@@ -121,6 +121,9 @@ function wcpp_maybe_load_elementor() {
 	}
 }
 
-// Activation / deactivation hooks — must be outside wcpp_init().
+// Activator must be loaded HERE — outside wcpp_init() — because activation
+// fires before plugins_loaded, so the class must exist at activation time.
+require_once plugin_dir_path( __FILE__ ) . 'includes/class-activator.php';
+
 register_activation_hook( __FILE__, array( 'WCPP_Activator', 'activate' ) );
 register_deactivation_hook( __FILE__, array( 'WCPP_Activator', 'deactivate' ) );
