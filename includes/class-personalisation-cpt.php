@@ -45,7 +45,7 @@ class WCPP_Personalisation_CPT {
 			'add_new_item'       => __( 'Create Personalisation Set', 'wcpp' ),
 			'edit_item'          => __( 'Edit Personalisation Set', 'wcpp' ),
 			'new_item'           => __( 'New Personalisation Set', 'wcpp' ),
-			'all_items'          => __( 'All Sets', 'wcpp' ),
+			'all_items'          => __( 'Personalisation', 'wcpp' ),
 			'search_items'       => __( 'Search Sets', 'wcpp' ),
 			'not_found'          => __( 'No personalisation sets found. Create one!', 'wcpp' ),
 			'not_found_in_trash' => __( 'No sets in trash.', 'wcpp' ),
