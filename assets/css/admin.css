@@ -1,0 +1,27 @@
+/**
+ * WC Personalisation Panel — Admin styles
+ * Settings page + product meta box only.
+ */
+
+.wcpp-settings-wrap h1 {
+	margin-bottom: 8px;
+}
+
+.wcpp-settings-wrap .description {
+	margin-bottom: 20px;
+	color: #666;
+}
+
+.wcpp-product-meta p {
+	margin-bottom: 12px;
+}
+
+.wcpp-product-meta label {
+	cursor: pointer;
+}
+
+.wcpp-product-meta hr {
+	border: none;
+	border-top: 1px solid #ddd;
+	margin: 12px 0;
+}
