@@ -49,6 +49,8 @@ function wcpp_init() {
 
 	// Load all classes.
 	require_once WCPP_PATH . 'includes/class-settings-store.php';
+	require_once WCPP_PATH . 'includes/class-admin-menu.php';
+	require_once WCPP_PATH . 'includes/class-settings-page.php';
 	require_once WCPP_PATH . 'includes/class-personalisation-cpt.php';
 	require_once WCPP_PATH . 'includes/class-price-calculator.php';
 	require_once WCPP_PATH . 'includes/class-cart-handler.php';
@@ -58,7 +60,10 @@ function wcpp_init() {
 	require_once WCPP_PATH . 'includes/class-email-handler.php';
 
 	// Boot each class.
+	WCPP_Admin_Menu::init();
+	WCPP_Settings_Page::init();
 	WCPP_Personalisation_CPT::init();
+	WCPP_Price_Calculator::init();
 	WCPP_Cart_Handler::init();
 	WCPP_Order_Handler::init();
 	WCPP_Ajax_Handler::init();
@@ -83,7 +88,8 @@ function wcpp_init() {
  */
 function wcpp_plugin_action_links( $links ) {
 	$custom = array(
-		'settings' => '<a href="' . esc_url( admin_url( 'edit.php?post_type=wcpp_personalisation' ) ) . '">' . esc_html__( 'Settings', 'wcpp' ) . '</a>',
+		'sets'     => '<a href="' . esc_url( admin_url( 'edit.php?post_type=wcpp_personalisation' ) ) . '">' . esc_html__( 'Sets', 'wcpp' ) . '</a>',
+		'settings' => '<a href="' . esc_url( admin_url( 'admin.php?page=wcpp-settings' ) ) . '">' . esc_html__( 'Settings', 'wcpp' ) . '</a>',
 	);
 	return array_merge( $custom, $links );
 }
@@ -129,8 +135,8 @@ function wcpp_declare_hpos_compatibility() {
  * @return void
  */
 function wcpp_maybe_load_elementor() {
-	$settings = WCPP_Settings_Store::get_global();
-	if ( ! empty( $settings['elementor_enabled'] ) && file_exists( WCPP_PATH . 'elementor/class-elementor-module.php' ) ) {
+	$behaviour = WCPP_Settings_Store::get_behaviour();
+	if ( ! empty( $behaviour['elementor'] ) && file_exists( WCPP_PATH . 'elementor/class-elementor-module.php' ) ) {
 		require_once WCPP_PATH . 'elementor/class-elementor-module.php';
 		WCPP_Elementor_Module::init();
 	}

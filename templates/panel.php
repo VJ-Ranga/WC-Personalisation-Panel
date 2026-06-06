@@ -1,86 +1,58 @@
 <?php
 /**
- * Template: Personalisation panel drawer.
+ * Template: panel drawer. Override: yourtheme/wcpp/panel.php
+ * JS reads IDs/classes here — keep in sync with wcpp-panel.js.
  *
- * Override this in your theme: copy to yourtheme/wcpp/panel.php
- * JS reads IDs and classes in this file — keep them in sync with wcpp-panel.js.
+ * Vars: $design (array), $config (array).
  *
  * @package WC_Personalisation_Panel
  */
 
-// Block direct file access.
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
+
+$slide_class    = 'wcpp-from-' . ( 'left' === $design['slide_from'] ? 'left' : 'right' );
+$progress_style = $design['progress_show'] ? $design['progress_style'] : 'none';
+$header_title   = $design['header_title'];
 ?>
-<!-- Overlay backdrop -->
 <div id="wcpp-overlay" class="wcpp-overlay" aria-hidden="true"></div>
 
-<!-- Panel drawer -->
 <div
 	id="wcpp-panel"
-	class="wcpp-panel"
+	class="wcpp-panel <?php echo esc_attr( $slide_class ); ?>"
 	role="dialog"
 	aria-modal="true"
 	aria-label="<?php esc_attr_e( 'Personalisation Options', 'wcpp' ); ?>"
 	aria-hidden="true"
+	data-progress-style="<?php echo esc_attr( $progress_style ); ?>"
 >
-	<!-- Panel header -->
 	<div class="wcpp-panel__header">
-		<button
-			type="button"
-			id="wcpp-back"
-			class="wcpp-panel__back"
-			aria-label="<?php esc_attr_e( 'Go back', 'wcpp' ); ?>"
-			style="display:none;"
-		>
-			&#8592; <?php esc_html_e( 'Back', 'wcpp' ); ?>
+		<button type="button" id="wcpp-back" class="wcpp-panel__back" aria-label="<?php esc_attr_e( 'Go back', 'wcpp' ); ?>" style="display:none;">
+			&#8592;
 		</button>
-
-		<h2 id="wcpp-panel-title" class="wcpp-panel__title">
-			<?php esc_html_e( 'Add Personalisation', 'wcpp' ); ?>
-		</h2>
-
-		<button
-			type="button"
-			id="wcpp-close"
-			class="wcpp-panel__close"
-			aria-label="<?php esc_attr_e( 'Close personalisation panel', 'wcpp' ); ?>"
-		>
+		<h2 id="wcpp-panel-title" class="wcpp-panel__title"><?php echo esc_html( $header_title ); ?></h2>
+		<button type="button" id="wcpp-close" class="wcpp-panel__close" aria-label="<?php esc_attr_e( 'Close', 'wcpp' ); ?>">
 			&#10005;
 		</button>
 	</div>
 
-	<!-- Progress bar -->
-	<div class="wcpp-panel__progress" role="progressbar" aria-valuemin="0" aria-valuemax="6" aria-valuenow="0">
-		<div id="wcpp-progress-bar" class="wcpp-panel__progress-fill" style="width:0%"></div>
-	</div>
+	<?php if ( 'none' !== $progress_style ) : ?>
+		<div class="wcpp-panel__progress" id="wcpp-progress">
+			<?php if ( 'bar' === $progress_style ) : ?>
+				<div class="wcpp-progress-bar"><div class="wcpp-progress-bar__fill" id="wcpp-progress-fill"></div></div>
+			<?php elseif ( 'dots' === $progress_style ) : ?>
+				<div class="wcpp-progress-dots" id="wcpp-progress-dots"></div>
+			<?php else : ?>
+				<div class="wcpp-progress-text" id="wcpp-progress-text"></div>
+			<?php endif; ?>
+		</div>
+	<?php endif; ?>
 
-	<!-- Step content — JS renders each step into this container -->
-	<div id="wcpp-step-content" class="wcpp-panel__content">
-		<!-- Populated by wcpp-panel.js -->
-	</div>
+	<div id="wcpp-step-content" class="wcpp-panel__content"></div>
 
-	<!-- Panel footer -->
 	<div class="wcpp-panel__footer">
-		<button
-			type="button"
-			id="wcpp-next"
-			class="button wcpp-panel__next"
-		>
-			<?php esc_html_e( 'Next', 'wcpp' ); ?>
-		</button>
-
-		<button
-			type="button"
-			id="wcpp-add-to-bag"
-			class="button button-primary wcpp-panel__add-to-bag"
-			style="display:none;"
-		>
-			<?php esc_html_e( 'Add to Bag', 'wcpp' ); ?>
-		</button>
-
-		<div id="wcpp-price-preview" class="wcpp-panel__price-preview"></div>
+		<button type="button" id="wcpp-next" class="wcpp-panel__next"><?php echo esc_html( $design['next_text'] ); ?></button>
+		<button type="button" id="wcpp-add-to-bag" class="wcpp-panel__add-to-bag" style="display:none;"><?php echo esc_html( $design['addbag_text'] ); ?></button>
 	</div>
-
 </div>

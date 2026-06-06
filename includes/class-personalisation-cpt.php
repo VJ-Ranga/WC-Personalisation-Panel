@@ -37,17 +37,18 @@ class WCPP_Personalisation_CPT {
 	 */
 	public static function register_cpt() {
 		$labels = array(
-			'name'               => __( 'Personalisation', 'wcpp' ),
+			'name'               => __( 'Personalisation Sets', 'wcpp' ),
 			'singular_name'      => __( 'Personalisation Set', 'wcpp' ),
-			'add_new'            => __( 'Create Personalisation', 'wcpp' ),
-			'add_new_item'       => __( 'Create Personalisation Set', 'wcpp' ),
+			'add_new'            => __( 'Add New Set', 'wcpp' ),
+			'add_new_item'       => __( 'Add New Personalisation Set', 'wcpp' ),
 			'edit_item'          => __( 'Edit Personalisation Set', 'wcpp' ),
 			'new_item'           => __( 'New Personalisation Set', 'wcpp' ),
-			'all_items'          => __( 'Personalisation', 'wcpp' ),
-			'search_items'       => __( 'Search Sets', 'wcpp' ),
-			'not_found'          => __( 'No personalisation sets found. Create one!', 'wcpp' ),
-			'not_found_in_trash' => __( 'No sets in trash.', 'wcpp' ),
-			'menu_name'          => __( 'Personalisation', 'wcpp' ),
+			'view_item'          => __( 'View Personalisation Set', 'wcpp' ),
+			'all_items'          => __( 'Personalisation Sets', 'wcpp' ),
+			'search_items'       => __( 'Search Personalisation Sets', 'wcpp' ),
+			'not_found'          => __( 'No personalisation sets yet. Create your first one!', 'wcpp' ),
+			'not_found_in_trash' => __( 'No personalisation sets in trash.', 'wcpp' ),
+			'menu_name'          => __( 'Personalisation Sets', 'wcpp' ),
 		);
 
 		register_post_type(
@@ -56,7 +57,7 @@ class WCPP_Personalisation_CPT {
 				'labels'            => $labels,
 				'public'            => false,
 				'show_ui'           => true,
-				'show_in_menu'      => 'woocommerce',
+				'show_in_menu'      => WCPP_Admin_Menu::MENU_SLUG,
 				'show_in_nav_menus' => false,
 				'show_in_admin_bar' => false,
 				'supports'          => array( 'title' ),
@@ -95,11 +96,11 @@ class WCPP_Personalisation_CPT {
 			'high'
 		);
 
-		// Panel design settings — sidebar.
+		// Button text override — sidebar.
 		add_meta_box(
-			'wcpp_design',
-			__( 'Panel Design', 'wcpp' ),
-			array( __CLASS__, 'render_design_box' ),
+			'wcpp_button_override',
+			__( 'Button Text (optional)', 'wcpp' ),
+			array( __CLASS__, 'render_button_box' ),
 			'wcpp_personalisation',
 			'side',
 			'default'
@@ -348,95 +349,35 @@ class WCPP_Personalisation_CPT {
 	// ─── DESIGN SETTINGS ─────────────────────────────────────────────────
 
 	/**
-	 * Render the panel design settings meta box.
+	 * Render the button-text override meta box.
+	 * All visual design is global (Panel Settings) — this only overrides
+	 * the trigger button label for this specific set.
 	 *
 	 * @param WP_Post $post Current post.
 	 * @return void
 	 */
-	public static function render_design_box( $post ) {
-		$design = get_post_meta( $post->ID, '_wcpp_design', true );
-		if ( ! is_array( $design ) ) {
-			$design = array();
-		}
-
-		$defaults = self::design_defaults();
-		$design   = wp_parse_args( $design, $defaults );
+	public static function render_button_box( $post ) {
+		$override = get_post_meta( $post->ID, '_wcpp_button_text', true );
+		$global   = WCPP_Settings_Store::get_design();
 		?>
-		<div class="wcpp-design-box">
-
-			<!-- Primary colour -->
+		<div class="wcpp-button-box">
 			<p>
-				<label><strong><?php esc_html_e( 'Primary Colour', 'wcpp' ); ?></strong></label><br />
-				<input type="text" name="wcpp_design[primary_color]"
-					value="<?php echo esc_attr( $design['primary_color'] ); ?>"
-					class="wcpp-color-picker" data-default-color="<?php echo esc_attr( $defaults['primary_color'] ); ?>" />
-			</p>
-
-			<!-- Panel width -->
-			<p>
-				<label><strong><?php esc_html_e( 'Panel Width (px)', 'wcpp' ); ?></strong></label><br />
-				<input type="number" name="wcpp_design[panel_width]"
-					value="<?php echo esc_attr( $design['panel_width'] ); ?>"
-					min="300" max="700" style="width:80px;" /> px
-				<span class="description"><?php esc_html_e( '300–700px. Default: 420.', 'wcpp' ); ?></span>
-			</p>
-
-			<!-- Button text -->
-			<p>
-				<label><strong><?php esc_html_e( 'Button Text', 'wcpp' ); ?></strong></label><br />
-				<input type="text" name="wcpp_design[button_text]"
-					value="<?php echo esc_attr( $design['button_text'] ); ?>"
+				<input type="text" name="wcpp_button_text"
+					value="<?php echo esc_attr( $override ); ?>"
+					placeholder="<?php echo esc_attr( $global['btn_text'] ); ?>"
 					style="width:100%;" />
 			</p>
-
-			<!-- Button style -->
-			<p>
-				<label><strong><?php esc_html_e( 'Button Style', 'wcpp' ); ?></strong></label><br />
-				<select name="wcpp_design[button_style]" style="width:100%;">
-					<option value="outline" <?php selected( $design['button_style'], 'outline' ); ?>><?php esc_html_e( 'Outline', 'wcpp' ); ?></option>
-					<option value="filled" <?php selected( $design['button_style'], 'filled' ); ?>><?php esc_html_e( 'Filled', 'wcpp' ); ?></option>
-				</select>
+			<p class="description">
+				<?php
+				printf(
+					/* translators: %s: global default button text */
+					esc_html__( 'Leave blank to use the global default: "%s". All colours, fonts and sizes are set globally in Panel Settings.', 'wcpp' ),
+					esc_html( $global['btn_text'] )
+				);
+				?>
 			</p>
-
-			<!-- Font family -->
-			<p>
-				<label><strong><?php esc_html_e( 'Panel Font', 'wcpp' ); ?></strong></label><br />
-				<select name="wcpp_design[font_family]" style="width:100%;">
-					<option value="inherit" <?php selected( $design['font_family'], 'inherit' ); ?>><?php esc_html_e( 'Inherit from theme', 'wcpp' ); ?></option>
-					<option value="'Poppins', sans-serif" <?php selected( $design['font_family'], "'Poppins', sans-serif" ); ?>>Poppins</option>
-					<option value="'Playfair Display', serif" <?php selected( $design['font_family'], "'Playfair Display', serif" ); ?>>Playfair Display</option>
-					<option value="'Montserrat', sans-serif" <?php selected( $design['font_family'], "'Montserrat', sans-serif" ); ?>>Montserrat</option>
-					<option value="'Lato', sans-serif" <?php selected( $design['font_family'], "'Lato', sans-serif" ); ?>>Lato</option>
-					<option value="'Cormorant Garamond', serif" <?php selected( $design['font_family'], "'Cormorant Garamond', serif" ); ?>>Cormorant Garamond</option>
-				</select>
-			</p>
-
-			<!-- Border radius -->
-			<p>
-				<label><strong><?php esc_html_e( 'Button/Card Radius (px)', 'wcpp' ); ?></strong></label><br />
-				<input type="number" name="wcpp_design[border_radius]"
-					value="<?php echo esc_attr( $design['border_radius'] ); ?>"
-					min="0" max="50" style="width:70px;" /> px
-			</p>
-
 		</div>
 		<?php
-	}
-
-	/**
-	 * Design setting defaults.
-	 *
-	 * @return array
-	 */
-	public static function design_defaults() {
-		return array(
-			'primary_color' => '#1A56DB',
-			'panel_width'   => 420,
-			'button_text'   => 'Add Personalisation',
-			'button_style'  => 'outline',
-			'font_family'   => 'inherit',
-			'border_radius' => 6,
-		);
 	}
 
 	// ─── INFO BOX ─────────────────────────────────────────────────────────
@@ -453,6 +394,9 @@ class WCPP_Personalisation_CPT {
 		</p>
 		<p class="description">
 			<?php esc_html_e( 'Product-level assignment overrides category-level.', 'wcpp' ); ?>
+		</p>
+		<p>
+			<a href="<?php echo esc_url( admin_url( 'admin.php?page=wcpp-settings' ) ); ?>"><?php esc_html_e( 'Edit Panel Settings (design) →', 'wcpp' ); ?></a>
 		</p>
 		<?php
 	}
@@ -486,8 +430,8 @@ class WCPP_Personalisation_CPT {
 		// Save category assignment.
 		self::save_categories( $post_id );
 
-		// Save design settings.
-		self::save_design( $post_id );
+		// Save button-text override.
+		self::save_button_text( $post_id );
 	}
 
 	/**
@@ -555,29 +499,18 @@ class WCPP_Personalisation_CPT {
 	}
 
 	/**
-	 * Save design settings.
+	 * Save the per-set button-text override.
 	 *
 	 * @param int $post_id Post ID.
 	 * @return void
 	 */
-	private static function save_design( $post_id ) {
-		if ( empty( $_POST['wcpp_design'] ) || ! is_array( $_POST['wcpp_design'] ) ) {
-			return;
+	private static function save_button_text( $post_id ) {
+		$text = isset( $_POST['wcpp_button_text'] ) ? sanitize_text_field( wp_unslash( $_POST['wcpp_button_text'] ) ) : '';
+		if ( '' !== $text ) {
+			update_post_meta( $post_id, '_wcpp_button_text', $text );
+		} else {
+			delete_post_meta( $post_id, '_wcpp_button_text' );
 		}
-
-		$raw      = $_POST['wcpp_design']; // phpcs:ignore
-		$defaults = self::design_defaults();
-
-		$clean = array(
-			'primary_color' => sanitize_hex_color( $raw['primary_color'] ?? $defaults['primary_color'] ) ?: $defaults['primary_color'],
-			'panel_width'   => max( 300, min( 700, intval( $raw['panel_width'] ?? $defaults['panel_width'] ) ) ),
-			'button_text'   => sanitize_text_field( wp_unslash( $raw['button_text'] ?? $defaults['button_text'] ) ),
-			'button_style'  => in_array( $raw['button_style'] ?? '', array( 'outline', 'filled' ), true ) ? $raw['button_style'] : $defaults['button_style'],
-			'font_family'   => sanitize_text_field( wp_unslash( $raw['font_family'] ?? $defaults['font_family'] ) ),
-			'border_radius' => max( 0, min( 50, intval( $raw['border_radius'] ?? $defaults['border_radius'] ) ) ),
-		);
-
-		update_post_meta( $post_id, '_wcpp_design', $clean );
 	}
 
 	// ─── ADMIN COLUMNS ───────────────────────────────────────────────────

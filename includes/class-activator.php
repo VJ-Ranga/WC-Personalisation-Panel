@@ -26,24 +26,22 @@ class WCPP_Activator {
 	 */
 	public static function activate() {
 
-		// Seed global settings with sensible defaults if not already saved.
-		if ( false === get_option( 'wcpp_global_settings' ) ) {
-			$defaults = array(
-				'enabled'          => false,
-				'locations'        => array( 'Chest', 'Cuff', 'Collar', 'Hem' ),
-				'types'            => array( 'text', 'initials', 'symbol' ),
-				'fonts'            => array( 'serif', 'script', 'block' ),
-				'colours'          => array( '#000000', '#FFFFFF', '#C0A882', '#C41E3A' ),
-				'flat_fee'         => '0.00',
-				'per_char_fee'     => '0.00',
-				'max_chars'        => 3,
-				'non_returnable'   => true,
-				'elementor_enabled'=> false,
+		// Seed global settings (design + behaviour) with defaults if not set.
+		if ( false === get_option( 'wcpp_settings' ) ) {
+			require_once WCPP_PATH . 'includes/class-settings-store.php';
+			update_option(
+				'wcpp_settings',
+				array(
+					'design'    => WCPP_Settings_Store::design_defaults(),
+					'behaviour' => WCPP_Settings_Store::behaviour_defaults(),
+				),
+				false
 			);
-			update_option( 'wcpp_global_settings', $defaults, false );
 		}
 
-		// Flush rewrite rules.
+		// Clean up the old option from the previous architecture.
+		delete_option( 'wcpp_global_settings' );
+
 		flush_rewrite_rules();
 	}
 

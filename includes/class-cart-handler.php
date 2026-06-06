@@ -1,6 +1,6 @@
 <?php
 /**
- * Cart Handler — all WooCommerce cart hooks.
+ * Cart Handler — front-end button, panel render, cart hooks.
  *
  * @package WC_Personalisation_Panel
  */
@@ -15,20 +15,76 @@ if ( ! defined( 'ABSPATH' ) ) {
 class WCPP_Cart_Handler {
 
 	/**
-	 * Register all hooks.
+	 * Register hooks. Button placement is dynamic, based on global design.
 	 *
 	 * @return void
 	 */
 	public static function init() {
-		add_action( 'woocommerce_before_add_to_cart_button', array( __CLASS__, 'render_button' ) );
-		add_action( 'wp_footer',                             array( __CLASS__, 'render_panel' ) );
-		add_filter( 'woocommerce_add_cart_item_data',        array( __CLASS__, 'attach_data' ), 10, 2 );
-		add_filter( 'woocommerce_get_item_data',             array( __CLASS__, 'display_in_cart' ), 10, 2 );
-		add_action( 'wp_enqueue_scripts',                    array( __CLASS__, 'enqueue_assets' ) );
+		$design    = WCPP_Settings_Store::get_design();
+		$placement = $design['btn_placement'];
+
+		if ( 'before_cart' === $placement ) {
+			add_action( 'woocommerce_before_add_to_cart_button', array( __CLASS__, 'render_button' ) );
+		} elseif ( 'after_cart' === $placement ) {
+			add_action( 'woocommerce_after_add_to_cart_button', array( __CLASS__, 'render_button' ) );
+		}
+		// 'shortcode' = no auto hook; use [wcpp_button] or wcpp_render_button().
+
+		add_shortcode( 'wcpp_button', array( __CLASS__, 'shortcode_button' ) );
+
+		add_action( 'wp_footer',                      array( __CLASS__, 'render_panel' ) );
+		add_filter( 'woocommerce_add_cart_item_data', array( __CLASS__, 'attach_data' ), 10, 2 );
+		add_filter( 'woocommerce_get_item_data',      array( __CLASS__, 'display_in_cart' ), 10, 2 );
+		add_action( 'wp_enqueue_scripts',             array( __CLASS__, 'enqueue_assets' ) );
 	}
 
 	/**
-	 * Enqueue front-end assets on product pages that have a set assigned.
+	 * Build the inline CSS custom-property block from the design tokens.
+	 *
+	 * @param array $design Design settings.
+	 * @return string
+	 */
+	private static function build_css_vars( $design ) {
+		// Overlay rgba from hex + opacity.
+		$hex     = ltrim( $design['overlay_color'], '#' );
+		$r       = hexdec( substr( $hex, 0, 2 ) );
+		$g       = hexdec( substr( $hex, 2, 2 ) );
+		$b       = hexdec( substr( $hex, 4, 2 ) );
+		$opacity = max( 0, min( 100, (int) $design['overlay_opacity'] ) ) / 100;
+		$overlay = sprintf( 'rgba(%d,%d,%d,%s)', $r, $g, $b, $opacity );
+
+		$font = ( 'inherit' === $design['font_family'] ) ? 'inherit' : "'" . $design['font_family'] . "'";
+
+		$vars = array(
+			'--wcpp-btn-bg'        => $design['btn_bg'],
+			'--wcpp-btn-text'      => $design['btn_text_color'],
+			'--wcpp-btn-radius'    => intval( $design['btn_radius'] ) . 'px',
+			'--wcpp-panel-width'   => intval( $design['panel_width'] ) . 'px',
+			'--wcpp-mobile-bp'     => intval( $design['mobile_bp'] ) . 'px',
+			'--wcpp-panel-bg'      => $design['panel_bg'],
+			'--wcpp-font'          => $font,
+			'--wcpp-panel-radius'  => intval( $design['panel_radius'] ) . 'px',
+			'--wcpp-overlay'       => $overlay,
+			'--wcpp-anim'          => intval( $design['anim_speed'] ) . 'ms',
+			'--wcpp-title-color'   => $design['title_color'],
+			'--wcpp-progress'      => $design['progress_color'],
+			'--wcpp-card-border'   => $design['card_border'],
+			'--wcpp-card-selected' => $design['card_selected'],
+			'--wcpp-img-size'      => intval( $design['card_img_size'] ) . 'px',
+			'--wcpp-footer-btn'    => $design['footer_btn_color'],
+		);
+
+		$css = ':root{';
+		foreach ( $vars as $k => $v ) {
+			$css .= $k . ':' . $v . ';';
+		}
+		$css .= '}';
+
+		return $css;
+	}
+
+	/**
+	 * Enqueue front-end assets on product pages with a set assigned.
 	 *
 	 * @return void
 	 */
@@ -46,36 +102,23 @@ class WCPP_Cart_Handler {
 
 		$design = $config['design'];
 
-		wp_enqueue_style(
-			'wcpp-panel',
-			WCPP_URL . 'assets/css/panel-default.css',
-			array(),
-			WCPP_VERSION
-		);
+		wp_enqueue_style( 'wcpp-panel', WCPP_URL . 'assets/css/panel-default.css', array(), WCPP_VERSION );
 
-		// Output design as CSS custom properties.
-		$font_face = '';
+		// Google font import if not inheriting.
 		if ( 'inherit' !== $design['font_family'] ) {
-			$font_name = str_replace( array( "'", '"' ), '', explode( ',', $design['font_family'] )[0] );
-			$font_face = "@import url('https://fonts.googleapis.com/css2?family=" . urlencode( $font_name ) . ":wght@400;600&display=swap');";
+			$family = str_replace( ' ', '+', $design['font_family'] );
+			wp_enqueue_style(
+				'wcpp-font',
+				'https://fonts.googleapis.com/css2?family=' . $family . ':wght@400;600;700&display=swap',
+				array(),
+				null // phpcs:ignore WordPress.WP.EnqueuedResourceParameters.MissingVersion
+			);
 		}
 
-		$css = $font_face . '
-		#wcpp-panel, #wcpp-overlay, .wcpp-button {
-			--wcpp-primary:       ' . sanitize_hex_color( $design['primary_color'] ) . ';
-			--wcpp-panel-width:   ' . absint( $design['panel_width'] ) . 'px;
-			--wcpp-font:          ' . esc_attr( $design['font_family'] ) . ';
-			--wcpp-radius:        ' . absint( $design['border_radius'] ) . 'px;
-		}';
-		wp_add_inline_style( 'wcpp-panel', $css );
+		// Inline design tokens.
+		wp_add_inline_style( 'wcpp-panel', self::build_css_vars( $design ) );
 
-		wp_enqueue_script(
-			'wcpp-panel',
-			WCPP_URL . 'assets/js/wcpp-panel.js',
-			array( 'jquery' ),
-			WCPP_VERSION,
-			true
-		);
+		wp_enqueue_script( 'wcpp-panel', WCPP_URL . 'assets/js/wcpp-panel.js', array( 'jquery' ), WCPP_VERSION, true );
 
 		wp_localize_script(
 			'wcpp-panel',
@@ -85,23 +128,25 @@ class WCPP_Cart_Handler {
 				'nonce'   => wp_create_nonce( 'wcpp_nonce' ),
 				'config'  => $config,
 				'i18n'    => array(
-					'addToBag'     => esc_html__( 'Add to Bag', 'wcpp' ),
-					'back'         => esc_html__( 'Back', 'wcpp' ),
-					'next'         => esc_html__( 'Next', 'wcpp' ),
+					'back'         => $design['back_text'],
+					'next'         => $design['next_text'],
+					'addToBag'     => $design['addbag_text'],
 					'close'        => esc_html__( 'Close', 'wcpp' ),
 					'confirmClose' => esc_html__( 'You\'ll lose your personalisation choices. Are you sure?', 'wcpp' ),
 					'errorGeneric' => esc_html__( 'Something went wrong. Please try again.', 'wcpp' ),
 					'summary'      => esc_html__( 'Review & Add', 'wcpp' ),
 					'yourChoices'  => esc_html__( 'Your Choices', 'wcpp' ),
-					'free'         => esc_html__( 'Free', 'wcpp' ),
+					'free'         => $design['free_label'],
 					'adding'       => esc_html__( 'Adding...', 'wcpp' ),
+					'stepOf'       => esc_html__( 'Step %1$d of %2$d', 'wcpp' ),
+					'total'        => esc_html__( 'Personalisation total:', 'wcpp' ),
 				),
 			)
 		);
 	}
 
 	/**
-	 * Render the "Add Personalisation" button on the product page.
+	 * Render the trigger button.
 	 *
 	 * @return void
 	 */
@@ -114,8 +159,9 @@ class WCPP_Cart_Handler {
 		}
 
 		$design      = $config['design'];
-		$button_text = ! empty( $design['button_text'] ) ? $design['button_text'] : __( 'Add Personalisation', 'wcpp' );
-		$btn_style   = $design['button_style'] ?? 'outline';
+		$button_text = ! empty( $config['button_text'] ) ? $config['button_text'] : $design['btn_text'];
+		$btn_style   = $design['btn_style'];
+		$full_width  = ! empty( $design['btn_full_width'] );
 
 		$template = wcpp_locate_template( 'button.php' );
 		if ( $template ) {
@@ -124,7 +170,18 @@ class WCPP_Cart_Handler {
 	}
 
 	/**
-	 * Render the panel drawer into wp_footer on product pages.
+	 * Shortcode handler for [wcpp_button].
+	 *
+	 * @return string
+	 */
+	public static function shortcode_button() {
+		ob_start();
+		self::render_button();
+		return ob_get_clean();
+	}
+
+	/**
+	 * Render the panel drawer in the footer.
 	 *
 	 * @return void
 	 */
@@ -140,6 +197,8 @@ class WCPP_Cart_Handler {
 			return;
 		}
 
+		$design = $config['design'];
+
 		$template = wcpp_locate_template( 'panel.php' );
 		if ( $template ) {
 			include $template;
@@ -147,9 +206,9 @@ class WCPP_Cart_Handler {
 	}
 
 	/**
-	 * Attach personalisation data + unique key to cart item.
+	 * Attach personalisation data + unique key to the cart item.
 	 *
-	 * @param array $cart_item_data Existing cart item data.
+	 * @param array $cart_item_data Cart item data.
 	 * @param int   $product_id     Product ID.
 	 * @return array
 	 */
@@ -161,10 +220,10 @@ class WCPP_Cart_Handler {
 	}
 
 	/**
-	 * Display personalisation data in cart and mini-cart.
+	 * Display personalisation in cart and mini-cart.
 	 *
-	 * @param array $item_data Existing display data.
-	 * @param array $cart_item Cart item array.
+	 * @param array $item_data Display data.
+	 * @param array $cart_item Cart item.
 	 * @return array
 	 */
 	public static function display_in_cart( $item_data, $cart_item ) {
@@ -178,7 +237,7 @@ class WCPP_Cart_Handler {
 			foreach ( $data['selections'] as $sel ) {
 				$display = esc_html( $sel['choice_name'] );
 				if ( isset( $sel['choice_price'] ) && (float) $sel['choice_price'] > 0 ) {
-					$display .= ' (+' . wc_price( $sel['choice_price'] ) . ')';
+					$display .= ' (+' . wp_strip_all_tags( wc_price( $sel['choice_price'] ) ) . ')';
 				}
 				$item_data[] = array(
 					'name'  => esc_html( $sel['option_name'] ),
@@ -201,7 +260,7 @@ class WCPP_Cart_Handler {
 /**
  * Theme-first template locator.
  *
- * @param string $template_name Filename e.g. 'button.php'.
+ * @param string $template_name Filename.
  * @return string|false
  */
 function wcpp_locate_template( $template_name ) {
@@ -218,7 +277,7 @@ function wcpp_locate_template( $template_name ) {
 }
 
 /**
- * Template tag for themes.
+ * Template tag.
  *
  * @return void
  */

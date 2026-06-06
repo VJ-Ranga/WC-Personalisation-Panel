@@ -1,17 +1,61 @@
 /**
  * WC Personalisation Panel — Front-end styles
- * Scoped to #wcpp-panel, #wcpp-overlay, .wcpp-*
- * CSS custom properties driven by design settings.
+ * Driven by CSS custom properties output inline from global design settings.
+ * Scoped to #wcpp-panel, #wcpp-overlay, .wcpp-button.
  */
 
-/* ─── CSS Custom Properties (overridden per-set via inline style) ─ */
-#wcpp-panel,
-#wcpp-overlay,
+/* ─── Fallback tokens (overridden by inline :root block) ─────────── */
+:root {
+	--wcpp-btn-bg:        #1A56DB;
+	--wcpp-btn-text:      #1A56DB;
+	--wcpp-btn-radius:    6px;
+	--wcpp-panel-width:   420px;
+	--wcpp-mobile-bp:     500px;
+	--wcpp-panel-bg:      #ffffff;
+	--wcpp-font:          inherit;
+	--wcpp-panel-radius:  6px;
+	--wcpp-overlay:       rgba(0,0,0,0.45);
+	--wcpp-anim:          350ms;
+	--wcpp-title-color:   #111111;
+	--wcpp-progress:      #1A56DB;
+	--wcpp-card-border:   #e0e0e0;
+	--wcpp-card-selected: #1A56DB;
+	--wcpp-img-size:      52px;
+	--wcpp-footer-btn:    #1A56DB;
+}
+
+/* ─── Trigger button ─────────────────────────────────────────────── */
 .wcpp-button {
-	--wcpp-primary:     #1A56DB;
-	--wcpp-panel-width: 420px;
-	--wcpp-font:        inherit;
-	--wcpp-radius:      6px;
+	margin-top:    12px;
+	padding:       14px 20px;
+	font-size:     15px;
+	font-weight:   600;
+	border-radius: var(--wcpp-btn-radius);
+	cursor:        pointer;
+	min-height:    48px;
+	transition:    background 0.2s, color 0.2s, opacity 0.2s;
+	letter-spacing: 0.3px;
+}
+.wcpp-button--full { width: 100%; display: block; }
+.wcpp-button--outline {
+	background: transparent;
+	color:      var(--wcpp-btn-text);
+	border:     2px solid var(--wcpp-btn-bg);
+}
+.wcpp-button--outline:hover { background: var(--wcpp-btn-bg); color: #fff; }
+.wcpp-button--filled {
+	background: var(--wcpp-btn-bg);
+	color:      #fff;
+	border:     2px solid var(--wcpp-btn-bg);
+}
+.wcpp-button--filled:hover { opacity: 0.88; }
+.wcpp-button--text {
+	background:      transparent;
+	color:          var(--wcpp-btn-text);
+	border:         none;
+	text-decoration: underline;
+	min-height:     auto;
+	padding:        8px 0;
 }
 
 /* ─── Overlay ────────────────────────────────────────────────────── */
@@ -19,37 +63,35 @@
 	display:    none;
 	position:   fixed;
 	inset:      0;
-	background: rgba(0, 0, 0, 0.45);
-	z-index:    9998;
+	background: var(--wcpp-overlay);
+	z-index:    99998;
 	opacity:    0;
-	transition: opacity 0.3s ease;
+	transition: opacity var(--wcpp-anim) ease;
 }
-.wcpp-overlay.wcpp-is-open {
-	display: block;
-	opacity: 1;
-}
+.wcpp-overlay.wcpp-is-open { display: block; opacity: 1; }
 
 /* ─── Panel drawer ───────────────────────────────────────────────── */
 #wcpp-panel {
 	position:        fixed;
 	top:             0;
-	right:           0;
+	height:          100%;
 	width:           var(--wcpp-panel-width);
 	max-width:       100%;
-	height:          100%;
-	background:      #fff;
-	z-index:         9999;
+	background:      var(--wcpp-panel-bg);
+	z-index:         99999;
 	display:         flex;
 	flex-direction:  column;
-	transform:       translateX(110%);
-	transition:      transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-	box-shadow:      -4px 0 32px rgba(0, 0, 0, 0.14);
+	transition:      transform var(--wcpp-anim) cubic-bezier(0.4, 0, 0.2, 1);
+	box-shadow:      0 0 40px rgba(0, 0, 0, 0.16);
 	font-family:     var(--wcpp-font);
 	overflow:        hidden;
 }
-#wcpp-panel.wcpp-is-open {
-	transform: translateX(0);
-}
+/* Slide from right (default) */
+#wcpp-panel.wcpp-from-right { right: 0; transform: translateX(110%); }
+#wcpp-panel.wcpp-from-right.wcpp-is-open { transform: translateX(0); }
+/* Slide from left */
+#wcpp-panel.wcpp-from-left { left: 0; transform: translateX(-110%); }
+#wcpp-panel.wcpp-from-left.wcpp-is-open { transform: translateX(0); }
 
 /* ─── Header ─────────────────────────────────────────────────────── */
 .wcpp-panel__header {
@@ -67,150 +109,160 @@
 	margin:      0;
 	flex:        1;
 	text-align:  center;
-	color:       #111;
+	color:       var(--wcpp-title-color);
 }
 .wcpp-panel__back,
 .wcpp-panel__close {
-	background:  none;
-	border:      none;
-	cursor:      pointer;
-	padding:     6px;
-	font-size:   18px;
-	color:       #666;
-	min-width:   44px;
-	min-height:  44px;
-	display:     flex;
-	align-items: center;
+	background:      none;
+	border:         none;
+	cursor:         pointer;
+	padding:        6px;
+	font-size:      18px;
+	color:          #666;
+	min-width:      44px;
+	min-height:     44px;
+	display:        flex;
+	align-items:    center;
 	justify-content: center;
-	border-radius: var(--wcpp-radius);
-	transition:  color 0.2s, background 0.2s;
+	border-radius:  var(--wcpp-panel-radius);
+	transition:     color 0.2s, background 0.2s;
 }
 .wcpp-panel__back:hover,
-.wcpp-panel__close:hover {
-	color:      #000;
-	background: #f5f5f5;
-}
+.wcpp-panel__close:hover { color: #000; background: #f5f5f5; }
 
-/* ─── Progress bar ───────────────────────────────────────────────── */
-.wcpp-panel__progress {
+/* ─── Progress: BAR ──────────────────────────────────────────────── */
+.wcpp-panel__progress { flex-shrink: 0; }
+.wcpp-progress-bar {
 	height:     3px;
 	background: #f0f0f0;
-	flex-shrink: 0;
 }
-.wcpp-panel__progress-fill {
+.wcpp-progress-bar__fill {
 	height:     100%;
-	background: var(--wcpp-primary);
-	transition: width 0.35s ease;
+	width:      0;
+	background: var(--wcpp-progress);
+	transition: width var(--wcpp-anim) ease;
+}
+
+/* ─── Progress: DOTS ─────────────────────────────────────────────── */
+.wcpp-progress-dots {
+	display:         flex;
+	justify-content: center;
+	gap:             8px;
+	padding:         12px 0;
+}
+.wcpp-progress-dots span {
+	width:        8px;
+	height:       8px;
+	border-radius: 50%;
+	background:   #ddd;
+	transition:   background 0.2s, transform 0.2s;
+}
+.wcpp-progress-dots span.wcpp-dot-active {
+	background: var(--wcpp-progress);
+	transform:  scale(1.3);
+}
+
+/* ─── Progress: TEXT ─────────────────────────────────────────────── */
+.wcpp-progress-text {
+	text-align: center;
+	padding:    10px 0;
+	font-size:  12px;
+	color:      #888;
+	font-weight: 600;
 }
 
 /* ─── Step content ───────────────────────────────────────────────── */
 .wcpp-panel__content {
-	flex:                   1;
-	overflow-y:             auto;
-	padding:                24px 20px;
+	flex:       1;
+	overflow-y: auto;
+	padding:    24px 20px;
 	-webkit-overflow-scrolling: touch;
 }
 .wcpp-step__heading {
-	font-size:     17px;
-	font-weight:   700;
-	margin:        0 0 18px;
-	color:         #111;
+	font-size:   17px;
+	font-weight: 700;
+	margin:      0 0 18px;
+	color:       var(--wcpp-title-color);
 }
 
-/* ─── Option buttons (choice picker) ────────────────────────────── */
-.wcpp-options {
-	display:        flex;
-	flex-direction: column;
-	gap:            10px;
+/* ─── Choice options ─────────────────────────────────────────────── */
+.wcpp-options { display: flex; flex-direction: column; gap: 10px; }
+.wcpp-options--grid2,
+.wcpp-options--grid3 {
+	display:               grid;
+	gap:                   10px;
 }
+.wcpp-options--grid2 { grid-template-columns: repeat(2, 1fr); }
+.wcpp-options--grid3 { grid-template-columns: repeat(3, 1fr); }
 
-/* Shake animation for validation hint */
 @keyframes wcppShake {
-	0%, 100% { transform: translateX(0); }
-	20%      { transform: translateX(-6px); }
-	40%      { transform: translateX(6px); }
-	60%      { transform: translateX(-4px); }
-	80%      { transform: translateX(4px); }
+	0%,100% { transform: translateX(0); }
+	20% { transform: translateX(-6px); }
+	40% { transform: translateX(6px); }
+	60% { transform: translateX(-4px); }
+	80% { transform: translateX(4px); }
 }
-.wcpp-options.wcpp-shake {
-	animation: wcppShake 0.45s ease;
-}
+.wcpp-options.wcpp-shake { animation: wcppShake 0.45s ease; }
 
 .wcpp-option-btn {
-	display:         flex;
-	align-items:     center;
-	gap:             12px;
-	padding:         12px 14px;
-	border:          2px solid #e0e0e0;
-	border-radius:   var(--wcpp-radius);
-	background:      #fff;
-	cursor:          pointer;
-	text-align:      left;
-	transition:      border-color 0.2s, background 0.2s, box-shadow 0.2s;
-	min-height:      52px;
-	width:           100%;
-	position:        relative;
+	display:       flex;
+	align-items:   center;
+	gap:           12px;
+	padding:       12px 14px;
+	border:        2px solid var(--wcpp-card-border);
+	border-radius: var(--wcpp-panel-radius);
+	background:    #fff;
+	cursor:        pointer;
+	text-align:    left;
+	transition:    border-color 0.2s, box-shadow 0.2s;
+	min-height:    52px;
+	width:         100%;
+	position:      relative;
 }
-.wcpp-option-btn:hover {
-	border-color: var(--wcpp-primary);
-	box-shadow:   0 0 0 3px color-mix(in srgb, var(--wcpp-primary) 12%, transparent);
-}
+.wcpp-option-btn:hover { border-color: var(--wcpp-card-selected); }
 .wcpp-option-btn.wcpp-selected {
-	border-color: var(--wcpp-primary);
-	background:   color-mix(in srgb, var(--wcpp-primary) 6%, #fff);
+	border-color: var(--wcpp-card-selected);
+	box-shadow:   inset 0 0 0 1px var(--wcpp-card-selected);
 }
 
-/* Fallback for browsers without color-mix */
-@supports not (color: color-mix(in srgb, red 50%, blue)) {
-	.wcpp-option-btn:hover { box-shadow: 0 0 0 3px rgba(26,86,219,0.12); }
-	.wcpp-option-btn.wcpp-selected { background: #f0f4ff; }
+/* Grid card layout — stacked, centered */
+.wcpp-options--grid2 .wcpp-option-btn,
+.wcpp-options--grid3 .wcpp-option-btn {
+	flex-direction: column;
+	text-align:     center;
+	gap:            6px;
+	padding:        12px 8px;
 }
 
 .wcpp-option-img-wrap {
 	flex-shrink: 0;
-	width:       52px;
-	height:      52px;
+	width:       var(--wcpp-img-size);
+	height:      var(--wcpp-img-size);
 }
 .wcpp-option-img {
-	width:        100%;
-	height:       100%;
-	object-fit:   cover;
-	border-radius: calc(var(--wcpp-radius) - 2px);
-	display:      block;
+	width:         100%;
+	height:        100%;
+	object-fit:    cover;
+	border-radius: calc(var(--wcpp-panel-radius) - 2px);
+	display:       block;
 }
-.wcpp-option-label-wrap {
-	flex:           1;
-	display:        flex;
-	flex-direction: column;
-	gap:            2px;
-}
-.wcpp-option-name {
-	font-size:   14px;
-	font-weight: 600;
-	color:       #111;
-}
-.wcpp-option-price {
-	font-size: 12px;
-	color:     var(--wcpp-primary);
-	font-weight: 500;
-}
+.wcpp-option-label-wrap { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.wcpp-option-name  { font-size: 14px; font-weight: 600; color: #111; }
+.wcpp-option-price { font-size: 12px; color: var(--wcpp-card-selected); font-weight: 500; }
 .wcpp-option-tick {
-	color:      var(--wcpp-primary);
-	font-size:  18px;
-	opacity:    0;
+	color:       var(--wcpp-card-selected);
+	font-size:   18px;
+	opacity:     0;
 	flex-shrink: 0;
-	transition: opacity 0.15s;
+	transition:  opacity 0.15s;
 }
-.wcpp-option-btn.wcpp-selected .wcpp-option-tick {
-	opacity: 1;
-}
+.wcpp-option-btn.wcpp-selected .wcpp-option-tick { opacity: 1; }
+/* Hide tick in grid mode (no room) */
+.wcpp-options--grid2 .wcpp-option-tick,
+.wcpp-options--grid3 .wcpp-option-tick { position: absolute; top: 4px; right: 4px; }
 
-/* ─── Summary step ───────────────────────────────────────────────── */
-.wcpp-summary-list {
-	list-style: none;
-	margin:     0;
-	padding:    0;
-}
+/* ─── Summary ────────────────────────────────────────────────────── */
+.wcpp-summary-list { list-style: none; margin: 0; padding: 0; }
 .wcpp-summary-item {
 	display:         flex;
 	align-items:     center;
@@ -219,49 +271,29 @@
 	border-bottom:   1px solid #f0f0f0;
 	gap:             10px;
 }
-.wcpp-summary-item:last-child {
-	border-bottom: none;
-}
-.wcpp-summary-left {
-	display:     flex;
-	align-items: center;
-	gap:         10px;
-	flex:        1;
-}
+.wcpp-summary-item:last-child { border-bottom: none; }
+.wcpp-summary-left { display: flex; align-items: center; gap: 10px; flex: 1; }
 .wcpp-summary-img {
 	width:         40px;
 	height:        40px;
 	object-fit:    cover;
-	border-radius: var(--wcpp-radius);
+	border-radius: var(--wcpp-panel-radius);
 	flex-shrink:   0;
 }
-.wcpp-summary-text {
-	display:        flex;
-	flex-direction: column;
-	gap:            2px;
-}
+.wcpp-summary-text { display: flex; flex-direction: column; gap: 2px; }
 .wcpp-summary-label {
-	font-size:  11px;
-	color:      #888;
+	font-size:      11px;
+	color:          #888;
 	text-transform: uppercase;
 	letter-spacing: 0.5px;
 }
-.wcpp-summary-value {
-	font-size:   14px;
-	font-weight: 600;
-	color:       #111;
-}
-.wcpp-summary-price {
-	font-size:   13px;
-	color:       var(--wcpp-primary);
-	font-weight: 600;
-	white-space: nowrap;
-}
+.wcpp-summary-value { font-size: 14px; font-weight: 600; color: #111; }
+.wcpp-summary-price { font-size: 13px; color: var(--wcpp-card-selected); font-weight: 600; white-space: nowrap; }
 .wcpp-summary-total {
 	margin-top:    16px;
 	padding:       12px 14px;
 	background:    #f8f9ff;
-	border-radius: var(--wcpp-radius);
+	border-radius: var(--wcpp-panel-radius);
 	font-size:     14px;
 	text-align:    right;
 	border:        1px solid #e0e8ff;
@@ -269,87 +301,34 @@
 
 /* ─── Footer ─────────────────────────────────────────────────────── */
 .wcpp-panel__footer {
-	padding:      16px 20px;
-	border-top:   1px solid #eee;
-	flex-shrink:  0;
-	background:   #fff;
+	padding:     16px 20px;
+	border-top:  1px solid #eee;
+	flex-shrink: 0;
+	background:  var(--wcpp-panel-bg);
 }
 .wcpp-panel__next,
 .wcpp-panel__add-to-bag {
-	width:         100%;
-	padding:       14px;
-	font-size:     15px;
-	font-weight:   700;
-	border-radius: var(--wcpp-radius);
-	cursor:        pointer;
-	min-height:    50px;
-	transition:    background 0.2s, color 0.2s, opacity 0.2s;
+	width:          100%;
+	padding:        14px;
+	font-size:      15px;
+	font-weight:    700;
+	border-radius:  var(--wcpp-btn-radius);
+	cursor:         pointer;
+	min-height:     50px;
+	background:     var(--wcpp-footer-btn);
+	color:          #fff;
+	border:         2px solid var(--wcpp-footer-btn);
+	transition:     opacity 0.2s;
 	letter-spacing: 0.3px;
 }
-.wcpp-panel__next {
-	background:   var(--wcpp-primary);
-	color:        #fff;
-	border:       2px solid var(--wcpp-primary);
-}
-.wcpp-panel__next:hover {
-	opacity: 0.88;
-}
-.wcpp-panel__add-to-bag {
-	background:   var(--wcpp-primary);
-	color:        #fff;
-	border:       2px solid var(--wcpp-primary);
-}
-.wcpp-panel__add-to-bag:hover {
-	opacity: 0.88;
-}
-.wcpp-panel__add-to-bag:disabled {
-	opacity: 0.55;
-	cursor:  not-allowed;
-}
+.wcpp-panel__next:hover,
+.wcpp-panel__add-to-bag:hover { opacity: 0.88; }
+.wcpp-panel__add-to-bag:disabled { opacity: 0.55; cursor: not-allowed; }
 
-/* ─── "Add Personalisation" button ──────────────────────────────── */
-.wcpp-button {
-	width:         100%;
-	margin-top:    12px;
-	padding:       14px;
-	font-size:     15px;
-	font-weight:   600;
-	border-radius: var(--wcpp-radius);
-	cursor:        pointer;
-	min-height:    50px;
-	transition:    background 0.2s, color 0.2s;
-	letter-spacing: 0.3px;
-	display:       block;
-}
-.wcpp-button--outline {
-	background:   #fff;
-	color:        var(--wcpp-primary);
-	border:       2px solid var(--wcpp-primary);
-}
-.wcpp-button--outline:hover {
-	background: var(--wcpp-primary);
-	color:      #fff;
-}
-.wcpp-button--filled {
-	background: var(--wcpp-primary);
-	color:      #fff;
-	border:     2px solid var(--wcpp-primary);
-}
-.wcpp-button--filled:hover {
-	opacity: 0.88;
-}
+/* ─── Cart / non-returnable ──────────────────────────────────────── */
+.wcpp-non-returnable { color: #c41e3a; font-weight: 600; font-size: 12px; }
 
-/* ─── Cart display ───────────────────────────────────────────────── */
-.wcpp-non-returnable {
-	color:       #c41e3a;
-	font-weight: 600;
-	font-size:   12px;
-}
-
-/* ─── Mobile — full width below 500px ───────────────────────────── */
+/* ─── Mobile ─────────────────────────────────────────────────────── */
 @media (max-width: 500px) {
-	#wcpp-panel {
-		width:         100% !important;
-		border-radius: 0;
-	}
+	#wcpp-panel { width: 100% !important; border-radius: 0; }
 }

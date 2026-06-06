@@ -1,12 +1,18 @@
 <?php
 /**
- * Settings Store — single source of truth for all personalisation data.
+ * Settings Store — single source of truth for ALL plugin data.
  *
- * Lookup priority:
- *   1. Product has explicit _wcpp_set_id → use that set
- *   2. Any published set has _wcpp_apply_all = true → use it
- *   3. Product's categories match a set's _wcpp_assigned_categories → use that set
- *   4. Return null (no personalisation for this product)
+ * Two kinds of data:
+ *   1. GLOBAL settings (design + behaviour) — one option `wcpp_settings`,
+ *      applies to every panel site-wide. Read via get_design() / get_behaviour().
+ *   2. PER-SET data (steps, choices, categories, button override) — stored on
+ *      each wcpp_personalisation post. Read via get_set() / get().
+ *
+ * Set lookup priority for a product:
+ *   1. Product has explicit _wcpp_set_id          → use that set
+ *   2. A published set has _wcpp_apply_all = true  → use it
+ *   3. Product category matches a set's categories → use that set
+ *   4. null (no personalisation for this product)
  *
  * @package WC_Personalisation_Panel
  */
@@ -21,13 +27,136 @@ if ( ! defined( 'ABSPATH' ) ) {
 class WCPP_Settings_Store {
 
 	/**
-	 * Get the full personalisation set for a product.
-	 * Returns null if nothing is assigned.
+	 * Option key for global settings.
+	 *
+	 * @var string
+	 */
+	const OPTION = 'wcpp_settings';
+
+	// ─────────────────────────────────────────────────────────────────────
+	//  GLOBAL SETTINGS (design + behaviour)
+	// ─────────────────────────────────────────────────────────────────────
+
+	/**
+	 * Default design tokens.
+	 *
+	 * @return array
+	 */
+	public static function design_defaults() {
+		return array(
+			// Trigger button (on the product page).
+			'btn_text'          => 'Add Personalisation',
+			'btn_style'         => 'outline',   // outline | filled | text.
+			'btn_bg'            => '#1A56DB',
+			'btn_text_color'    => '#1A56DB',
+			'btn_radius'        => 6,
+			'btn_placement'     => 'after_cart', // before_cart | after_cart | shortcode.
+			'btn_full_width'    => 1,
+
+			// Drawer / panel.
+			'slide_from'        => 'right',     // right | left.
+			'panel_width'       => 420,
+			'mobile_bp'         => 500,
+			'panel_bg'          => '#ffffff',
+			'font_family'       => 'inherit',
+			'panel_radius'      => 6,
+			'overlay_color'     => '#000000',
+			'overlay_opacity'   => 45,          // 0-100 %.
+			'anim_speed'        => 350,         // ms.
+
+			// Header.
+			'header_title'      => 'Add Personalisation',
+			'title_color'       => '#111111',
+
+			// Progress indicator.
+			'progress_show'     => 1,
+			'progress_style'    => 'bar',       // bar | dots | text.
+			'progress_color'    => '#1A56DB',
+
+			// Choice cards.
+			'card_layout'       => 'list',      // list | grid2 | grid3.
+			'card_border'       => '#e0e0e0',
+			'card_selected'     => '#1A56DB',
+			'card_img_size'     => 52,
+			'card_show_price'   => 1,
+
+			// Footer buttons.
+			'next_text'         => 'Next',
+			'back_text'         => 'Back',
+			'addbag_text'       => 'Add to Bag',
+			'footer_btn_color'  => '#1A56DB',
+
+			// Pricing display.
+			'show_choice_price' => 1,
+			'show_total'        => 1,
+			'free_label'        => 'Free',
+		);
+	}
+
+	/**
+	 * Default behaviour settings.
+	 *
+	 * @return array
+	 */
+	public static function behaviour_defaults() {
+		return array(
+			'enabled'              => 1,
+			'required'             => 0,  // Force personalisation before normal add-to-cart.
+			'non_returnable'       => 1,
+			'max_personalisations' => 1,
+			'allow_cart_edit'      => 0,
+			'elementor'            => 0,
+			'remove_on_uninstall'  => 0,
+		);
+	}
+
+	/**
+	 * Get merged design settings.
+	 *
+	 * @return array
+	 */
+	public static function get_design() {
+		$all = get_option( self::OPTION, array() );
+		$raw = isset( $all['design'] ) && is_array( $all['design'] ) ? $all['design'] : array();
+		return wp_parse_args( $raw, self::design_defaults() );
+	}
+
+	/**
+	 * Get merged behaviour settings.
+	 *
+	 * @return array
+	 */
+	public static function get_behaviour() {
+		$all = get_option( self::OPTION, array() );
+		$raw = isset( $all['behaviour'] ) && is_array( $all['behaviour'] ) ? $all['behaviour'] : array();
+		return wp_parse_args( $raw, self::behaviour_defaults() );
+	}
+
+	/**
+	 * Is the plugin globally enabled?
+	 *
+	 * @return bool
+	 */
+	public static function is_enabled() {
+		$b = self::get_behaviour();
+		return ! empty( $b['enabled'] );
+	}
+
+	// ─────────────────────────────────────────────────────────────────────
+	//  PER-SET DATA
+	// ─────────────────────────────────────────────────────────────────────
+
+	/**
+	 * Get the full personalisation set for a product (with global design merged in).
+	 * Returns null if nothing assigned or plugin disabled.
 	 *
 	 * @param int $product_id WooCommerce product ID.
 	 * @return array|null
 	 */
 	public static function get( $product_id ) {
+		if ( ! self::is_enabled() ) {
+			return null;
+		}
 		$set_id = self::get_set_id( $product_id );
 		if ( ! $set_id ) {
 			return null;
@@ -36,10 +165,10 @@ class WCPP_Settings_Store {
 	}
 
 	/**
-	 * Get a personalisation set by post ID.
-	 * Includes options, design, and assignment data.
+	 * Get a personalisation set by post ID. Includes options, button override,
+	 * and the GLOBAL design + behaviour (so the front-end has everything).
 	 *
-	 * @param int $set_id Post ID of the wcpp_personalisation post.
+	 * @param int $set_id Post ID.
 	 * @return array|null
 	 */
 	public static function get_set( $set_id ) {
@@ -50,47 +179,37 @@ class WCPP_Settings_Store {
 		}
 
 		$options = get_post_meta( $set_id, '_wcpp_options', true );
-		$design  = get_post_meta( $set_id, '_wcpp_design', true );
-
 		if ( ! is_array( $options ) ) {
 			$options = array();
 		}
 
-		// Merge design with defaults.
-		$design_defaults = array(
-			'primary_color' => '#1A56DB',
-			'panel_width'   => 420,
-			'button_text'   => 'Add Personalisation',
-			'button_style'  => 'outline',
-			'font_family'   => 'inherit',
-			'border_radius' => 6,
-		);
-		$design = is_array( $design ) ? wp_parse_args( $design, $design_defaults ) : $design_defaults;
+		$btn_override = get_post_meta( $set_id, '_wcpp_button_text', true );
 
 		return array(
-			'id'      => (int) $set_id,
-			'name'    => $post->post_title,
-			'options' => $options,
-			'design'  => $design,
+			'id'          => (int) $set_id,
+			'name'        => $post->post_title,
+			'options'     => $options,
+			'button_text' => is_string( $btn_override ) ? $btn_override : '',
+			'design'      => self::get_design(),
+			'behaviour'   => self::get_behaviour(),
 		);
 	}
 
 	/**
 	 * Resolve which set ID applies to a product.
-	 * Priority: product override → apply_all set → category match.
 	 *
-	 * @param int $product_id WooCommerce product ID.
-	 * @return int Set post ID, or 0 if none.
+	 * @param int $product_id Product ID.
+	 * @return int Set post ID, or 0.
 	 */
 	public static function get_set_id( $product_id ) {
 
 		// 1. Product-level explicit assignment.
 		$set_id = (int) get_post_meta( (int) $product_id, '_wcpp_set_id', true );
-		if ( $set_id && get_post_status( $set_id ) === 'publish' ) {
+		if ( $set_id && 'publish' === get_post_status( $set_id ) ) {
 			return $set_id;
 		}
 
-		// 2 & 3. Check all published sets for apply_all or category match.
+		// 2 & 3. Scan published sets.
 		$product_cat_ids = self::get_product_category_ids( $product_id );
 
 		$sets = get_posts(
@@ -103,18 +222,12 @@ class WCPP_Settings_Store {
 		);
 
 		foreach ( $sets as $sid ) {
-			// apply_all overrides everything.
 			if ( get_post_meta( $sid, '_wcpp_apply_all', true ) ) {
 				return (int) $sid;
 			}
-
-			// Category match.
 			$assigned_cats = get_post_meta( $sid, '_wcpp_assigned_categories', true );
 			if ( is_array( $assigned_cats ) && ! empty( $assigned_cats ) ) {
-				$overlap = array_intersect(
-					array_map( 'intval', $assigned_cats ),
-					$product_cat_ids
-				);
+				$overlap = array_intersect( array_map( 'intval', $assigned_cats ), $product_cat_ids );
 				if ( ! empty( $overlap ) ) {
 					return (int) $sid;
 				}
@@ -125,7 +238,7 @@ class WCPP_Settings_Store {
 	}
 
 	/**
-	 * Get all product category IDs for a product (including ancestors).
+	 * Get product category IDs including ancestors.
 	 *
 	 * @param int $product_id Product ID.
 	 * @return int[]
@@ -135,13 +248,10 @@ class WCPP_Settings_Store {
 		if ( ! $terms || is_wp_error( $terms ) ) {
 			return array();
 		}
-
 		$ids = array();
 		foreach ( $terms as $term ) {
 			$ids[] = (int) $term->term_id;
-			// Include parent categories too.
-			$ancestors = get_ancestors( $term->term_id, 'product_cat' );
-			foreach ( $ancestors as $ancestor ) {
+			foreach ( get_ancestors( $term->term_id, 'product_cat' ) as $ancestor ) {
 				$ids[] = (int) $ancestor;
 			}
 		}
@@ -149,9 +259,9 @@ class WCPP_Settings_Store {
 	}
 
 	/**
-	 * Get all published personalisation sets (for dropdowns).
+	 * All published sets (for dropdowns).
 	 *
-	 * @return array  [ ['id' => int, 'name' => string], ... ]
+	 * @return array
 	 */
 	public static function get_all_sets() {
 		$posts = get_posts(
@@ -163,7 +273,6 @@ class WCPP_Settings_Store {
 				'order'          => 'ASC',
 			)
 		);
-
 		$sets = array();
 		foreach ( $posts as $post ) {
 			$sets[] = array(
@@ -175,12 +284,11 @@ class WCPP_Settings_Store {
 	}
 
 	/**
-	 * Validate that a choice name is valid for a given option within a set.
-	 * Used for server-side whitelisting.
+	 * Validate a choice name against a set's option (server-side whitelist).
 	 *
 	 * @param int    $set_id      Set post ID.
 	 * @param string $option_id   Option ID.
-	 * @param string $choice_name Choice name to validate.
+	 * @param string $choice_name Choice name.
 	 * @return bool
 	 */
 	public static function is_valid_choice( $set_id, $option_id, $choice_name ) {

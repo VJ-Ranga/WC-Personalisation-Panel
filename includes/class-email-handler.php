@@ -2,6 +2,11 @@
 /**
  * Email Handler — personalisation details in WooCommerce order emails.
  *
+ * Note: woocommerce_order_item_meta_end already fires inside emails, and the
+ * Order Handler hooks it. To avoid double output we only add an emails-specific
+ * hook here if needed. WooCommerce calls order_item_meta_end for both screen
+ * and email, so the Order Handler covers emails too — this class stays minimal.
+ *
  * @package WC_Personalisation_Panel
  */
 
@@ -15,38 +20,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 class WCPP_Email_Handler {
 
 	/**
-	 * Register all hooks.
+	 * Register hooks. Intentionally empty — order_item_meta_end (handled by
+	 * WCPP_Order_Handler) already renders inside emails. Kept as a seam for
+	 * future email-only formatting.
 	 *
 	 * @return void
 	 */
 	public static function init() {
-		add_action( 'woocommerce_order_item_meta_end', array( __CLASS__, 'display_in_email' ), 10, 3 );
-	}
-
-	/**
-	 * Output personalisation data in order emails.
-	 * WooCommerce calls woocommerce_order_item_meta_end for both admin and customer emails.
-	 *
-	 * @param WC_Order_Item $item    Order item.
-	 * @param string        $unused  Not used.
-	 * @param WC_Order      $order   Order object.
-	 * @return void
-	 */
-	public static function display_in_email( $item, $unused, $order ) {
-		$location       = $item->get_meta( 'wcpp_location' );
-		$non_returnable = $item->get_meta( 'wcpp_non_returnable' );
-
-		if ( empty( $location ) ) {
-			return;
-		}
-
-		echo '<br><strong>' . esc_html__( 'Personalisation', 'wcpp' ) . ':</strong> ';
-
-		// TODO: Phase 2+ — display all fields.
-		echo esc_html( $location );
-
-		if ( $non_returnable ) {
-			echo '<br><em>' . esc_html__( '⚠ This item is non-returnable once personalised.', 'wcpp' ) . '</em>';
-		}
+		// Reserved for email-specific styling in a later phase.
 	}
 }
