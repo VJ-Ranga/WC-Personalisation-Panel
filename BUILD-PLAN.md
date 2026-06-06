@@ -298,8 +298,8 @@
 
 | Phase | Status | Notes |
 |---|---|---|
-| Phase 0 — Scaffold | `[ ]` Not started | — |
-| Phase 1 — Settings | `[ ]` Not started | — |
+| Phase 0 — Scaffold | `[x]` Done | Activate plugin in Local to confirm |
+| Phase 1 — Settings | `[x]` Done | Test settings page + meta box in admin |
 | Phase 2 — Vertical Slice | `[ ]` Not started | Gate milestone |
 | Phase 3 — Full Wizard | `[ ]` Not started | — |
 | Phase 4 — Pricing | `[ ]` Not started | — |
