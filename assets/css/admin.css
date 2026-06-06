@@ -1,201 +1,226 @@
-/* ─────────────────────────────────────────────────────────────
+/* ─────────────────────────────────────────────────────────────────
    WC Personalisation Panel — Admin Styles
-   Builder UI + product meta box + category field
-──────────────────────────────────────────────────────────────── */
+────────────────────────────────────────────────────────────────── */
 
-/* ─── Builder intro ──────────────────────────────────────────── */
+/* ─── Builder intro ──────────────────────────────────────────────── */
 .wcpp-builder-intro {
-	color: #666;
+	color:       #666;
+	font-style:  italic;
 	margin-bottom: 16px;
-	font-style: italic;
 }
 
-/* ─── Option block ───────────────────────────────────────────── */
+/* ─── Option block ───────────────────────────────────────────────── */
 .wcpp-option-block {
-	background: #f9f9f9;
-	border: 1px solid #ddd;
+	background:    #f9f9f9;
+	border:        1px solid #ddd;
 	border-radius: 6px;
-	margin-bottom: 16px;
-	overflow: hidden;
+	margin-bottom: 14px;
+	overflow:      hidden;
 }
 
-/* ─── Option header ──────────────────────────────────────────── */
+/* ─── Option header ──────────────────────────────────────────────── */
 .wcpp-option-header {
-	display: flex;
-	align-items: center;
-	gap: 10px;
-	background: #fff;
-	border-bottom: 1px solid #e0e0e0;
-	padding: 12px 14px;
+	display:         flex;
+	align-items:     center;
+	gap:             10px;
+	background:      #fff;
+	border-bottom:   1px solid #e5e5e5;
+	padding:         10px 14px;
 }
-
 .wcpp-option-label {
-	font-weight: 600;
-	font-size: 13px;
-	color: #1A56DB;
-	white-space: nowrap;
-	min-width: 52px;
+	font-weight:  700;
+	font-size:    12px;
+	color:        #2271b1;
+	white-space:  nowrap;
+	min-width:    48px;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
 }
-
 .wcpp-option-name-input {
-	flex: 1;
-	font-size: 14px !important;
+	flex:        1;
+	font-size:   14px !important;
 	font-weight: 600 !important;
-	padding: 6px 10px !important;
-	border-radius: 4px !important;
+	padding:     6px 10px !important;
 }
-
 .wcpp-delete-option {
-	color: #c41e3a !important;
-	border-color: #c41e3a !important;
-	padding: 4px 8px !important;
-	flex-shrink: 0;
+	color:        #b32d2e !important;
+	border-color: #b32d2e !important;
+	flex-shrink:  0;
 }
-
 .wcpp-delete-option:hover {
-	background: #c41e3a !important;
-	color: #fff !important;
+	background: #b32d2e !important;
+	color:      #fff !important;
 }
 
-/* ─── Choices list ───────────────────────────────────────────── */
+/* ─── Choices list ───────────────────────────────────────────────── */
 .wcpp-choices-list {
 	padding: 10px 14px;
 }
 
-.wcpp-choices-list:empty {
-	padding: 6px 14px;
-}
-
-/* ─── Choice row ─────────────────────────────────────────────── */
+/* ─── Choice row ─────────────────────────────────────────────────── */
 .wcpp-choice-row {
-	display: flex;
-	align-items: flex-end;
-	gap: 12px;
-	background: #fff;
-	border: 1px solid #e0e0e0;
-	border-radius: 4px;
-	padding: 10px 12px;
-	margin-bottom: 8px;
+	display:         flex;
+	align-items:     flex-end;
+	gap:             12px;
+	background:      #fff;
+	border:          1px solid #e5e5e5;
+	border-radius:   4px;
+	padding:         10px 12px;
+	margin-bottom:   8px;
 }
+.wcpp-choice-row:last-child { margin-bottom: 0; }
 
-.wcpp-choice-row:last-child {
-	margin-bottom: 0;
-}
-
-/* ─── Choice image ───────────────────────────────────────────── */
+/* ─── Choice image ───────────────────────────────────────────────── */
 .wcpp-choice-image-wrap {
-	display: flex;
+	display:        flex;
 	flex-direction: column;
-	align-items: center;
-	gap: 6px;
-	min-width: 80px;
+	align-items:    center;
+	gap:            6px;
+	min-width:      80px;
 }
-
 .wcpp-image-preview {
 	position: relative;
-	width: 72px;
-	height: 72px;
+	width:    72px;
+	height:   72px;
 }
-
 .wcpp-image-preview img {
-	width: 72px;
-	height: 72px;
-	object-fit: cover;
+	width:         72px;
+	height:        72px;
+	object-fit:    cover;
 	border-radius: 4px;
-	border: 1px solid #ddd;
-	display: block;
+	border:        1px solid #ddd;
+	display:       block;
 }
-
 .wcpp-remove-image {
-	position: absolute;
-	top: -6px;
-	right: -6px;
-	background: #c41e3a;
-	color: #fff;
-	border: none;
+	position:      absolute;
+	top:           -6px;
+	right:         -6px;
+	background:    #b32d2e;
+	color:         #fff;
+	border:        none;
 	border-radius: 50%;
-	width: 20px;
-	height: 20px;
-	font-size: 12px;
-	line-height: 20px;
-	text-align: center;
-	cursor: pointer;
-	padding: 0;
+	width:         20px;
+	height:        20px;
+	font-size:     12px;
+	line-height:   20px;
+	text-align:    center;
+	cursor:        pointer;
+	padding:       0;
 }
-
 .wcpp-select-image {
-	font-size: 11px !important;
-	padding: 3px 6px !important;
+	font-size:  11px !important;
+	padding:    3px 6px !important;
 	white-space: nowrap;
 }
 
-/* ─── Choice fields ──────────────────────────────────────────── */
+/* ─── Choice fields ──────────────────────────────────────────────── */
 .wcpp-choice-field {
-	display: flex;
+	display:        flex;
 	flex-direction: column;
-	gap: 4px;
-	flex: 1;
+	gap:            4px;
+	flex:           1;
 }
-
 .wcpp-choice-field label {
-	font-size: 11px;
-	font-weight: 600;
-	color: #888;
+	font-size:   11px;
+	font-weight: 700;
+	color:       #888;
 	text-transform: uppercase;
-	letter-spacing: 0.5px;
+	letter-spacing: 0.4px;
 }
-
-.wcpp-choice-field input {
-	padding: 6px 8px !important;
-	border-radius: 3px !important;
-}
-
 .wcpp-choice-field--price {
 	max-width: 90px;
-	flex: 0 0 90px;
+	flex:      0 0 90px;
 }
 
-/* ─── Delete choice ──────────────────────────────────────────── */
+/* ─── Delete choice ──────────────────────────────────────────────── */
 .wcpp-delete-choice {
-	color: #999 !important;
+	color:        #999 !important;
 	border-color: #ddd !important;
-	padding: 4px 8px !important;
-	flex-shrink: 0;
-	align-self: center;
+	align-self:   center;
+	flex-shrink:  0;
 }
-
 .wcpp-delete-choice:hover {
-	color: #c41e3a !important;
-	border-color: #c41e3a !important;
+	color:        #b32d2e !important;
+	border-color: #b32d2e !important;
 }
 
-/* ─── Add choice button (inside option block) ────────────────── */
+/* ─── Add choice / add option buttons ───────────────────────────── */
 .wcpp-add-choice-btn {
 	margin: 0 14px 12px !important;
-	display: inline-block;
 }
-
-/* ─── Add option button (at the bottom) ─────────────────────── */
 #wcpp-add-option.wcpp-add-option-btn {
 	margin-top: 8px;
-	font-size: 14px;
 }
 
-/* ─── Product meta box ───────────────────────────────────────── */
-.wcpp-product-assign p {
-	margin-bottom: 8px;
-}
-
-.wcpp-product-assign select {
-	width: 100%;
-}
-
-/* ─── Empty state (no options yet) ──────────────────────────── */
+/* ─── Empty state ────────────────────────────────────────────────── */
 #wcpp-options-container:empty::before {
-	content: "No options yet. Click \"Create Option\" to add your first step.";
-	display: block;
-	color: #999;
+	content:    "No options yet. Click \"+ Create Option\" to add your first step.";
+	display:    block;
+	color:      #999;
 	font-style: italic;
-	padding: 12px 0;
-	font-size: 13px;
+	font-size:  13px;
+	padding:    10px 0;
+}
+
+/* ─── Category assignment ────────────────────────────────────────── */
+.wcpp-categories-box p { margin-bottom: 8px; }
+.wcpp-category-list {
+	max-height:   200px;
+	overflow-y:   auto;
+	border:       1px solid #ddd;
+	border-radius: 4px;
+	padding:      8px 10px;
+	background:   #f9f9f9;
+	transition:   opacity 0.2s;
+}
+.wcpp-cat-label {
+	display:      block;
+	padding:      3px 0;
+	cursor:       pointer;
+	font-size:    13px;
+}
+.wcpp-cat-label:hover { color: #2271b1; }
+.wcpp-cat-count {
+	color:     #999;
+	font-size: 11px;
+	margin-left: 4px;
+}
+
+/* ─── Design box ─────────────────────────────────────────────────── */
+.wcpp-design-box p { margin-bottom: 12px; }
+.wcpp-design-box label { display: block; margin-bottom: 4px; }
+.wcpp-design-box .wp-color-result { vertical-align: middle; }
+
+/* ─── Product meta box ───────────────────────────────────────────── */
+.wcpp-product-assign p { margin-bottom: 8px; }
+.wcpp-product-assign select { width: 100%; }
+
+/* ─── Order meta display ─────────────────────────────────────────── */
+.wcpp-order-meta {
+	margin-top:  10px;
+	font-size:   13px;
+	padding:     10px;
+	background:  #f8f9fa;
+	border-left: 3px solid #2271b1;
+	border-radius: 0 4px 4px 0;
+}
+.wcpp-order-table {
+	width:         100%;
+	border-collapse: collapse;
+	margin-top:    6px;
+}
+.wcpp-order-table td {
+	padding:     4px 6px;
+	font-size:   13px;
+	border-bottom: 1px solid #eee;
+}
+.wcpp-order-table tr:last-child td {
+	border-bottom: none;
+}
+.wcpp-non-returnable {
+	color:       #b32d2e;
+	font-weight: 700;
+	font-size:   12px;
+	margin-top:  6px;
+	display:     block;
 }

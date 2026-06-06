@@ -1,324 +1,355 @@
 /**
  * WC Personalisation Panel — Front-end styles
- * Scoped to #wcpp-panel and .wcpp-* classes only.
- * No theme selectors. No global overrides.
+ * Scoped to #wcpp-panel, #wcpp-overlay, .wcpp-*
+ * CSS custom properties driven by design settings.
  */
 
-/* ─── Overlay ───────────────────────────────────────────────── */
-.wcpp-overlay {
-	display: none;
-	position: fixed;
-	inset: 0;
-	background: rgba(0, 0, 0, 0.45);
-	z-index: 9998;
-	opacity: 0;
-	transition: opacity 0.3s ease;
+/* ─── CSS Custom Properties (overridden per-set via inline style) ─ */
+#wcpp-panel,
+#wcpp-overlay,
+.wcpp-button {
+	--wcpp-primary:     #1A56DB;
+	--wcpp-panel-width: 420px;
+	--wcpp-font:        inherit;
+	--wcpp-radius:      6px;
 }
 
+/* ─── Overlay ────────────────────────────────────────────────────── */
+.wcpp-overlay {
+	display:    none;
+	position:   fixed;
+	inset:      0;
+	background: rgba(0, 0, 0, 0.45);
+	z-index:    9998;
+	opacity:    0;
+	transition: opacity 0.3s ease;
+}
 .wcpp-overlay.wcpp-is-open {
 	display: block;
 	opacity: 1;
 }
 
-/* ─── Panel drawer ──────────────────────────────────────────── */
+/* ─── Panel drawer ───────────────────────────────────────────────── */
 #wcpp-panel {
-	position: fixed;
-	top: 0;
-	right: 0;
-	width: 420px;
-	max-width: 100%;
-	height: 100%;
-	background: #fff;
-	z-index: 9999;
-	display: flex;
-	flex-direction: column;
-	transform: translateX(100%);
-	transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-	box-shadow: -4px 0 24px rgba(0, 0, 0, 0.12);
-	overflow: hidden;
+	position:        fixed;
+	top:             0;
+	right:           0;
+	width:           var(--wcpp-panel-width);
+	max-width:       100%;
+	height:          100%;
+	background:      #fff;
+	z-index:         9999;
+	display:         flex;
+	flex-direction:  column;
+	transform:       translateX(110%);
+	transition:      transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+	box-shadow:      -4px 0 32px rgba(0, 0, 0, 0.14);
+	font-family:     var(--wcpp-font);
+	overflow:        hidden;
 }
-
 #wcpp-panel.wcpp-is-open {
 	transform: translateX(0);
 }
 
-/* ─── Header ────────────────────────────────────────────────── */
+/* ─── Header ─────────────────────────────────────────────────────── */
 .wcpp-panel__header {
-	display: flex;
-	align-items: center;
+	display:         flex;
+	align-items:     center;
 	justify-content: space-between;
-	padding: 18px 20px;
-	border-bottom: 1px solid #e5e5e5;
-	flex-shrink: 0;
+	padding:         16px 20px;
+	border-bottom:   1px solid #eee;
+	flex-shrink:     0;
+	gap:             8px;
 }
-
 .wcpp-panel__title {
-	font-size: 16px;
-	font-weight: 600;
-	margin: 0;
-	flex: 1;
-	text-align: center;
+	font-size:   15px;
+	font-weight: 700;
+	margin:      0;
+	flex:        1;
+	text-align:  center;
+	color:       #111;
 }
-
 .wcpp-panel__back,
 .wcpp-panel__close {
-	background: none;
-	border: none;
-	cursor: pointer;
-	padding: 6px 8px;
-	font-size: 14px;
-	color: #555;
-	min-width: 44px;
-	min-height: 44px;
-	display: flex;
+	background:  none;
+	border:      none;
+	cursor:      pointer;
+	padding:     6px;
+	font-size:   18px;
+	color:       #666;
+	min-width:   44px;
+	min-height:  44px;
+	display:     flex;
 	align-items: center;
 	justify-content: center;
+	border-radius: var(--wcpp-radius);
+	transition:  color 0.2s, background 0.2s;
 }
-
 .wcpp-panel__back:hover,
 .wcpp-panel__close:hover {
-	color: #000;
+	color:      #000;
+	background: #f5f5f5;
 }
 
-/* ─── Progress bar ──────────────────────────────────────────── */
+/* ─── Progress bar ───────────────────────────────────────────────── */
 .wcpp-panel__progress {
-	height: 3px;
+	height:     3px;
 	background: #f0f0f0;
 	flex-shrink: 0;
 }
-
 .wcpp-panel__progress-fill {
-	height: 100%;
-	background: #1A56DB;
-	transition: width 0.3s ease;
+	height:     100%;
+	background: var(--wcpp-primary);
+	transition: width 0.35s ease;
 }
 
-/* ─── Step content ──────────────────────────────────────────── */
+/* ─── Step content ───────────────────────────────────────────────── */
 .wcpp-panel__content {
-	flex: 1;
-	overflow-y: auto;
-	padding: 24px 20px;
+	flex:                   1;
+	overflow-y:             auto;
+	padding:                24px 20px;
 	-webkit-overflow-scrolling: touch;
 }
-
 .wcpp-step__heading {
-	font-size: 18px;
-	font-weight: 600;
-	margin: 0 0 20px;
+	font-size:     17px;
+	font-weight:   700;
+	margin:        0 0 18px;
+	color:         #111;
 }
 
-/* Location / option buttons */
+/* ─── Option buttons (choice picker) ────────────────────────────── */
 .wcpp-options {
-	display: flex;
+	display:        flex;
 	flex-direction: column;
-	gap: 10px;
+	gap:            10px;
+}
+
+/* Shake animation for validation hint */
+@keyframes wcppShake {
+	0%, 100% { transform: translateX(0); }
+	20%      { transform: translateX(-6px); }
+	40%      { transform: translateX(6px); }
+	60%      { transform: translateX(-4px); }
+	80%      { transform: translateX(4px); }
+}
+.wcpp-options.wcpp-shake {
+	animation: wcppShake 0.45s ease;
 }
 
 .wcpp-option-btn {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	padding: 14px 16px;
-	border: 2px solid #e5e5e5;
-	border-radius: 6px;
-	background: #fff;
-	cursor: pointer;
-	font-size: 15px;
-	text-align: left;
-	transition: border-color 0.2s, background 0.2s;
-	min-height: 44px;
+	display:         flex;
+	align-items:     center;
+	gap:             12px;
+	padding:         12px 14px;
+	border:          2px solid #e0e0e0;
+	border-radius:   var(--wcpp-radius);
+	background:      #fff;
+	cursor:          pointer;
+	text-align:      left;
+	transition:      border-color 0.2s, background 0.2s, box-shadow 0.2s;
+	min-height:      52px;
+	width:           100%;
+	position:        relative;
 }
-
 .wcpp-option-btn:hover {
-	border-color: #1A56DB;
+	border-color: var(--wcpp-primary);
+	box-shadow:   0 0 0 3px color-mix(in srgb, var(--wcpp-primary) 12%, transparent);
 }
-
 .wcpp-option-btn.wcpp-selected {
-	border-color: #1A56DB;
-	background: #f0f4ff;
+	border-color: var(--wcpp-primary);
+	background:   color-mix(in srgb, var(--wcpp-primary) 6%, #fff);
 }
 
-/* Text input step */
-.wcpp-text-wrap {
-	position: relative;
+/* Fallback for browsers without color-mix */
+@supports not (color: color-mix(in srgb, red 50%, blue)) {
+	.wcpp-option-btn:hover { box-shadow: 0 0 0 3px rgba(26,86,219,0.12); }
+	.wcpp-option-btn.wcpp-selected { background: #f0f4ff; }
 }
 
-.wcpp-text-input {
-	width: 100%;
-	padding: 12px 14px;
-	font-size: 16px;
-	border: 2px solid #e5e5e5;
-	border-radius: 6px;
-	box-sizing: border-box;
-	transition: border-color 0.2s;
+.wcpp-option-img-wrap {
+	flex-shrink: 0;
+	width:       52px;
+	height:      52px;
 }
-
-.wcpp-text-input:focus {
-	outline: none;
-	border-color: #1A56DB;
+.wcpp-option-img {
+	width:        100%;
+	height:       100%;
+	object-fit:   cover;
+	border-radius: calc(var(--wcpp-radius) - 2px);
+	display:      block;
 }
-
-.wcpp-char-counter {
-	text-align: right;
-	font-size: 12px;
-	color: #888;
-	margin-top: 6px;
-}
-
-.wcpp-char-counter.wcpp-at-limit {
-	color: #c41e3a;
-	font-weight: 600;
-}
-
-/* Font picker */
-.wcpp-font-options {
-	display: flex;
+.wcpp-option-label-wrap {
+	flex:           1;
+	display:        flex;
 	flex-direction: column;
-	gap: 10px;
+	gap:            2px;
+}
+.wcpp-option-name {
+	font-size:   14px;
+	font-weight: 600;
+	color:       #111;
+}
+.wcpp-option-price {
+	font-size: 12px;
+	color:     var(--wcpp-primary);
+	font-weight: 500;
+}
+.wcpp-option-tick {
+	color:      var(--wcpp-primary);
+	font-size:  18px;
+	opacity:    0;
+	flex-shrink: 0;
+	transition: opacity 0.15s;
+}
+.wcpp-option-btn.wcpp-selected .wcpp-option-tick {
+	opacity: 1;
 }
 
-.wcpp-font-btn {
-	padding: 14px 16px;
-	border: 2px solid #e5e5e5;
-	border-radius: 6px;
-	background: #fff;
-	cursor: pointer;
-	font-size: 18px;
-	text-align: left;
-	min-height: 44px;
-	transition: border-color 0.2s, background 0.2s;
-}
-
-.wcpp-font-btn:hover,
-.wcpp-font-btn.wcpp-selected {
-	border-color: #1A56DB;
-	background: #f0f4ff;
-}
-
-/* Colour swatches */
-.wcpp-colour-options {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 12px;
-}
-
-.wcpp-colour-btn {
-	width: 44px;
-	height: 44px;
-	border-radius: 50%;
-	border: 3px solid transparent;
-	cursor: pointer;
-	outline: none;
-	transition: border-color 0.2s, transform 0.15s;
-}
-
-.wcpp-colour-btn:hover {
-	transform: scale(1.1);
-}
-
-.wcpp-colour-btn.wcpp-selected {
-	border-color: #1A56DB;
-	transform: scale(1.1);
-}
-
-/* Summary step */
+/* ─── Summary step ───────────────────────────────────────────────── */
 .wcpp-summary-list {
 	list-style: none;
-	margin: 0;
-	padding: 0;
+	margin:     0;
+	padding:    0;
 }
-
-.wcpp-summary-list li {
-	display: flex;
+.wcpp-summary-item {
+	display:         flex;
+	align-items:     center;
 	justify-content: space-between;
-	padding: 12px 0;
-	border-bottom: 1px solid #f0f0f0;
-	font-size: 14px;
+	padding:         12px 0;
+	border-bottom:   1px solid #f0f0f0;
+	gap:             10px;
 }
-
-.wcpp-summary-list li:last-child {
+.wcpp-summary-item:last-child {
 	border-bottom: none;
 }
-
+.wcpp-summary-left {
+	display:     flex;
+	align-items: center;
+	gap:         10px;
+	flex:        1;
+}
+.wcpp-summary-img {
+	width:         40px;
+	height:        40px;
+	object-fit:    cover;
+	border-radius: var(--wcpp-radius);
+	flex-shrink:   0;
+}
+.wcpp-summary-text {
+	display:        flex;
+	flex-direction: column;
+	gap:            2px;
+}
 .wcpp-summary-label {
-	color: #888;
+	font-size:  11px;
+	color:      #888;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
 }
-
 .wcpp-summary-value {
+	font-size:   14px;
 	font-weight: 600;
+	color:       #111;
+}
+.wcpp-summary-price {
+	font-size:   13px;
+	color:       var(--wcpp-primary);
+	font-weight: 600;
+	white-space: nowrap;
+}
+.wcpp-summary-total {
+	margin-top:    16px;
+	padding:       12px 14px;
+	background:    #f8f9ff;
+	border-radius: var(--wcpp-radius);
+	font-size:     14px;
+	text-align:    right;
+	border:        1px solid #e0e8ff;
 }
 
-/* ─── Footer ────────────────────────────────────────────────── */
+/* ─── Footer ─────────────────────────────────────────────────────── */
 .wcpp-panel__footer {
-	padding: 16px 20px;
-	border-top: 1px solid #e5e5e5;
-	flex-shrink: 0;
+	padding:      16px 20px;
+	border-top:   1px solid #eee;
+	flex-shrink:  0;
+	background:   #fff;
 }
-
 .wcpp-panel__next,
 .wcpp-panel__add-to-bag {
-	width: 100%;
-	padding: 14px;
-	font-size: 15px;
-	font-weight: 600;
-	border-radius: 6px;
-	cursor: pointer;
-	min-height: 48px;
+	width:         100%;
+	padding:       14px;
+	font-size:     15px;
+	font-weight:   700;
+	border-radius: var(--wcpp-radius);
+	cursor:        pointer;
+	min-height:    50px;
+	transition:    background 0.2s, color 0.2s, opacity 0.2s;
+	letter-spacing: 0.3px;
+}
+.wcpp-panel__next {
+	background:   var(--wcpp-primary);
+	color:        #fff;
+	border:       2px solid var(--wcpp-primary);
+}
+.wcpp-panel__next:hover {
+	opacity: 0.88;
+}
+.wcpp-panel__add-to-bag {
+	background:   var(--wcpp-primary);
+	color:        #fff;
+	border:       2px solid var(--wcpp-primary);
+}
+.wcpp-panel__add-to-bag:hover {
+	opacity: 0.88;
+}
+.wcpp-panel__add-to-bag:disabled {
+	opacity: 0.55;
+	cursor:  not-allowed;
 }
 
-.wcpp-panel__price-preview {
-	text-align: center;
-	font-size: 13px;
-	color: #555;
-	margin-top: 8px;
-	min-height: 20px;
-}
-
-/* ─── "Add Personalisation" button ─────────────────────────── */
+/* ─── "Add Personalisation" button ──────────────────────────────── */
 .wcpp-button {
-	width: 100%;
-	margin-top: 10px;
-	padding: 14px;
-	font-size: 15px;
-	border-radius: 6px;
-	cursor: pointer;
-	border: 2px solid #1A56DB;
-	color: #1A56DB;
-	background: #fff;
-	transition: background 0.2s, color 0.2s;
-	min-height: 48px;
+	width:         100%;
+	margin-top:    12px;
+	padding:       14px;
+	font-size:     15px;
+	font-weight:   600;
+	border-radius: var(--wcpp-radius);
+	cursor:        pointer;
+	min-height:    50px;
+	transition:    background 0.2s, color 0.2s;
+	letter-spacing: 0.3px;
+	display:       block;
+}
+.wcpp-button--outline {
+	background:   #fff;
+	color:        var(--wcpp-primary);
+	border:       2px solid var(--wcpp-primary);
+}
+.wcpp-button--outline:hover {
+	background: var(--wcpp-primary);
+	color:      #fff;
+}
+.wcpp-button--filled {
+	background: var(--wcpp-primary);
+	color:      #fff;
+	border:     2px solid var(--wcpp-primary);
+}
+.wcpp-button--filled:hover {
+	opacity: 0.88;
 }
 
-.wcpp-button:hover {
-	background: #1A56DB;
-	color: #fff;
-}
-
-/* ─── Non-returnable notice ─────────────────────────────────── */
+/* ─── Cart display ───────────────────────────────────────────────── */
 .wcpp-non-returnable {
-	display: inline-block;
-	color: #c41e3a;
+	color:       #c41e3a;
 	font-weight: 600;
-	font-size: 13px;
-	margin-top: 4px;
+	font-size:   12px;
 }
 
-/* ─── Cart display ──────────────────────────────────────────── */
-.wcpp-order-meta {
-	margin-top: 8px;
-	font-size: 13px;
-	color: #555;
-	border-left: 3px solid #1A56DB;
-	padding-left: 10px;
-}
-
-/* ─── Mobile — full width below 480px ──────────────────────── */
-@media (max-width: 480px) {
+/* ─── Mobile — full width below 500px ───────────────────────────── */
+@media (max-width: 500px) {
 	#wcpp-panel {
-		width: 100%;
-		height: 100%;
-		top: 0;
-		right: 0;
+		width:         100% !important;
 		border-radius: 0;
 	}
 }

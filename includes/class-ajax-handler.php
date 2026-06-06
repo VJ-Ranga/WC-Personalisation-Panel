@@ -1,12 +1,7 @@
 <?php
 /**
- * AJAX Handler — all AJAX endpoints, logged-in and guest.
- *
- * Endpoints:
- *   wp_ajax_wcpp_add_to_cart        (logged in)
- *   wp_ajax_nopriv_wcpp_add_to_cart (guest — mandatory)
- *   wp_ajax_wcpp_get_price          (logged in)
- *   wp_ajax_nopriv_wcpp_get_price   (guest)
+ * AJAX Handler — handles add-to-cart and price preview.
+ * Both logged-in and guest (nopriv).
  *
  * @package WC_Personalisation_Panel
  */
@@ -21,68 +16,116 @@ if ( ! defined( 'ABSPATH' ) ) {
 class WCPP_Ajax_Handler {
 
 	/**
-	 * Register all AJAX hooks.
+	 * Register AJAX hooks.
 	 *
 	 * @return void
 	 */
 	public static function init() {
-		// Add to cart — both logged-in and guest.
 		add_action( 'wp_ajax_wcpp_add_to_cart',        array( __CLASS__, 'handle_add_to_cart' ) );
 		add_action( 'wp_ajax_nopriv_wcpp_add_to_cart', array( __CLASS__, 'handle_add_to_cart' ) );
 
-		// Live price preview — both logged-in and guest.
 		add_action( 'wp_ajax_wcpp_get_price',        array( __CLASS__, 'handle_get_price' ) );
 		add_action( 'wp_ajax_nopriv_wcpp_get_price', array( __CLASS__, 'handle_get_price' ) );
 	}
 
 	/**
-	 * Handle the add-to-cart AJAX request.
-	 * Validates, sanitises, whitelists, then adds to cart.
+	 * Handle add-to-cart AJAX.
+	 * Validates nonce → product → set → selections → adds to WC cart.
 	 *
-	 * @return void  Sends JSON response and exits.
+	 * @return void
 	 */
 	public static function handle_add_to_cart() {
 
-		// Step 1: Verify nonce.
+		// Nonce.
 		check_ajax_referer( 'wcpp_nonce', 'nonce' );
 
-		// Step 2: Get and validate product ID.
-		$product_id = isset( $_POST['product_id'] ) ? intval( $_POST['product_id'] ) : 0;
-
+		// Product.
+		$product_id = isset( $_POST['product_id'] ) ? absint( $_POST['product_id'] ) : 0;
 		if ( ! $product_id || 'product' !== get_post_type( $product_id ) ) {
 			wp_send_json_error( array( 'message' => __( 'Invalid product.', 'wcpp' ) ) );
 		}
 
-		// Step 3: Load this product's config.
-		$config = WCPP_Settings_Store::get( $product_id );
+		// Set.
+		$set_id = isset( $_POST['set_id'] ) ? absint( $_POST['set_id'] ) : 0;
+		$set    = $set_id ? WCPP_Settings_Store::get_set( $set_id ) : null;
 
-		if ( ! $config['enabled'] ) {
+		// Fall back to looking up the set from the product if set_id not sent.
+		if ( ! $set ) {
+			$set = WCPP_Settings_Store::get( $product_id );
+		}
+
+		if ( ! $set ) {
 			wp_send_json_error( array( 'message' => __( 'Personalisation is not available for this product.', 'wcpp' ) ) );
 		}
 
-		// Step 4: Sanitise and whitelist location.
-		$location = isset( $_POST['location'] ) ? sanitize_text_field( wp_unslash( $_POST['location'] ) ) : '';
+		// Selections.
+		$raw_selections = isset( $_POST['selections'] ) ? sanitize_text_field( wp_unslash( $_POST['selections'] ) ) : '';
+		$selections     = json_decode( $raw_selections, true );
 
-		if ( empty( $location ) || ! in_array( $location, $config['locations'], true ) ) {
-			wp_send_json_error( array( 'message' => __( 'Invalid location selected.', 'wcpp' ) ) );
+		if ( ! is_array( $selections ) || empty( $selections ) ) {
+			wp_send_json_error( array( 'message' => __( 'Please complete all personalisation steps.', 'wcpp' ) ) );
 		}
 
-		// Step 5: Build personalisation data.
-		// TODO: Phase 3+ — add type, text, font, colour.
-		$personalisation = array(
-			'location'       => $location,
-			'non_returnable' => $config['non_returnable'],
-		);
+		// Validate each selection server-side.
+		$clean_selections = array();
+		foreach ( $selections as $sel ) {
+			$option_id   = sanitize_text_field( $sel['option_id'] ?? '' );
+			$option_name = sanitize_text_field( $sel['option_name'] ?? '' );
+			$choice_id   = sanitize_text_field( $sel['choice_id'] ?? '' );
+			$choice_name = sanitize_text_field( $sel['choice_name'] ?? '' );
 
-		// Step 6: Handle variable products.
-		$variation_id = isset( $_POST['variation_id'] ) ? intval( $_POST['variation_id'] ) : 0;
+			if ( empty( $option_id ) || empty( $choice_name ) ) {
+				continue;
+			}
+
+			// Whitelist choice against the set.
+			if ( ! WCPP_Settings_Store::is_valid_choice( $set['id'], $option_id, $choice_name ) ) {
+				wp_send_json_error(
+					array( 'message' => sprintf( __( 'Invalid choice: %s', 'wcpp' ), $choice_name ) )
+				);
+			}
+
+			// Re-fetch the choice price from server — never trust posted price.
+			$server_price = self::get_choice_price( $set, $option_id, $choice_id );
+
+			$clean_selections[] = array(
+				'option_id'        => $option_id,
+				'option_name'      => $option_name,
+				'choice_id'        => $choice_id,
+				'choice_name'      => $choice_name,
+				'choice_price'     => $server_price,
+				'choice_image_url' => sanitize_text_field( $sel['choice_image_url'] ?? '' ),
+			);
+		}
+
+		if ( empty( $clean_selections ) ) {
+			wp_send_json_error( array( 'message' => __( 'Please complete all personalisation steps.', 'wcpp' ) ) );
+		}
+
+		// Variable product — needs variation.
+		$variation_id = isset( $_POST['variation_id'] ) ? absint( $_POST['variation_id'] ) : 0;
 		$product      = wc_get_product( $product_id );
 
 		if ( $product && $product->is_type( 'variable' ) && ! $variation_id ) {
 			wp_send_json_error( array( 'message' => __( 'Please select a product option before adding personalisation.', 'wcpp' ) ) );
 		}
 
-		// Step 7: Add to cart — wcpp_data triggers attach_data in cart handler.
+		// Build personalisation payload.
+		$personalisation = array(
+			'set_id'         => $set['id'],
+			'set_name'       => $set['name'],
+			'selections'     => $clean_selections,
+			'non_returnable' => true, // Always non-returnable for personalised items.
+		);
+
+		// Server-calculated total personalisation price.
+		$total_price = 0;
+		foreach ( $clean_selections as $sel ) {
+			$total_price += (float) $sel['choice_price'];
+		}
+		$personalisation['total_price'] = number_format( $total_price, 2, '.', '' );
+
+		// Add to WooCommerce cart.
 		$cart_item_key = WC()->cart->add_to_cart(
 			$product_id,
 			1,
@@ -92,7 +135,7 @@ class WCPP_Ajax_Handler {
 		);
 
 		if ( ! $cart_item_key ) {
-			wp_send_json_error( array( 'message' => __( 'Could not add item to cart. Please try again.', 'wcpp' ) ) );
+			wp_send_json_error( array( 'message' => __( 'Could not add to cart. Please try again.', 'wcpp' ) ) );
 		}
 
 		wp_send_json_success(
@@ -104,24 +147,19 @@ class WCPP_Ajax_Handler {
 	}
 
 	/**
-	 * Handle the live price preview AJAX request.
-	 * Returns server-calculated price — JS never calculates price itself.
+	 * Handle live price preview AJAX.
 	 *
-	 * @return void  Sends JSON response and exits.
+	 * @return void
 	 */
 	public static function handle_get_price() {
-
-		// Verify nonce.
 		check_ajax_referer( 'wcpp_nonce', 'nonce' );
 
-		$product_id = isset( $_POST['product_id'] ) ? intval( $_POST['product_id'] ) : 0;
-		$text       = isset( $_POST['text'] ) ? sanitize_text_field( wp_unslash( $_POST['text'] ) ) : '';
-
+		$product_id = isset( $_POST['product_id'] ) ? absint( $_POST['product_id'] ) : 0;
 		if ( ! $product_id ) {
 			wp_send_json_error( array( 'message' => __( 'Invalid product.', 'wcpp' ) ) );
 		}
 
-		$price = WCPP_Price_Calculator::calculate( $product_id, array( 'text' => $text ) );
+		$price = WCPP_Price_Calculator::calculate( $product_id, array() );
 
 		wp_send_json_success(
 			array(
@@ -129,5 +167,26 @@ class WCPP_Ajax_Handler {
 				'price_display' => wc_price( $price ),
 			)
 		);
+	}
+
+	/**
+	 * Get the server-side price for a specific choice.
+	 *
+	 * @param array  $set       Full set array.
+	 * @param string $option_id Option ID.
+	 * @param string $choice_id Choice ID.
+	 * @return float
+	 */
+	private static function get_choice_price( $set, $option_id, $choice_id ) {
+		foreach ( $set['options'] as $opt ) {
+			if ( $opt['id'] === $option_id ) {
+				foreach ( $opt['choices'] as $ch ) {
+					if ( $ch['id'] === $choice_id ) {
+						return (float) $ch['price'];
+					}
+				}
+			}
+		}
+		return 0.00;
 	}
 }

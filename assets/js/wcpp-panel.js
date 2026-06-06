@@ -1,140 +1,144 @@
 /**
- * WC Personalisation Panel — Front-end wizard JS
+ * WC Personalisation Panel — Front-end wizard
  *
- * ES5. IIFE-wrapped. Reads window.wcpp (localised from PHP).
- * All events namespaced .wcppPanel.
- * No generic WC/theme selectors. Scoped to #wcpp-panel only.
+ * ES5. IIFE. Reads window.wcpp (localised from PHP).
+ * All events namespaced .wcppPanel
+ * Scoped to #wcpp-panel only — no generic WC/theme selectors.
  */
 (function ($, wcpp) {
 	'use strict';
 
-	if (!wcpp || !wcpp.config) {
+	// Guard — no config or no options means nothing to show.
+	if ( !wcpp || !wcpp.config || !wcpp.config.options || !wcpp.config.options.length ) {
 		return;
 	}
 
+	// ─── Build steps from config options ─────────────────────────────────
+	var steps = [];
+	$.each( wcpp.config.options, function ( i, opt ) {
+		steps.push({ id: opt.id, name: opt.name, option: opt });
+	});
+	// Summary is always the last step.
+	steps.push({ id: '__summary__', name: wcpp.i18n.summary, option: null });
+
 	// ─── State ────────────────────────────────────────────────────────────
 	var state = {
-		currentStep: 0,
-		productId:   0,
-		selections:  {
-			location: null,
-			type:     null,
-			text:     null,
-			font:     null,
-			colour:   null
-		}
+		currentStep:  0,
+		productId:    0,
+		variationId:  0,
+		selections:   {} // keyed by option.id
 	};
 
-	// Step definitions — populated dynamically from config.
-	// TODO Phase 3: add type, text, font, colour steps.
-	var steps = [
-		{ id: 'location', title: wcpp.i18n.stepLocation }
-	];
-
 	// ─── DOM refs ─────────────────────────────────────────────────────────
-	var $panel, $overlay, $content, $title, $back, $close, $next, $addToBag, $pricePreview, $progressBar;
+	var $panel, $overlay, $content, $title, $back, $close, $next, $addToBag, $progressBar;
 
 	// ─── Init ─────────────────────────────────────────────────────────────
-	$(document).ready(function () {
+	$( document ).ready( function () {
+		$panel       = $( '#wcpp-panel' );
+		$overlay     = $( '#wcpp-overlay' );
+		$content     = $( '#wcpp-step-content' );
+		$title       = $( '#wcpp-panel-title' );
+		$back        = $( '#wcpp-back' );
+		$close       = $( '#wcpp-close' );
+		$next        = $( '#wcpp-next' );
+		$addToBag    = $( '#wcpp-add-to-bag' );
+		$progressBar = $( '#wcpp-progress-bar' );
 
-		// Inject panel template if it's not already in the DOM (from PHP).
-		// The panel.php template is output by PHP — just bind to it here.
-		$panel       = $('#wcpp-panel');
-		$overlay     = $('#wcpp-overlay');
-		$content     = $('#wcpp-step-content');
-		$title       = $('#wcpp-panel-title');
-		$back        = $('#wcpp-back');
-		$close       = $('#wcpp-close');
-		$next        = $('#wcpp-next');
-		$addToBag    = $('#wcpp-add-to-bag');
-		$pricePreview= $('#wcpp-price-preview');
-		$progressBar = $('#wcpp-progress-bar');
-
-		if (!$panel.length) {
+		if ( !$panel.length ) {
 			return;
 		}
 
 		bindEvents();
 	});
 
-	// ─── Event binding ────────────────────────────────────────────────────
+	// ─── Events ───────────────────────────────────────────────────────────
 	function bindEvents() {
 
-		// Open panel.
-		$(document).on('click.wcppPanel', '#wcpp-open-panel', function () {
-			state.productId = parseInt($(this).data('product-id'), 10) || 0;
+		// Open.
+		$( document ).on( 'click.wcppPanel', '#wcpp-open-panel', function () {
+			state.productId   = parseInt( $( this ).data( 'product-id' ), 10 ) || 0;
+			state.variationId = 0;
+
+			// Try to get variation ID from the form.
+			var $form = $( 'form.cart' );
+			if ( $form.length ) {
+				var varId = parseInt( $form.find( 'input[name="variation_id"]' ).val(), 10 );
+				if ( varId ) {
+					state.variationId = varId;
+				}
+			}
+
 			openPanel();
 		});
 
-		// Close panel — button.
-		$close.on('click.wcppPanel', function () {
+		// Close — button.
+		$( document ).on( 'click.wcppPanel', '#wcpp-close', function () {
 			maybeClose();
 		});
 
-		// Close panel — overlay click.
-		$overlay.on('click.wcppPanel', function () {
+		// Close — overlay.
+		$( document ).on( 'click.wcppPanel', '#wcpp-overlay', function () {
 			maybeClose();
 		});
 
-		// Close panel — Escape key.
-		$(document).on('keydown.wcppPanel', function (e) {
-			if (e.key === 'Escape' && $panel.hasClass('wcpp-is-open')) {
+		// Close — Escape key.
+		$( document ).on( 'keydown.wcppPanel', function ( e ) {
+			if ( e.key === 'Escape' && $panel.hasClass( 'wcpp-is-open' ) ) {
 				maybeClose();
 			}
 		});
 
-		// Back button.
-		$back.on('click.wcppPanel', function () {
-			if (state.currentStep > 0) {
+		// Back.
+		$( document ).on( 'click.wcppPanel', '#wcpp-back', function () {
+			if ( state.currentStep > 0 ) {
 				state.currentStep--;
 				renderStep();
 			}
 		});
 
-		// Next button.
-		$next.on('click.wcppPanel', function () {
-			if (canAdvance()) {
+		// Next.
+		$( document ).on( 'click.wcppPanel', '#wcpp-next', function () {
+			if ( canAdvance() ) {
 				state.currentStep++;
 				renderStep();
+			} else {
+				// Shake the options to hint user must select.
+				$content.find( '.wcpp-options' ).addClass( 'wcpp-shake' );
+				setTimeout( function () {
+					$content.find( '.wcpp-options' ).removeClass( 'wcpp-shake' );
+				}, 500 );
 			}
 		});
 
 		// Add to Bag.
-		$addToBag.on('click.wcppPanel', function () {
+		$( document ).on( 'click.wcppPanel', '#wcpp-add-to-bag', function () {
 			submitToCart();
 		});
 	}
 
-	// ─── Panel open / close ───────────────────────────────────────────────
+	// ─── Open / close ─────────────────────────────────────────────────────
 	function openPanel() {
 		resetState();
-		$panel.attr('aria-hidden', 'false').addClass('wcpp-is-open');
-		$overlay.addClass('wcpp-is-open');
-		$('#wcpp-open-panel').attr('aria-expanded', 'true');
-		// Trap focus inside panel.
+		state.currentStep = 0;
+		$panel.attr( 'aria-hidden', 'false' ).addClass( 'wcpp-is-open' );
+		$overlay.addClass( 'wcpp-is-open' );
+		$( '#wcpp-open-panel' ).attr( 'aria-expanded', 'true' );
+		$( 'body' ).css( 'overflow', 'hidden' );
 		$close.focus();
-		// Prevent body scroll.
-		$('body').css('overflow', 'hidden');
 		renderStep();
 	}
 
 	function closePanel() {
-		$panel.attr('aria-hidden', 'true').removeClass('wcpp-is-open');
-		$overlay.removeClass('wcpp-is-open');
-		$('#wcpp-open-panel').attr('aria-expanded', 'false');
-		$('body').css('overflow', '');
+		$panel.attr( 'aria-hidden', 'true' ).removeClass( 'wcpp-is-open' );
+		$overlay.removeClass( 'wcpp-is-open' );
+		$( '#wcpp-open-panel' ).attr( 'aria-expanded', 'false' );
+		$( 'body' ).css( 'overflow', '' );
 	}
 
 	function maybeClose() {
-		var hasSelections = false;
-		$.each(state.selections, function (key, val) {
-			if (val !== null) {
-				hasSelections = true;
-			}
-		});
-
-		if (hasSelections) {
-			if (window.confirm(wcpp.i18n.confirmClose)) {
+		var hasSelections = Object.keys( state.selections ).length > 0;
+		if ( hasSelections ) {
+			if ( window.confirm( wcpp.i18n.confirmClose ) ) {
 				closePanel();
 			}
 		} else {
@@ -142,101 +146,176 @@
 		}
 	}
 
-	// ─── State helpers ────────────────────────────────────────────────────
 	function resetState() {
-		state.currentStep  = 0;
-		state.selections   = { location: null, type: null, text: null, font: null, colour: null };
-	}
-
-	function canAdvance() {
-		var step = steps[state.currentStep];
-		if (!step) {
-			return false;
-		}
-		return state.selections[step.id] !== null;
+		state.selections  = {};
+		state.variationId = 0;
 	}
 
 	// ─── Step rendering ───────────────────────────────────────────────────
 	function renderStep() {
-		var step = steps[state.currentStep];
-		var isLast = state.currentStep === steps.length - 1;
+		var step  = steps[ state.currentStep ];
+		var isFirst = state.currentStep === 0;
+		var isLast  = state.currentStep === steps.length - 1;
 
-		// Update title.
-		$title.text(step ? step.title : wcpp.i18n.stepSummary);
+		// Title.
+		$title.text( step.name );
 
-		// Update progress bar.
-		var pct = steps.length ? Math.round((state.currentStep / steps.length) * 100) : 0;
-		$progressBar.css('width', pct + '%').attr('aria-valuenow', state.currentStep);
+		// Progress bar — exclude summary from the count.
+		var totalOptions = steps.length - 1;
+		var pct = isLast ? 100 : Math.round( ( state.currentStep / totalOptions ) * 100 );
+		$progressBar.css( 'width', pct + '%' ).attr( 'aria-valuenow', state.currentStep );
 
-		// Show/hide back button.
-		if (state.currentStep > 0) {
-			$back.show();
-		} else {
-			$back.hide();
-		}
+		// Back button.
+		isFirst ? $back.hide() : $back.show();
 
-		// Show correct footer button.
-		if (isLast) {
+		// Footer buttons.
+		if ( isLast ) {
 			$next.hide();
-			$addToBag.show();
+			$addToBag.show().text( wcpp.i18n.addToBag ).prop( 'disabled', false );
 		} else {
 			$next.show();
 			$addToBag.hide();
 		}
 
-		// Render step content.
 		$content.empty();
 
-		if (!step) {
-			return;
+		if ( step.id === '__summary__' ) {
+			renderSummaryStep();
+		} else {
+			renderOptionStep( step.option );
 		}
 
-		switch (step.id) {
-			case 'location':
-				renderLocationStep();
-				break;
-			// TODO Phase 3: add cases for type, text, font, colour, summary.
-		}
+		// Scroll content to top.
+		$content.scrollTop( 0 );
 	}
 
-	// ─── Step: Location ───────────────────────────────────────────────────
-	function renderLocationStep() {
-		var locations = wcpp.config.locations || [];
+	// ─── Option step ──────────────────────────────────────────────────────
+	function renderOptionStep( option ) {
+		var currentSel = state.selections[ option.id ];
 
-		if (!locations.length) {
-			$content.append('<p>' + esc(wcpp.i18n.stepLocation) + '</p>');
-			return;
-		}
+		$content.append(
+			$( '<h3 class="wcpp-step__heading"></h3>' ).text( option.name )
+		);
 
-		var $wrap = $('<div class="wcpp-options"></div>');
+		var $wrap = $( '<div class="wcpp-options"></div>' );
 
-		$.each(locations, function (i, loc) {
-			var $btn = $('<button type="button" class="wcpp-option-btn"></button>').text(loc);
+		$.each( option.choices, function ( i, choice ) {
+			var $btn = $( '<button type="button" class="wcpp-option-btn"></button>' );
 
-			if (state.selections.location === loc) {
-				$btn.addClass('wcpp-selected');
+			// Image.
+			if ( choice.image_url ) {
+				$btn.append(
+					$( '<div class="wcpp-option-img-wrap"></div>' ).append(
+						$( '<img class="wcpp-option-img" />' )
+							.attr( 'src', choice.image_url )
+							.attr( 'alt', choice.name )
+					)
+				);
 			}
 
-			$btn.on('click.wcppPanel', function () {
-				state.selections.location = loc;
-				$wrap.find('.wcpp-option-btn').removeClass('wcpp-selected');
-				$btn.addClass('wcpp-selected');
-				// Auto-advance after selection on last step (Phase 2 has 1 step).
-				if (steps.length === 1) {
-					$next.show();
-				}
+			// Label + price.
+			var $labelWrap = $( '<div class="wcpp-option-label-wrap"></div>' );
+			$labelWrap.append( $( '<span class="wcpp-option-name"></span>' ).text( choice.name ) );
+
+			if ( parseFloat( choice.price ) > 0 ) {
+				$labelWrap.append(
+					$( '<span class="wcpp-option-price"></span>' ).text( '+' + formatPrice( choice.price ) )
+				);
+			}
+			$btn.append( $labelWrap );
+
+			// Tick icon.
+			$btn.append( $( '<span class="wcpp-option-tick dashicons dashicons-yes"></span>' ) );
+
+			// Selected state.
+			if ( currentSel && currentSel.choice_id === choice.id ) {
+				$btn.addClass( 'wcpp-selected' );
+			}
+
+			$btn.on( 'click.wcppPanel', function () {
+				state.selections[ option.id ] = {
+					option_id:        option.id,
+					option_name:      option.name,
+					choice_id:        choice.id,
+					choice_name:      choice.name,
+					choice_price:     choice.price,
+					choice_image_url: choice.image_url || ''
+				};
+				$wrap.find( '.wcpp-option-btn' ).removeClass( 'wcpp-selected' );
+				$btn.addClass( 'wcpp-selected' );
 			});
 
-			$wrap.append($btn);
+			$wrap.append( $btn );
 		});
 
-		$content.append($('<h3 class="wcpp-step__heading"></h3>').text(wcpp.i18n.stepLocation));
-		$content.append($wrap);
+		$content.append( $wrap );
 	}
 
-	// ─── AJAX: submit to cart ─────────────────────────────────────────────
+	// ─── Summary step ─────────────────────────────────────────────────────
+	function renderSummaryStep() {
+		$content.append(
+			$( '<h3 class="wcpp-step__heading"></h3>' ).text( wcpp.i18n.yourChoices )
+		);
+
+		var $list = $( '<ul class="wcpp-summary-list"></ul>' );
+		var totalPrice = 0;
+
+		$.each( wcpp.config.options, function ( i, opt ) {
+			var sel   = state.selections[ opt.id ];
+			var $li   = $( '<li class="wcpp-summary-item"></li>' );
+			var $left = $( '<div class="wcpp-summary-left"></div>' );
+
+			if ( sel && sel.choice_image_url ) {
+				$left.append( $( '<img class="wcpp-summary-img" />' ).attr( 'src', sel.choice_image_url ).attr( 'alt', sel.choice_name ) );
+			}
+
+			$left.append( $( '<div class="wcpp-summary-text"></div>' )
+				.append( $( '<span class="wcpp-summary-label"></span>' ).text( opt.name ) )
+				.append( $( '<span class="wcpp-summary-value"></span>' ).text( sel ? sel.choice_name : '—' ) )
+			);
+
+			$li.append( $left );
+
+			if ( sel && parseFloat( sel.choice_price ) > 0 ) {
+				totalPrice += parseFloat( sel.choice_price );
+				$li.append( $( '<span class="wcpp-summary-price"></span>' ).text( '+' + formatPrice( sel.choice_price ) ) );
+			}
+
+			$list.append( $li );
+		});
+
+		$content.append( $list );
+
+		// Total price if any.
+		if ( totalPrice > 0 ) {
+			$content.append(
+				$( '<div class="wcpp-summary-total"></div>' )
+					.append( $( '<span>' ).text( 'Personalisation total: ' ) )
+					.append( $( '<strong>' ).text( formatPrice( totalPrice ) ) )
+			);
+		}
+	}
+
+	// ─── Advance check ────────────────────────────────────────────────────
+	function canAdvance() {
+		var step = steps[ state.currentStep ];
+		if ( !step || step.id === '__summary__' ) {
+			return true;
+		}
+		return state.selections[ step.option.id ] !== undefined;
+	}
+
+	// ─── AJAX: add to cart ────────────────────────────────────────────────
 	function submitToCart() {
-		$addToBag.prop('disabled', true).text('...');
+		$addToBag.prop( 'disabled', true ).text( wcpp.i18n.adding );
+
+		// Build selections array in option order.
+		var selectionsArr = [];
+		$.each( wcpp.config.options, function ( i, opt ) {
+			if ( state.selections[ opt.id ] ) {
+				selectionsArr.push( state.selections[ opt.id ] );
+			}
+		});
 
 		$.ajax({
 			url:    wcpp.ajaxUrl,
@@ -245,35 +324,33 @@
 				action:       'wcpp_add_to_cart',
 				nonce:        wcpp.nonce,
 				product_id:   state.productId,
-				location:     state.selections.location
-				// TODO Phase 3: add type, text, font, colour.
+				variation_id: state.variationId,
+				set_id:       wcpp.config.id,
+				selections:   JSON.stringify( selectionsArr )
 			},
-			success: function (response) {
-				if (response.success) {
+			success: function ( response ) {
+				if ( response.success ) {
 					closePanel();
-					// Trigger WC fragment refresh so mini-cart updates.
-					$(document.body).trigger('wc_fragment_refresh');
-					// Redirect to cart.
-					if (response.data && response.data.cart_url) {
+					$( document.body ).trigger( 'wc_fragment_refresh' );
+					if ( response.data && response.data.cart_url ) {
 						window.location.href = response.data.cart_url;
 					}
 				} else {
-					var msg = (response.data && response.data.message) ? response.data.message : wcpp.i18n.errorGeneric;
-					alert(msg);
-					$addToBag.prop('disabled', false).text(wcpp.i18n.addToBag);
+					var msg = ( response.data && response.data.message ) ? response.data.message : wcpp.i18n.errorGeneric;
+					alert( msg );
+					$addToBag.prop( 'disabled', false ).text( wcpp.i18n.addToBag );
 				}
 			},
 			error: function () {
-				alert(wcpp.i18n.errorGeneric);
-				$addToBag.prop('disabled', false).text(wcpp.i18n.addToBag);
+				alert( wcpp.i18n.errorGeneric );
+				$addToBag.prop( 'disabled', false ).text( wcpp.i18n.addToBag );
 			}
 		});
 	}
 
-	// ─── Utility ──────────────────────────────────────────────────────────
-	// Simple HTML escape — never concat untrusted data into HTML without this.
-	function esc(str) {
-		return $('<div>').text(str).html();
+	// ─── Utility ─────────────────────────────────────────────────────────
+	function formatPrice( amount ) {
+		return parseFloat( amount ).toFixed( 2 );
 	}
 
-}(jQuery, window.wcpp || {}));
+}( jQuery, window.wcpp || {} ));
