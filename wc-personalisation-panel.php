@@ -68,8 +68,24 @@ function wcpp_init() {
 	// Declare WooCommerce HPOS compatibility.
 	add_action( 'before_woocommerce_init', 'wcpp_declare_hpos_compatibility' );
 
+	// Add Settings link in the plugins list.
+	add_filter( 'plugin_action_links_' . WCPP_BASENAME, 'wcpp_plugin_action_links' );
+
 	// Load Elementor module only if Elementor is active — guarded.
 	add_action( 'elementor/loaded', 'wcpp_maybe_load_elementor' );
+}
+
+/**
+ * Add Settings + Docs links to the plugin row in WP Admin → Plugins.
+ *
+ * @param array $links Existing action links.
+ * @return array
+ */
+function wcpp_plugin_action_links( $links ) {
+	$custom = array(
+		'settings' => '<a href="' . esc_url( admin_url( 'edit.php?post_type=wcpp_personalisation' ) ) . '">' . esc_html__( 'Settings', 'wcpp' ) . '</a>',
+	);
+	return array_merge( $custom, $links );
 }
 
 /**
