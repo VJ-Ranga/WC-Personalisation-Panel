@@ -1,6 +1,7 @@
 <?php
 /**
- * Product Meta — per-product personalisation settings meta box.
+ * Product Meta — assigns a personalisation set to a product.
+ * Simple dropdown: "Use personalisation set: [None / Shirts / Jackets ...]"
  *
  * @package WC_Personalisation_Panel
  */
@@ -22,17 +23,41 @@ class WCPP_Product_Meta {
 	public static function init() {
 		add_action( 'add_meta_boxes',    array( __CLASS__, 'add_meta_box' ) );
 		add_action( 'save_post_product', array( __CLASS__, 'save_meta' ), 10, 2 );
+		add_action( 'admin_enqueue_scripts', array( __CLASS__, 'enqueue_assets' ) );
+
+		// Category-level assignment.
+		add_action( 'product_cat_add_form_fields',  array( __CLASS__, 'category_add_field' ) );
+		add_action( 'product_cat_edit_form_fields', array( __CLASS__, 'category_edit_field' ) );
+		add_action( 'created_product_cat',          array( __CLASS__, 'save_category_meta' ) );
+		add_action( 'edited_product_cat',           array( __CLASS__, 'save_category_meta' ) );
 	}
 
 	/**
-	 * Register the meta box on the product edit screen.
+	 * Enqueue admin assets on product edit screen.
+	 *
+	 * @param string $hook Current admin page hook.
+	 * @return void
+	 */
+	public static function enqueue_assets( $hook ) {
+		if ( ! in_array( $hook, array( 'post.php', 'post-new.php' ), true ) ) {
+			return;
+		}
+		$screen = get_current_screen();
+		if ( ! $screen || 'product' !== $screen->post_type ) {
+			return;
+		}
+		wp_enqueue_style( 'wcpp-admin', WCPP_URL . 'assets/css/admin.css', array(), WCPP_VERSION );
+	}
+
+	/**
+	 * Register meta box on product edit screen.
 	 *
 	 * @return void
 	 */
 	public static function add_meta_box() {
 		add_meta_box(
-			'wcpp_product_settings',
-			__( 'Personalisation Settings', 'wcpp' ),
+			'wcpp_product_assign',
+			__( 'Personalisation', 'wcpp' ),
 			array( __CLASS__, 'render_meta_box' ),
 			'product',
 			'side',
@@ -41,203 +66,75 @@ class WCPP_Product_Meta {
 	}
 
 	/**
-	 * Render the meta box HTML.
+	 * Render the product meta box.
 	 *
-	 * @param WP_Post $post Current product post object.
+	 * @param WP_Post $post Product post.
 	 * @return void
 	 */
 	public static function render_meta_box( $post ) {
-		$product_id = $post->ID;
-		$product    = WCPP_Settings_Store::get_product( $product_id );
-		$global     = WCPP_Settings_Store::get_global();
-
 		wp_nonce_field( 'wcpp_product_meta', 'wcpp_product_nonce' );
+
+		$assigned_set_id = (int) get_post_meta( $post->ID, '_wcpp_set_id', true );
+		$all_sets        = WCPP_Settings_Store::get_all_sets();
 		?>
-		<div class="wcpp-product-meta">
+		<div class="wcpp-product-assign">
 
-			<!-- Enable for this product -->
-			<p>
-				<label>
-					<input
-						type="checkbox"
-						name="wcpp_product[enabled]"
-						value="1"
-						<?php checked( ! empty( $product['enabled'] ) ); ?>
-					/>
-					<strong><?php esc_html_e( 'Enable personalisation for this product', 'wcpp' ); ?></strong>
-				</label>
-			</p>
-
-			<hr />
-			<p class="description">
-				<?php esc_html_e( 'Leave any field blank to use the global default.', 'wcpp' ); ?>
-			</p>
-
-			<!-- Locations override -->
-			<p>
-				<label for="wcpp_product_locations"><strong><?php esc_html_e( 'Locations', 'wcpp' ); ?></strong></label><br />
-				<textarea
-					id="wcpp_product_locations"
-					name="wcpp_product[locations]"
-					rows="3"
-					style="width:100%"
-					placeholder="<?php echo esc_attr( implode( "\n", $global['locations'] ) ); ?>"
-				><?php
-				$saved_locations = $product['locations'] ?? array();
-				echo esc_textarea( implode( "\n", $saved_locations ) );
-				?></textarea>
-				<span class="description"><?php esc_html_e( 'One per line. Blank = use global.', 'wcpp' ); ?></span>
-			</p>
-
-			<!-- Types override -->
-			<p>
-				<strong><?php esc_html_e( 'Types', 'wcpp' ); ?></strong><br />
-				<?php
-				$type_options = array(
-					'text'     => __( 'Text', 'wcpp' ),
-					'initials' => __( 'Initials', 'wcpp' ),
-					'symbol'   => __( 'Symbol', 'wcpp' ),
-				);
-				$saved_types  = $product['types'] ?? array();
-				foreach ( $type_options as $value => $label ) :
+			<?php if ( empty( $all_sets ) ) : ?>
+				<p class="description">
+					<?php
+					printf(
+						/* translators: %s: link to create personalisation set */
+						esc_html__( 'No personalisation sets found. %s first.', 'wcpp' ),
+						'<a href="' . esc_url( admin_url( 'edit.php?post_type=wcpp_personalisation' ) ) . '">' . esc_html__( 'Create one', 'wcpp' ) . '</a>'
+					);
 					?>
-					<label style="display:block;">
-						<input
-							type="checkbox"
-							name="wcpp_product[types][]"
-							value="<?php echo esc_attr( $value ); ?>"
-							<?php checked( in_array( $value, $saved_types, true ) ); ?>
-						/>
-						<?php echo esc_html( $label ); ?>
-					</label>
-				<?php endforeach; ?>
-				<span class="description"><?php esc_html_e( 'Blank = use global.', 'wcpp' ); ?></span>
-			</p>
+				</p>
+			<?php else : ?>
 
-			<!-- Fonts override -->
-			<p>
-				<label for="wcpp_product_fonts"><strong><?php esc_html_e( 'Fonts', 'wcpp' ); ?></strong></label><br />
-				<textarea
-					id="wcpp_product_fonts"
-					name="wcpp_product[fonts]"
-					rows="3"
-					style="width:100%"
-					placeholder="<?php echo esc_attr( implode( "\n", $global['fonts'] ) ); ?>"
-				><?php
-				$saved_fonts = $product['fonts'] ?? array();
-				echo esc_textarea( implode( "\n", $saved_fonts ) );
-				?></textarea>
-				<span class="description"><?php esc_html_e( 'One per line. Blank = use global.', 'wcpp' ); ?></span>
-			</p>
+				<p>
+					<label for="wcpp_set_id"><strong><?php esc_html_e( 'Personalisation Set', 'wcpp' ); ?></strong></label>
+				</p>
+				<select name="wcpp_set_id" id="wcpp_set_id" style="width:100%;">
+					<option value="0"><?php esc_html_e( '— None —', 'wcpp' ); ?></option>
+					<?php foreach ( $all_sets as $set ) : ?>
+						<option value="<?php echo esc_attr( $set['id'] ); ?>" <?php selected( $assigned_set_id, $set['id'] ); ?>>
+							<?php echo esc_html( $set['name'] ); ?>
+						</option>
+					<?php endforeach; ?>
+				</select>
 
-			<!-- Colours override -->
-			<p>
-				<label for="wcpp_product_colours"><strong><?php esc_html_e( 'Colours', 'wcpp' ); ?></strong></label><br />
-				<textarea
-					id="wcpp_product_colours"
-					name="wcpp_product[colours]"
-					rows="3"
-					style="width:100%"
-					placeholder="<?php echo esc_attr( implode( "\n", $global['colours'] ) ); ?>"
-				><?php
-				$saved_colours = $product['colours'] ?? array();
-				echo esc_textarea( implode( "\n", $saved_colours ) );
-				?></textarea>
-				<span class="description"><?php esc_html_e( 'Hex values, one per line. Blank = use global.', 'wcpp' ); ?></span>
-			</p>
+				<p class="description" style="margin-top:8px;">
+					<?php esc_html_e( 'Choose which personalisation set to show on this product. Overrides any category-level assignment.', 'wcpp' ); ?>
+				</p>
 
-			<!-- Pricing overrides -->
-			<p>
-				<label for="wcpp_product_flat_fee"><strong><?php esc_html_e( 'Flat Fee', 'wcpp' ); ?></strong></label><br />
-				<input
-					type="number"
-					id="wcpp_product_flat_fee"
-					name="wcpp_product[flat_fee]"
-					value="<?php echo esc_attr( $product['flat_fee'] ?? '' ); ?>"
-					step="0.01"
-					min="0"
-					style="width:80px"
-					placeholder="<?php echo esc_attr( $global['flat_fee'] ); ?>"
-				/>
-				<?php echo esc_html( get_woocommerce_currency_symbol() ); ?>
-				<span class="description"><?php esc_html_e( 'Blank = use global.', 'wcpp' ); ?></span>
-			</p>
+				<?php if ( $assigned_set_id ) : ?>
+					<p style="margin-top:8px;">
+						<a href="<?php echo esc_url( get_edit_post_link( $assigned_set_id ) ); ?>" target="_blank">
+							<?php esc_html_e( 'Edit this set ↗', 'wcpp' ); ?>
+						</a>
+					</p>
+				<?php endif; ?>
 
-			<p>
-				<label for="wcpp_product_per_char_fee"><strong><?php esc_html_e( 'Per-Character Fee', 'wcpp' ); ?></strong></label><br />
-				<input
-					type="number"
-					id="wcpp_product_per_char_fee"
-					name="wcpp_product[per_char_fee]"
-					value="<?php echo esc_attr( $product['per_char_fee'] ?? '' ); ?>"
-					step="0.01"
-					min="0"
-					style="width:80px"
-					placeholder="<?php echo esc_attr( $global['per_char_fee'] ); ?>"
-				/>
-				<?php echo esc_html( get_woocommerce_currency_symbol() ); ?>
-				<span class="description"><?php esc_html_e( 'Blank = use global.', 'wcpp' ); ?></span>
-			</p>
-
-			<p>
-				<label for="wcpp_product_max_chars"><strong><?php esc_html_e( 'Max Characters', 'wcpp' ); ?></strong></label><br />
-				<input
-					type="number"
-					id="wcpp_product_max_chars"
-					name="wcpp_product[max_chars]"
-					value="<?php echo esc_attr( $product['max_chars'] ?? '' ); ?>"
-					min="1"
-					max="50"
-					style="width:60px"
-					placeholder="<?php echo esc_attr( $global['max_chars'] ); ?>"
-				/>
-				<span class="description"><?php esc_html_e( 'Blank = use global.', 'wcpp' ); ?></span>
-			</p>
-
-			<!-- Non-returnable -->
-			<p>
-				<label>
-					<input
-						type="checkbox"
-						name="wcpp_product[non_returnable]"
-						value="1"
-						<?php
-						$nr = $product['non_returnable'] ?? null;
-						if ( null === $nr ) {
-							checked( $global['non_returnable'] );
-						} else {
-							checked( $nr );
-						}
-						?>
-					/>
-					<?php esc_html_e( 'Non-returnable when personalised', 'wcpp' ); ?>
-				</label>
-			</p>
+			<?php endif; ?>
 
 		</div>
 		<?php
 	}
 
 	/**
-	 * Save per-product settings when the product is saved.
+	 * Save product meta.
 	 *
 	 * @param int     $post_id Product post ID.
-	 * @param WP_Post $post    Product post object.
+	 * @param WP_Post $post    Product post.
 	 * @return void
 	 */
 	public static function save_meta( $post_id, $post ) {
-
-		// Guard: autosave.
 		if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
 			return;
 		}
-
-		// Guard: capability.
 		if ( ! current_user_can( 'edit_product', $post_id ) ) {
 			return;
 		}
-
-		// Guard: nonce.
 		if (
 			! isset( $_POST['wcpp_product_nonce'] ) ||
 			! wp_verify_nonce( sanitize_key( $_POST['wcpp_product_nonce'] ), 'wcpp_product_meta' )
@@ -245,60 +142,86 @@ class WCPP_Product_Meta {
 			return;
 		}
 
-		// Guard: our fields not submitted.
-		if ( ! isset( $_POST['wcpp_product'] ) ) {
-			return;
+		$set_id = isset( $_POST['wcpp_set_id'] ) ? absint( $_POST['wcpp_set_id'] ) : 0;
+
+		if ( $set_id ) {
+			update_post_meta( $post_id, '_wcpp_set_id', $set_id );
+		} else {
+			delete_post_meta( $post_id, '_wcpp_set_id' );
 		}
-
-		$input = $_POST['wcpp_product']; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- sanitised below field by field.
-		$clean = array();
-
-		$clean['enabled']      = ! empty( $input['enabled'] );
-		$clean['non_returnable']= ! empty( $input['non_returnable'] );
-
-		// Arrays — split textarea.
-		$clean['locations'] = self::parse_list( $input['locations'] ?? '' );
-		$clean['fonts']     = self::parse_list( $input['fonts'] ?? '' );
-
-		// Colours — validate hex.
-		$raw_colours    = self::parse_list( $input['colours'] ?? '' );
-		$clean['colours'] = array_values(
-			array_filter(
-				$raw_colours,
-				function( $c ) {
-					return (bool) sanitize_hex_color( $c );
-				}
-			)
-		);
-
-		// Types — whitelist.
-		$allowed_types   = array( 'text', 'initials', 'symbol' );
-		$submitted_types = isset( $input['types'] ) && is_array( $input['types'] ) ? $input['types'] : array();
-		$clean['types']  = array_values( array_intersect( $submitted_types, $allowed_types ) );
-
-		// Pricing — only save if non-empty.
-		if ( '' !== trim( $input['flat_fee'] ?? '' ) ) {
-			$clean['flat_fee'] = number_format( (float) $input['flat_fee'], 2, '.', '' );
-		}
-		if ( '' !== trim( $input['per_char_fee'] ?? '' ) ) {
-			$clean['per_char_fee'] = number_format( (float) $input['per_char_fee'], 2, '.', '' );
-		}
-		if ( '' !== trim( $input['max_chars'] ?? '' ) ) {
-			$clean['max_chars'] = max( 1, intval( $input['max_chars'] ) );
-		}
-
-		update_post_meta( $post_id, '_wcpp_product_settings', $clean );
 	}
 
 	/**
-	 * Parse a textarea/string into a clean array.
+	 * Add personalisation set field on the Add Category screen.
 	 *
-	 * @param string $raw Raw input.
-	 * @return array
+	 * @return void
 	 */
-	private static function parse_list( $raw ) {
-		$raw   = sanitize_textarea_field( wp_unslash( $raw ) );
-		$items = preg_split( '/[\r\n,]+/', $raw );
-		return array_values( array_filter( array_map( 'trim', $items ) ) );
+	public static function category_add_field() {
+		$all_sets = WCPP_Settings_Store::get_all_sets();
+		if ( empty( $all_sets ) ) {
+			return;
+		}
+		?>
+		<div class="form-field">
+			<label for="wcpp_cat_set_id"><?php esc_html_e( 'Personalisation Set', 'wcpp' ); ?></label>
+			<select name="wcpp_cat_set_id" id="wcpp_cat_set_id">
+				<option value="0"><?php esc_html_e( '— None —', 'wcpp' ); ?></option>
+				<?php foreach ( $all_sets as $set ) : ?>
+					<option value="<?php echo esc_attr( $set['id'] ); ?>">
+						<?php echo esc_html( $set['name'] ); ?>
+					</option>
+				<?php endforeach; ?>
+			</select>
+			<p class="description"><?php esc_html_e( 'All products in this category will use this personalisation set (unless overridden on the product).', 'wcpp' ); ?></p>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Add personalisation set field on the Edit Category screen.
+	 *
+	 * @param WP_Term $term Current term.
+	 * @return void
+	 */
+	public static function category_edit_field( $term ) {
+		$all_sets        = WCPP_Settings_Store::get_all_sets();
+		$assigned_set_id = (int) get_term_meta( $term->term_id, '_wcpp_set_id', true );
+
+		if ( empty( $all_sets ) ) {
+			return;
+		}
+		?>
+		<tr class="form-field">
+			<th scope="row">
+				<label for="wcpp_cat_set_id"><?php esc_html_e( 'Personalisation Set', 'wcpp' ); ?></label>
+			</th>
+			<td>
+				<select name="wcpp_cat_set_id" id="wcpp_cat_set_id">
+					<option value="0"><?php esc_html_e( '— None —', 'wcpp' ); ?></option>
+					<?php foreach ( $all_sets as $set ) : ?>
+						<option value="<?php echo esc_attr( $set['id'] ); ?>" <?php selected( $assigned_set_id, $set['id'] ); ?>>
+							<?php echo esc_html( $set['name'] ); ?>
+						</option>
+					<?php endforeach; ?>
+				</select>
+				<p class="description"><?php esc_html_e( 'All products in this category will use this personalisation set (unless overridden on the product).', 'wcpp' ); ?></p>
+			</td>
+		</tr>
+		<?php
+	}
+
+	/**
+	 * Save category term meta.
+	 *
+	 * @param int $term_id Term ID.
+	 * @return void
+	 */
+	public static function save_category_meta( $term_id ) {
+		$set_id = isset( $_POST['wcpp_cat_set_id'] ) ? absint( $_POST['wcpp_cat_set_id'] ) : 0;
+		if ( $set_id ) {
+			update_term_meta( $term_id, '_wcpp_set_id', $set_id );
+		} else {
+			delete_term_meta( $term_id, '_wcpp_set_id' );
+		}
 	}
 }

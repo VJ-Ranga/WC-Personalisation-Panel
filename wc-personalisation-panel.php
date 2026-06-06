@@ -48,21 +48,20 @@ function wcpp_init() {
 	}
 
 	// Load all classes.
-	require_once WCPP_PATH . 'includes/class-activator.php';
 	require_once WCPP_PATH . 'includes/class-settings-store.php';
+	require_once WCPP_PATH . 'includes/class-personalisation-cpt.php';
 	require_once WCPP_PATH . 'includes/class-price-calculator.php';
 	require_once WCPP_PATH . 'includes/class-cart-handler.php';
 	require_once WCPP_PATH . 'includes/class-order-handler.php';
 	require_once WCPP_PATH . 'includes/class-ajax-handler.php';
-	require_once WCPP_PATH . 'includes/class-admin-settings.php';
 	require_once WCPP_PATH . 'includes/class-product-meta.php';
 	require_once WCPP_PATH . 'includes/class-email-handler.php';
 
 	// Boot each class.
+	WCPP_Personalisation_CPT::init();
 	WCPP_Cart_Handler::init();
 	WCPP_Order_Handler::init();
 	WCPP_Ajax_Handler::init();
-	WCPP_Admin_Settings::init();
 	WCPP_Product_Meta::init();
 	WCPP_Email_Handler::init();
 

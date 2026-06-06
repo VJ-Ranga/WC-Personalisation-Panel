@@ -1,12 +1,14 @@
 <?php
 /**
- * Settings Store — the ONLY place settings are read and merged.
- * Everything else calls this. Never read options/meta directly elsewhere.
+ * Settings Store — the ONLY place personalisation data is read.
+ * Everything else calls this. Never read post meta directly elsewhere.
+ *
+ * Data lives in the wcpp_personalisation CPT.
+ * Products and categories are assigned a set ID.
  *
  * @package WC_Personalisation_Panel
  */
 
-// Block direct file access.
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -15,123 +17,141 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Class WCPP_Settings_Store
  *
  * Public API:
- *   WCPP_Settings_Store::get( $product_id )  → merged config array for a product
- *   WCPP_Settings_Store::get_global()        → global defaults only
+ *   WCPP_Settings_Store::get( $product_id )        → full set array for a product, or null
+ *   WCPP_Settings_Store::get_set( $set_id )        → full set array by set ID, or null
+ *   WCPP_Settings_Store::get_all_sets()            → array of all sets [ ['id'=>, 'name'=>], ... ]
+ *   WCPP_Settings_Store::get_set_id( $product_id ) → assigned set ID for a product (0 if none)
  */
 class WCPP_Settings_Store {
 
 	/**
-	 * Global settings defaults — used when no saved option exists.
-	 *
-	 * @var array
-	 */
-	private static $fallback = array(
-		'enabled'          => false,
-		'locations'        => array(),
-		'types'            => array( 'text', 'initials', 'symbol' ),
-		'fonts'            => array( 'serif', 'script', 'block' ),
-		'colours'          => array( '#000000', '#FFFFFF', '#C0A882' ),
-		'flat_fee'         => '0.00',
-		'per_char_fee'     => '0.00',
-		'max_chars'        => 3,
-		'non_returnable'   => true,
-		'elementor_enabled'=> false,
-	);
-
-	/**
-	 * Get merged settings for a specific product.
-	 * Per-product values override global defaults.
-	 * Returns a clean, typed array every time.
+	 * Get the personalisation set assigned to a product.
+	 * Checks product-level first, then falls back to category-level.
+	 * Returns null if nothing is assigned or if the set has no options.
 	 *
 	 * @param int $product_id WooCommerce product ID.
-	 * @return array
+	 * @return array|null
 	 */
 	public static function get( $product_id ) {
-		$global  = self::get_global();
-		$product = self::get_product( $product_id );
-
-		// Per-product overrides global — but only non-empty values override.
-		$merged = $global;
-
-		if ( isset( $product['enabled'] ) ) {
-			$merged['enabled'] = (bool) $product['enabled'];
+		$set_id = self::get_set_id( $product_id );
+		if ( ! $set_id ) {
+			return null;
 		}
-
-		// Arrays: override only if the product has a non-empty array set.
-		foreach ( array( 'locations', 'types', 'fonts', 'colours' ) as $key ) {
-			if ( ! empty( $product[ $key ] ) && is_array( $product[ $key ] ) ) {
-				$merged[ $key ] = $product[ $key ];
-			}
-		}
-
-		// Scalars: override only if the product has a non-empty value set.
-		foreach ( array( 'flat_fee', 'per_char_fee', 'max_chars' ) as $key ) {
-			if ( isset( $product[ $key ] ) && '' !== $product[ $key ] ) {
-				$merged[ $key ] = $product[ $key ];
-			}
-		}
-
-		if ( isset( $product['non_returnable'] ) ) {
-			$merged['non_returnable'] = (bool) $product['non_returnable'];
-		}
-
-		return self::cast( $merged );
+		return self::get_set( $set_id );
 	}
 
 	/**
-	 * Get global settings only (no product override).
+	 * Get a personalisation set by its post ID.
 	 *
-	 * @return array
+	 * @param int $set_id Post ID of the wcpp_personalisation post.
+	 * @return array|null
 	 */
-	public static function get_global() {
-		$saved = get_option( 'wcpp_global_settings', array() );
-		return self::cast( wp_parse_args( $saved, self::$fallback ) );
-	}
+	public static function get_set( $set_id ) {
+		$post = get_post( (int) $set_id );
 
-	/**
-	 * Get raw per-product settings (no merge).
-	 * Returns empty array if nothing is saved for the product.
-	 *
-	 * @param int $product_id WooCommerce product ID.
-	 * @return array
-	 */
-	public static function get_product( $product_id ) {
-		$saved = get_post_meta( (int) $product_id, '_wcpp_product_settings', true );
-		return is_array( $saved ) ? $saved : array();
-	}
+		if ( ! $post || 'wcpp_personalisation' !== $post->post_type || 'publish' !== $post->post_status ) {
+			return null;
+		}
 
-	/**
-	 * Cast all values to their correct types.
-	 * Ensures the returned array is always predictable — no mixed types.
-	 *
-	 * @param array $settings Raw settings array.
-	 * @return array
-	 */
-	private static function cast( array $settings ) {
+		$options = get_post_meta( $set_id, '_wcpp_options', true );
+		if ( ! is_array( $options ) ) {
+			$options = array();
+		}
+
 		return array(
-			'enabled'          => (bool) ( $settings['enabled'] ?? false ),
-			'locations'        => self::clean_array( $settings['locations'] ?? array() ),
-			'types'            => self::clean_array( $settings['types'] ?? array() ),
-			'fonts'            => self::clean_array( $settings['fonts'] ?? array() ),
-			'colours'          => self::clean_array( $settings['colours'] ?? array() ),
-			'flat_fee'         => number_format( (float) ( $settings['flat_fee'] ?? 0 ), 2, '.', '' ),
-			'per_char_fee'     => number_format( (float) ( $settings['per_char_fee'] ?? 0 ), 2, '.', '' ),
-			'max_chars'        => max( 1, (int) ( $settings['max_chars'] ?? 3 ) ),
-			'non_returnable'   => (bool) ( $settings['non_returnable'] ?? true ),
-			'elementor_enabled'=> (bool) ( $settings['elementor_enabled'] ?? false ),
+			'id'      => (int) $set_id,
+			'name'    => $post->post_title,
+			'options' => $options,
 		);
 	}
 
 	/**
-	 * Clean an array — trim whitespace, remove empty values, re-index.
+	 * Get the set ID assigned to a product.
+	 * Checks product meta first, then product category term meta.
 	 *
-	 * @param array $arr Raw array.
-	 * @return array
+	 * @param int $product_id WooCommerce product ID.
+	 * @return int Set post ID, or 0 if none assigned.
 	 */
-	private static function clean_array( $arr ) {
-		if ( ! is_array( $arr ) ) {
+	public static function get_set_id( $product_id ) {
+		// Product-level assignment takes priority.
+		$set_id = (int) get_post_meta( (int) $product_id, '_wcpp_set_id', true );
+		if ( $set_id ) {
+			return $set_id;
+		}
+
+		// Fall back to category-level assignment.
+		$terms = get_the_terms( (int) $product_id, 'product_cat' );
+		if ( $terms && ! is_wp_error( $terms ) ) {
+			foreach ( $terms as $term ) {
+				$term_set_id = (int) get_term_meta( $term->term_id, '_wcpp_set_id', true );
+				if ( $term_set_id ) {
+					return $term_set_id;
+				}
+			}
+		}
+
+		return 0;
+	}
+
+	/**
+	 * Get all published personalisation sets.
+	 * Used to populate dropdowns.
+	 *
+	 * @return array Array of [ 'id' => int, 'name' => string ]
+	 */
+	public static function get_all_sets() {
+		$posts = get_posts(
+			array(
+				'post_type'      => 'wcpp_personalisation',
+				'post_status'    => 'publish',
+				'posts_per_page' => -1,
+				'orderby'        => 'title',
+				'order'          => 'ASC',
+			)
+		);
+
+		$sets = array();
+		foreach ( $posts as $post ) {
+			$sets[] = array(
+				'id'   => $post->ID,
+				'name' => $post->post_title,
+			);
+		}
+		return $sets;
+	}
+
+	/**
+	 * Get all option names from a set (useful for validation).
+	 *
+	 * @param int $set_id Set post ID.
+	 * @return array Flat array of option names.
+	 */
+	public static function get_option_names( $set_id ) {
+		$set = self::get_set( $set_id );
+		if ( ! $set ) {
 			return array();
 		}
-		return array_values( array_filter( array_map( 'trim', $arr ) ) );
+		return array_column( $set['options'], 'name' );
+	}
+
+	/**
+	 * Get all valid choice names for a specific option within a set.
+	 * Used for server-side whitelisting of submitted values.
+	 *
+	 * @param int    $set_id      Set post ID.
+	 * @param string $option_name The option name (e.g. 'Location').
+	 * @return array Flat array of valid choice names.
+	 */
+	public static function get_valid_choices( $set_id, $option_name ) {
+		$set = self::get_set( $set_id );
+		if ( ! $set ) {
+			return array();
+		}
+		foreach ( $set['options'] as $opt ) {
+			if ( $opt['name'] === $option_name ) {
+				return array_column( $opt['choices'], 'name' );
+			}
+		}
+		return array();
 	}
 }

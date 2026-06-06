@@ -1,27 +1,201 @@
-/**
- * WC Personalisation Panel — Admin styles
- * Settings page + product meta box only.
- */
+/* ─────────────────────────────────────────────────────────────
+   WC Personalisation Panel — Admin Styles
+   Builder UI + product meta box + category field
+──────────────────────────────────────────────────────────────── */
 
-.wcpp-settings-wrap h1 {
+/* ─── Builder intro ──────────────────────────────────────────── */
+.wcpp-builder-intro {
+	color: #666;
+	margin-bottom: 16px;
+	font-style: italic;
+}
+
+/* ─── Option block ───────────────────────────────────────────── */
+.wcpp-option-block {
+	background: #f9f9f9;
+	border: 1px solid #ddd;
+	border-radius: 6px;
+	margin-bottom: 16px;
+	overflow: hidden;
+}
+
+/* ─── Option header ──────────────────────────────────────────── */
+.wcpp-option-header {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	background: #fff;
+	border-bottom: 1px solid #e0e0e0;
+	padding: 12px 14px;
+}
+
+.wcpp-option-label {
+	font-weight: 600;
+	font-size: 13px;
+	color: #1A56DB;
+	white-space: nowrap;
+	min-width: 52px;
+}
+
+.wcpp-option-name-input {
+	flex: 1;
+	font-size: 14px !important;
+	font-weight: 600 !important;
+	padding: 6px 10px !important;
+	border-radius: 4px !important;
+}
+
+.wcpp-delete-option {
+	color: #c41e3a !important;
+	border-color: #c41e3a !important;
+	padding: 4px 8px !important;
+	flex-shrink: 0;
+}
+
+.wcpp-delete-option:hover {
+	background: #c41e3a !important;
+	color: #fff !important;
+}
+
+/* ─── Choices list ───────────────────────────────────────────── */
+.wcpp-choices-list {
+	padding: 10px 14px;
+}
+
+.wcpp-choices-list:empty {
+	padding: 6px 14px;
+}
+
+/* ─── Choice row ─────────────────────────────────────────────── */
+.wcpp-choice-row {
+	display: flex;
+	align-items: flex-end;
+	gap: 12px;
+	background: #fff;
+	border: 1px solid #e0e0e0;
+	border-radius: 4px;
+	padding: 10px 12px;
 	margin-bottom: 8px;
 }
 
-.wcpp-settings-wrap .description {
-	margin-bottom: 20px;
-	color: #666;
+.wcpp-choice-row:last-child {
+	margin-bottom: 0;
 }
 
-.wcpp-product-meta p {
-	margin-bottom: 12px;
+/* ─── Choice image ───────────────────────────────────────────── */
+.wcpp-choice-image-wrap {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 6px;
+	min-width: 80px;
 }
 
-.wcpp-product-meta label {
-	cursor: pointer;
+.wcpp-image-preview {
+	position: relative;
+	width: 72px;
+	height: 72px;
 }
 
-.wcpp-product-meta hr {
+.wcpp-image-preview img {
+	width: 72px;
+	height: 72px;
+	object-fit: cover;
+	border-radius: 4px;
+	border: 1px solid #ddd;
+	display: block;
+}
+
+.wcpp-remove-image {
+	position: absolute;
+	top: -6px;
+	right: -6px;
+	background: #c41e3a;
+	color: #fff;
 	border: none;
-	border-top: 1px solid #ddd;
-	margin: 12px 0;
+	border-radius: 50%;
+	width: 20px;
+	height: 20px;
+	font-size: 12px;
+	line-height: 20px;
+	text-align: center;
+	cursor: pointer;
+	padding: 0;
+}
+
+.wcpp-select-image {
+	font-size: 11px !important;
+	padding: 3px 6px !important;
+	white-space: nowrap;
+}
+
+/* ─── Choice fields ──────────────────────────────────────────── */
+.wcpp-choice-field {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	flex: 1;
+}
+
+.wcpp-choice-field label {
+	font-size: 11px;
+	font-weight: 600;
+	color: #888;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+}
+
+.wcpp-choice-field input {
+	padding: 6px 8px !important;
+	border-radius: 3px !important;
+}
+
+.wcpp-choice-field--price {
+	max-width: 90px;
+	flex: 0 0 90px;
+}
+
+/* ─── Delete choice ──────────────────────────────────────────── */
+.wcpp-delete-choice {
+	color: #999 !important;
+	border-color: #ddd !important;
+	padding: 4px 8px !important;
+	flex-shrink: 0;
+	align-self: center;
+}
+
+.wcpp-delete-choice:hover {
+	color: #c41e3a !important;
+	border-color: #c41e3a !important;
+}
+
+/* ─── Add choice button (inside option block) ────────────────── */
+.wcpp-add-choice-btn {
+	margin: 0 14px 12px !important;
+	display: inline-block;
+}
+
+/* ─── Add option button (at the bottom) ─────────────────────── */
+#wcpp-add-option.wcpp-add-option-btn {
+	margin-top: 8px;
+	font-size: 14px;
+}
+
+/* ─── Product meta box ───────────────────────────────────────── */
+.wcpp-product-assign p {
+	margin-bottom: 8px;
+}
+
+.wcpp-product-assign select {
+	width: 100%;
+}
+
+/* ─── Empty state (no options yet) ──────────────────────────── */
+#wcpp-options-container:empty::before {
+	content: "No options yet. Click \"Create Option\" to add your first step.";
+	display: block;
+	color: #999;
+	font-style: italic;
+	padding: 12px 0;
+	font-size: 13px;
 }
