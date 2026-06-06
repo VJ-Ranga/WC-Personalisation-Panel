@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+<ruleset name="WC Personalisation Panel">
+
+    <description>PHPCS config for wc-personalisation-panel. Run: phpcs .</description>
+
+    <!-- What to scan -->
+    <file>.</file>
+
+    <!-- What to skip -->
+    <exclude-pattern>*/vendor/*</exclude-pattern>
+    <exclude-pattern>*/node_modules/*</exclude-pattern>
+    <exclude-pattern>*/languages/*</exclude-pattern>
+    <exclude-pattern>*/assets/*</exclude-pattern>
+
+    <!-- WordPress Coding Standards -->
+    <rule ref="WordPress">
+        <!-- We use wcpp_ prefix consistently — allow it -->
+        <exclude name="WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound"/>
+    </rule>
+
+    <!-- Require PHP 7.4+ -->
+    <config name="minimum_supported_wp_version" value="6.0"/>
+    <config name="testVersion" value="7.4-"/>
+
+    <!-- Tell PHPCS our text domain -->
+    <rule ref="WordPress.WP.I18n">
+        <properties>
+            <property name="text_domain" type="array" value="wcpp"/>
+        </properties>
+    </rule>
+
+    <!-- Tell PHPCS our prefix -->
+    <rule ref="WordPress.NamingConventions.PrefixAllGlobals">
+        <properties>
+            <property name="prefixes" type="array" value="wcpp,WCPP"/>
+        </properties>
+    </rule>
+
+    <!-- Line length — warn at 120, error at 150 -->
+    <rule ref="Generic.Files.LineLength">
+        <properties>
+            <property name="lineLimit" value="120"/>
+            <property name="absoluteLineLimit" value="150"/>
+        </properties>
+    </rule>
+
+</ruleset>

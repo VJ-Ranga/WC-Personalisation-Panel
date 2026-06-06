@@ -1,0 +1,14 @@
+# WP-CLI config for wc-personalisation-panel
+# Local by Flywheel site: 2202new
+# Run WP-CLI commands from inside this plugin folder — it will find WordPress automatically.
+
+path: C:\Users\VJR-LAP3\Local Sites\2202new\app\public
+
+# Useful commands from this folder:
+#
+#   wp plugin activate wc-personalisation-panel
+#   wp plugin deactivate wc-personalisation-panel
+#   wp i18n make-pot . languages/wcpp.pot --domain=wcpp --exclude=vendor,node_modules
+#   wp cache flush
+#   wp cron event run --due-now
+#   wp db export ../../../sql/backup-$(date +%Y%m%d).sql

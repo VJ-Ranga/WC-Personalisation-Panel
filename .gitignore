@@ -1,0 +1,29 @@
+# WordPress
+wp-config.php
+wp-content/uploads/
+wp-content/debug.log
+
+# Dev tools
+node_modules/
+vendor/
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE files
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Build output
+*.zip
+*.tar.gz
+
+# Logs
+*.log
+
+# Local WP-CLI override (keep wp-cli.yml but not local overrides)
+wp-cli.local.yml

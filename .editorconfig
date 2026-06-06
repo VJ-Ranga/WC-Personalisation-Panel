@@ -1,0 +1,38 @@
+root = true
+
+# WordPress Coding Standards use tabs for indentation
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+# PHP files — tabs (WordPress standard)
+[*.php]
+indent_style = tab
+indent_size = 4
+
+# CSS/JS files — tabs
+[*.{css,js}]
+indent_style = tab
+indent_size = 4
+
+# XML / config files — tabs
+[*.{xml,xml.dist}]
+indent_style = tab
+indent_size = 4
+
+# Markdown — spaces (readability)
+[*.md]
+indent_style = space
+indent_size = 2
+trim_trailing_whitespace = false
+
+# YAML / yml — spaces (YAML spec requires spaces)
+[*.{yml,yaml}]
+indent_style = space
+indent_size = 2
+
+# .pot / .po translation files
+[*.{pot,po}]
+indent_style = tab
