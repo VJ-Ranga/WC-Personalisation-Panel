@@ -15,6 +15,14 @@ A **self-contained WordPress plugin** (zero external deps) that adds a slide-in 
 
 ---
 
+## CURRENT STATUS
+- Phase 0 ✅ Scaffold
+- Phase 1 ✅ CPT builder + category assignment + design settings
+- Phase 2 🔄 Full wizard working — needs end-to-end cart/order test
+- Phase 3–8 ⬜ Pending
+
+---
+
 ## WIZARD FLOW (what the customer sees)
 
 ```
