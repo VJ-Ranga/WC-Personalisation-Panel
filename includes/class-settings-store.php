@@ -100,13 +100,26 @@ class WCPP_Settings_Store {
 	 */
 	public static function behaviour_defaults() {
 		return array(
-			'enabled'              => 1,
-			'required'             => 0,  // Force personalisation before normal add-to-cart.
-			'non_returnable'       => 1,
-			'max_personalisations' => 1,
-			'allow_cart_edit'      => 0,
-			'elementor'            => 0,
-			'remove_on_uninstall'  => 0,
+			'enabled'             => 1,
+			'non_returnable'      => 1,
+			'elementor'           => 0,
+			'remove_on_uninstall' => 0,
+		);
+	}
+
+	/**
+	 * Canonical font whitelist (label => CSS family). 'inherit' = theme font.
+	 *
+	 * @return array
+	 */
+	public static function fonts() {
+		return array(
+			'inherit'            => 'inherit',
+			'Poppins'            => "'Poppins', sans-serif",
+			'Playfair Display'   => "'Playfair Display', serif",
+			'Montserrat'         => "'Montserrat', sans-serif",
+			'Lato'               => "'Lato', sans-serif",
+			'Cormorant Garamond' => "'Cormorant Garamond', serif",
 		);
 	}
 

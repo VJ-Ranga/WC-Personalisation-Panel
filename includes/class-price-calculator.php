@@ -1,8 +1,7 @@
 <?php
 /**
- * Price Calculator — applies personalisation prices to the cart.
- * Server-side only. The price stored on the cart item was already
- * recalculated server-side in the AJAX handler from set choice prices.
+ * Price Calculator — computes and applies personalisation prices.
+ * Server-side only. The browser's price is never trusted.
  *
  * @package WC_Personalisation_Panel
  */
@@ -26,7 +25,11 @@ class WCPP_Price_Calculator {
 	}
 
 	/**
-	 * Add the personalisation total to each personalised cart item's price.
+	 * Apply the personalisation add-on to each personalised cart item.
+	 *
+	 * Idempotent: the price is always set to (base_price + add-on), where
+	 * base_price was captured once at add-to-cart time. This means the hook
+	 * firing multiple times in one request never compounds the price.
 	 *
 	 * @param WC_Cart $cart Cart object.
 	 * @return void
@@ -35,45 +38,40 @@ class WCPP_Price_Calculator {
 		if ( is_admin() && ! defined( 'DOING_AJAX' ) ) {
 			return;
 		}
-
 		if ( ! $cart || ! is_a( $cart, 'WC_Cart' ) ) {
 			return;
 		}
 
 		foreach ( $cart->get_cart() as $cart_item ) {
-			if ( empty( $cart_item['wcpp_data']['total_price'] ) ) {
+			if ( empty( $cart_item['wcpp_data'] ) || empty( $cart_item['data'] ) || ! is_object( $cart_item['data'] ) ) {
 				continue;
 			}
 
-			$extra = (float) $cart_item['wcpp_data']['total_price'];
+			$data  = $cart_item['wcpp_data'];
+			$extra = isset( $data['total_price'] ) ? (float) $data['total_price'] : 0.0;
 			if ( $extra <= 0 ) {
 				continue;
 			}
 
-			if ( empty( $cart_item['data'] ) || ! is_object( $cart_item['data'] ) ) {
-				continue;
-			}
+			// Prefer the base captured at add time; fall back to the live price.
+			$base = isset( $data['base_price'] )
+				? (float) $data['base_price']
+				: (float) $cart_item['data']->get_price();
 
-			$product = $cart_item['data'];
-			$base    = (float) $product->get_price();
-			$product->set_price( $base + $extra );
+			$cart_item['data']->set_price( $base + $extra );
 		}
 	}
 
 	/**
-	 * Compute the personalisation total for a set of selections.
-	 * Used by the AJAX handler and for any server-side recalculation.
+	 * Sum the choice prices of a set of resolved selections.
 	 *
-	 * @param int   $product_id Product ID (reserved for future per-product rules).
-	 * @param array $data       Personalisation data with 'selections'.
+	 * @param array $selections Array of selections, each with 'choice_price'.
 	 * @return float
 	 */
-	public static function calculate( $product_id, array $data ) {
-		$total = 0;
-		if ( ! empty( $data['selections'] ) && is_array( $data['selections'] ) ) {
-			foreach ( $data['selections'] as $sel ) {
-				$total += (float) ( $sel['choice_price'] ?? 0 );
-			}
+	public static function calculate( array $selections ) {
+		$total = 0.0;
+		foreach ( $selections as $sel ) {
+			$total += (float) ( $sel['choice_price'] ?? 0 );
 		}
 		return round( $total, 2 );
 	}

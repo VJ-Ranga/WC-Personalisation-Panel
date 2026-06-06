@@ -36,6 +36,19 @@ class WCPP_Settings_Page {
 			WCPP_Settings_Store::OPTION,
 			array( 'sanitize_callback' => array( __CLASS__, 'sanitize' ) )
 		);
+
+		// Align the save capability with the page capability (manage_woocommerce)
+		// so Shop Managers can save, not just full admins.
+		add_filter( 'option_page_capability_wcpp_settings_group', array( __CLASS__, 'settings_capability' ) );
+	}
+
+	/**
+	 * Capability required to save the settings group.
+	 *
+	 * @return string
+	 */
+	public static function settings_capability() {
+		return 'manage_woocommerce';
 	}
 
 	/**
@@ -77,9 +90,13 @@ class WCPP_Settings_Page {
 		}
 
 		// Text fields.
-		foreach ( array( 'btn_text', 'header_title', 'next_text', 'back_text', 'addbag_text', 'free_label', 'font_family' ) as $key ) {
+		foreach ( array( 'btn_text', 'header_title', 'next_text', 'back_text', 'addbag_text', 'free_label' ) as $key ) {
 			$out['design'][ $key ] = sanitize_text_field( wp_unslash( $d[ $key ] ?? $design_defaults[ $key ] ) );
 		}
+
+		// Font — whitelist against the known list (prevents CSS/URL injection).
+		$font_keys              = array_keys( WCPP_Settings_Store::fonts() );
+		$out['design']['font_family'] = in_array( $d['font_family'] ?? '', $font_keys, true ) ? $d['font_family'] : $design_defaults['font_family'];
 
 		// Enum fields.
 		$out['design']['btn_style']      = in_array( $d['btn_style'] ?? '', array( 'outline', 'filled', 'text' ), true ) ? $d['btn_style'] : $design_defaults['btn_style'];
@@ -103,10 +120,9 @@ class WCPP_Settings_Page {
 		}
 
 		// Behaviour toggles.
-		foreach ( array( 'enabled', 'required', 'non_returnable', 'allow_cart_edit', 'elementor', 'remove_on_uninstall' ) as $key ) {
+		foreach ( array( 'enabled', 'non_returnable', 'elementor', 'remove_on_uninstall' ) as $key ) {
 			$out['behaviour'][ $key ] = empty( $b[ $key ] ) ? 0 : 1;
 		}
-		$out['behaviour']['max_personalisations'] = max( 1, min( 10, intval( $b['max_personalisations'] ?? $behaviour_defaults['max_personalisations'] ) ) );
 
 		return $out;
 	}
@@ -400,20 +416,8 @@ class WCPP_Settings_Page {
 				<td><label><input type="checkbox" name="<?php echo esc_attr( self::name( 'behaviour', 'enabled' ) ); ?>" value="1" <?php checked( $b['enabled'] ); ?> /> <?php esc_html_e( 'Master switch — turn personalisation on/off site-wide', 'wcpp' ); ?></label></td>
 			</tr>
 			<tr>
-				<th><?php esc_html_e( 'Personalisation required', 'wcpp' ); ?></th>
-				<td><label><input type="checkbox" name="<?php echo esc_attr( self::name( 'behaviour', 'required' ) ); ?>" value="1" <?php checked( $b['required'] ); ?> /> <?php esc_html_e( 'Customer must personalise before adding to cart (for assigned products)', 'wcpp' ); ?></label></td>
-			</tr>
-			<tr>
 				<th><?php esc_html_e( 'Non-returnable', 'wcpp' ); ?></th>
 				<td><label><input type="checkbox" name="<?php echo esc_attr( self::name( 'behaviour', 'non_returnable' ) ); ?>" value="1" <?php checked( $b['non_returnable'] ); ?> /> <?php esc_html_e( 'Mark personalised items as non-returnable (shown on cart, order, email)', 'wcpp' ); ?></label></td>
-			</tr>
-			<tr>
-				<th><?php esc_html_e( 'Max personalisations per item', 'wcpp' ); ?></th>
-				<td><input type="number" name="<?php echo esc_attr( self::name( 'behaviour', 'max_personalisations' ) ); ?>" value="<?php echo esc_attr( $b['max_personalisations'] ); ?>" min="1" max="10" class="small-text" /></td>
-			</tr>
-			<tr>
-				<th><?php esc_html_e( 'Allow editing from cart', 'wcpp' ); ?></th>
-				<td><label><input type="checkbox" name="<?php echo esc_attr( self::name( 'behaviour', 'allow_cart_edit' ) ); ?>" value="1" <?php checked( $b['allow_cart_edit'] ); ?> /> <?php esc_html_e( 'Let customers edit their choices from the cart page', 'wcpp' ); ?></label></td>
 			</tr>
 			<tr>
 				<th><?php esc_html_e( 'Elementor support', 'wcpp' ); ?></th>

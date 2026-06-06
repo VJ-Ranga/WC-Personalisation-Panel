@@ -186,10 +186,8 @@
 	margin-left: 4px;
 }
 
-/* ─── Design box ─────────────────────────────────────────────────── */
-.wcpp-design-box p { margin-bottom: 12px; }
-.wcpp-design-box label { display: block; margin-bottom: 4px; }
-.wcpp-design-box .wp-color-result { vertical-align: middle; }
+/* ─── Button-text override box ───────────────────────────────────── */
+.wcpp-button-box p { margin-bottom: 8px; }
 
 /* ─── Product meta box ───────────────────────────────────────────── */
 .wcpp-product-assign p { margin-bottom: 8px; }
@@ -224,3 +222,34 @@
 	margin-top:  6px;
 	display:     block;
 }
+
+/* ─── Settings page polish ───────────────────────────────────────── */
+.wcpp-settings-wrap { max-width: 880px; }
+.wcpp-settings-wrap > h1 {
+	font-weight:    600;
+	letter-spacing: -0.01em;
+	margin-bottom:  4px;
+}
+.wcpp-settings-wrap .nav-tab-wrapper { margin-bottom: 24px; }
+.wcpp-settings-wrap h2.title {
+	margin-top:     34px;
+	padding-bottom: 8px;
+	border-bottom:  1px solid #e4e4e4;
+	font-size:      14px;
+	font-weight:    600;
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+	color:          #1d2327;
+}
+.wcpp-settings-wrap .form-table th {
+	font-weight: 500;
+	width:       220px;
+}
+.wcpp-settings-wrap .form-table td .description {
+	color:      #757575;
+	font-style: normal;
+	margin-top: 4px;
+}
+.wcpp-settings-wrap select,
+.wcpp-settings-wrap input[type="text"],
+.wcpp-settings-wrap input[type="number"] { border-radius: 5px; }

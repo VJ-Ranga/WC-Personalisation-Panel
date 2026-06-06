@@ -53,7 +53,9 @@ class WCPP_Cart_Handler {
 		$opacity = max( 0, min( 100, (int) $design['overlay_opacity'] ) ) / 100;
 		$overlay = sprintf( 'rgba(%d,%d,%d,%s)', $r, $g, $b, $opacity );
 
-		$font = ( 'inherit' === $design['font_family'] ) ? 'inherit' : "'" . $design['font_family'] . "'";
+		// Resolve the CSS font-family from the whitelist (safe value, never raw input).
+		$fonts = WCPP_Settings_Store::fonts();
+		$font  = isset( $fonts[ $design['font_family'] ] ) ? $fonts[ $design['font_family'] ] : 'inherit';
 
 		$vars = array(
 			'--wcpp-btn-bg'        => $design['btn_bg'],
@@ -104,12 +106,14 @@ class WCPP_Cart_Handler {
 
 		wp_enqueue_style( 'wcpp-panel', WCPP_URL . 'assets/css/panel-default.css', array(), WCPP_VERSION );
 
-		// Google font import if not inheriting.
-		if ( 'inherit' !== $design['font_family'] ) {
-			$family = str_replace( ' ', '+', $design['font_family'] );
+		// Google font import — only for whitelisted fonts, URL fully escaped.
+		$font_keys = array_keys( WCPP_Settings_Store::fonts() );
+		if ( 'inherit' !== $design['font_family'] && in_array( $design['font_family'], $font_keys, true ) ) {
+			$family    = rawurlencode( $design['font_family'] );
+			$font_url  = 'https://fonts.googleapis.com/css2?family=' . $family . ':wght@400;600;700&display=swap';
 			wp_enqueue_style(
 				'wcpp-font',
-				'https://fonts.googleapis.com/css2?family=' . $family . ':wght@400;600;700&display=swap',
+				esc_url( $font_url ),
 				array(),
 				null // phpcs:ignore WordPress.WP.EnqueuedResourceParameters.MissingVersion
 			);
@@ -120,13 +124,22 @@ class WCPP_Cart_Handler {
 
 		wp_enqueue_script( 'wcpp-panel', WCPP_URL . 'assets/js/wcpp-panel.js', array( 'jquery' ), WCPP_VERSION, true );
 
+		// Trimmed front-end config — never expose the behaviour settings to the page.
+		$front_config = array(
+			'id'          => $config['id'],
+			'name'        => $config['name'],
+			'options'     => $config['options'],
+			'button_text' => $config['button_text'],
+			'design'      => $config['design'],
+		);
+
 		wp_localize_script(
 			'wcpp-panel',
 			'wcpp',
 			array(
 				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
 				'nonce'   => wp_create_nonce( 'wcpp_nonce' ),
-				'config'  => $config,
+				'config'  => $front_config,
 				'i18n'    => array(
 					'back'         => $design['back_text'],
 					'next'         => $design['next_text'],

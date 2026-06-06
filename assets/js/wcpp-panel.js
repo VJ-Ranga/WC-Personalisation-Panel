@@ -173,7 +173,7 @@
 				$labelWrap.append( $( '<span class="wcpp-option-price"></span>' ).text( '+' + money( choice.price ) ) );
 			}
 			$btn.append( $labelWrap );
-			$btn.append( $( '<span class="wcpp-option-tick dashicons dashicons-yes"></span>' ) );
+			$btn.append( $( '<span class="wcpp-option-tick">✓</span>' ) );
 
 			if ( currentSel && currentSel.choice_id === choice.id ) { $btn.addClass( 'wcpp-selected' ); }
 

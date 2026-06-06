@@ -64,7 +64,19 @@ class WCPP_Personalisation_CPT {
 				'has_archive'       => false,
 				'rewrite'           => false,
 				'query_var'         => false,
-				'capability_type'   => 'post',
+				// Gate to WooCommerce permissions — only admins and shop managers
+				// (manage_woocommerce) can manage personalisation sets.
+				'capabilities'      => array(
+					'edit_post'              => 'manage_woocommerce',
+					'read_post'              => 'manage_woocommerce',
+					'delete_post'            => 'manage_woocommerce',
+					'edit_posts'             => 'manage_woocommerce',
+					'edit_others_posts'      => 'manage_woocommerce',
+					'delete_posts'           => 'manage_woocommerce',
+					'publish_posts'          => 'manage_woocommerce',
+					'read_private_posts'     => 'manage_woocommerce',
+					'create_posts'           => 'manage_woocommerce',
+				),
 				'map_meta_cap'      => true,
 			)
 		);
@@ -134,14 +146,14 @@ class WCPP_Personalisation_CPT {
 		wp_enqueue_style(
 			'wcpp-admin',
 			WCPP_URL . 'assets/css/admin.css',
-			array( 'wp-color-picker' ),
+			array(),
 			WCPP_VERSION
 		);
 
 		wp_enqueue_script(
 			'wcpp-admin',
 			WCPP_URL . 'assets/js/wcpp-admin.js',
-			array( 'jquery', 'wp-color-picker' ),
+			array( 'jquery' ),
 			WCPP_VERSION,
 			true
 		);

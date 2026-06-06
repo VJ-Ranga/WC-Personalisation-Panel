@@ -3,7 +3,7 @@
  * Plugin Name:       WC Personalisation Panel
  * Plugin URI:        https://github.com/VJ-Ranga/WC-Personalisation-Panel
  * Description:       Adds a slide-in personalisation drawer to WooCommerce product pages. Customers choose location, type, text, font and colour before adding to cart.
- * Version:           0.1.0
+ * Version:           0.5.0
  * Author:            Cloudycode
  * Author URI:        https://github.com/VJ-Ranga
  * License:           GPL-2.0-or-later
@@ -24,7 +24,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Plugin constants.
-define( 'WCPP_VERSION',  '0.1.0' );
+define( 'WCPP_VERSION',  '0.5.0' );
 define( 'WCPP_PATH',     plugin_dir_path( __FILE__ ) );
 define( 'WCPP_URL',      plugin_dir_url( __FILE__ ) );
 define( 'WCPP_BASENAME', plugin_basename( __FILE__ ) );
@@ -33,6 +33,10 @@ define( 'WCPP_BASENAME', plugin_basename( __FILE__ ) );
  * Main init — fires on plugins_loaded so WooCommerce is already registered.
  */
 add_action( 'plugins_loaded', 'wcpp_init', 10 );
+
+// Declare WooCommerce HPOS compatibility — registered at top level so it runs
+// before WooCommerce fires `before_woocommerce_init`.
+add_action( 'before_woocommerce_init', 'wcpp_declare_hpos_compatibility' );
 
 /**
  * Check WooCommerce is active, then boot the plugin.
@@ -69,9 +73,6 @@ function wcpp_init() {
 	WCPP_Ajax_Handler::init();
 	WCPP_Product_Meta::init();
 	WCPP_Email_Handler::init();
-
-	// Declare WooCommerce HPOS compatibility.
-	add_action( 'before_woocommerce_init', 'wcpp_declare_hpos_compatibility' );
 
 	// Add Settings link in the plugins list.
 	add_filter( 'plugin_action_links_' . WCPP_BASENAME, 'wcpp_plugin_action_links' );
