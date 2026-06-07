@@ -249,27 +249,20 @@
 	transform:    translateY(-2px);
 	box-shadow:   0 10px 26px -14px rgba(0,0,0,.4);
 }
+/* Dead simple: a square 512×512 image fills the card width as a full square. */
 #wcpp-panel .wcpp-select-card__img {
-	display:         flex !important;
-	align-items:     center;
-	justify-content: center;
-	height:          200px !important;   /* fixed box — guarantees card height */
-	padding:         18px;
-	background:      #fff;
-	box-sizing:      border-box;
-	overflow:        hidden;
+	display:    block;
+	background: #fafafa;
+	line-height: 0;
 }
-/* !important defeats theme/WooCommerce global <img> rules. */
 #wcpp-panel .wcpp-select-card__img img {
-	max-width:    100% !important;
-	max-height:   100% !important;
-	width:        auto !important;
-	height:       auto !important;
-	min-height:   0 !important;
-	object-fit:   contain !important;    /* show the whole garment, never crop */
-	display:      block !important;
-	margin:       0 !important;
-	border:       0 !important;
+	display:    block !important;
+	width:      100% !important;
+	height:     auto !important;
+	max-width:  100% !important;
+	margin:     0 !important;
+	border:     0 !important;
+	border-radius: 0 !important;
 }
 .wcpp-select-card__foot {
 	display:         flex;
@@ -350,16 +343,22 @@
 	height:        var(--wcpp-img-size);
 	border-radius: calc(var(--wcpp-panel-radius) - 2px);
 	overflow:      hidden;
-	background:    #f4f1ec;
+	background:    #fafafa;
 }
-.wcpp-option-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+/* List mode: small thumbnail, contained (no crop). */
+#wcpp-panel .wcpp-option-img { width: 100% !important; height: 100% !important; object-fit: contain !important; display: block !important; }
 
-/* In grid mode images become full-width squares (512×512 source ideal). */
+/* Grid mode: image fills the cell as a FULL square (512×512), never cropped. */
 .wcpp-options--grid2 .wcpp-option-img-wrap,
 .wcpp-options--grid3 .wcpp-option-img-wrap {
-	width:         100%;
-	height:        auto;
-	aspect-ratio:  1 / 1;
+	width:  100%;
+	height: auto;
+}
+#wcpp-panel .wcpp-options--grid2 .wcpp-option-img,
+#wcpp-panel .wcpp-options--grid3 .wcpp-option-img {
+	width:      100% !important;
+	height:     auto !important;
+	object-fit: fill !important;
 }
 
 /* ─── Text-input step ────────────────────────────────────────────── */
