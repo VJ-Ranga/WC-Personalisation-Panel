@@ -361,6 +361,43 @@
 	object-fit: fill !important;
 }
 
+/* ─── Toast notification (replaces window.alert) ─────────────────── */
+.wcpp-toast {
+	position:       fixed;
+	left:           50%;
+	bottom:         32px;
+	transform:      translateX(-50%) translateY(24px);
+	display:        flex;
+	align-items:    center;
+	gap:            10px;
+	max-width:      90%;
+	padding:        14px 22px;
+	background:     #1a1a1a;
+	color:          #fff;
+	font-size:      14px;
+	font-weight:    500;
+	line-height:    1.4;
+	border-radius:  10px;
+	box-shadow:     0 12px 34px rgba(0, 0, 0, 0.28);
+	z-index:        100001;
+	opacity:        0;
+	pointer-events: none;
+	transition:     opacity .3s var(--wcpp-ease), transform .3s var(--wcpp-ease);
+	font-family:    var(--wcpp-font);
+}
+.wcpp-toast.wcpp-toast--show {
+	opacity:   1;
+	transform: translateX(-50%) translateY(0);
+}
+.wcpp-toast__icon {
+	flex-shrink: 0;
+	font-size:   16px;
+	color:       #f0c24b;
+}
+@media (max-width: 500px) {
+	.wcpp-toast { bottom: 20px; width: calc(100% - 32px); justify-content: center; text-align: center; }
+}
+
 /* ─── Colour swatches ────────────────────────────────────────────── */
 .wcpp-swatches {
 	display:   flex;

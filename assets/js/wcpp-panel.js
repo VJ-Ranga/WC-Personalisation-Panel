@@ -52,7 +52,7 @@
 			if ( $vform.length ) {
 				var vid = parseInt( $vform.find( 'input[name="variation_id"]' ).val(), 10 );
 				if ( !vid ) {
-					window.alert( wcpp.i18n.selectVariation || 'Please choose the product options (e.g. size) before personalising.' );
+					notify( wcpp.i18n.selectVariation || 'Please choose the product options (e.g. size) before personalising.' );
 					return; // Don't open the panel.
 				}
 				state.variationId = vid;
@@ -558,12 +558,12 @@
 					$( document.body ).trigger( 'wc_fragment_refresh' );
 					if ( res.data && res.data.cart_url ) { window.location.href = res.data.cart_url; }
 				} else {
-					alert( ( res.data && res.data.message ) ? res.data.message : ( i18n.errorGeneric || 'Error' ) );
+					notify( ( res.data && res.data.message ) ? res.data.message : ( i18n.errorGeneric || 'Error' ) );
 					$addToBag.prop( 'disabled', false ).text( i18n.addToBag );
 				}
 			},
 			error: function () {
-				alert( i18n.errorGeneric || 'Error' );
+				notify( i18n.errorGeneric || 'Error' );
 				$addToBag.prop( 'disabled', false ).text( i18n.addToBag );
 			}
 		} );
@@ -587,6 +587,21 @@
 	}
 
 	// ─── Utils ────────────────────────────────────────────────────────────────
+	// Branded toast notification (replaces window.alert). Works whether the
+	// panel is open or not (appended to body, slides up from the bottom).
+	function notify( msg ) {
+		$( '.wcpp-toast' ).remove();
+		var $t = $( '<div class="wcpp-toast" role="alert"></div>' );
+		$t.append( $( '<span class="wcpp-toast__icon">&#9888;</span>' ) );
+		$t.append( $( '<span class="wcpp-toast__msg"></span>' ).text( msg ) );
+		$( 'body' ).append( $t );
+		setTimeout( function () { $t.addClass( 'wcpp-toast--show' ); }, 10 );
+		setTimeout( function () {
+			$t.removeClass( 'wcpp-toast--show' );
+			setTimeout( function () { $t.remove(); }, 350 );
+		}, 4000 );
+	}
+
 	function shake() {
 		var $o = $content.find( '.wcpp-options, .wcpp-text-wrap' );
 		$o.addClass( 'wcpp-shake' );
