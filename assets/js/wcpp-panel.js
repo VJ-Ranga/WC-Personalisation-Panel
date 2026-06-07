@@ -227,6 +227,21 @@
 			$list.append( $li );
 		});
 
+		// Flat set fee (one-time charge for the whole set).
+		var setFee = parseFloat( wcpp.config.set_price || 0 );
+		if ( setFee > 0 ) {
+			total += setFee;
+			if ( showPrice ) {
+				var $feeLi = $( '<li class="wcpp-summary-item wcpp-summary-fee"></li>' );
+				$feeLi.append( $( '<div class="wcpp-summary-left"></div>' ).append(
+					$( '<div class="wcpp-summary-text"></div>' )
+						.append( $( '<span class="wcpp-summary-label"></span>' ).text( wcpp.i18n.feeLabel || 'Personalisation fee' ) )
+				) );
+				$feeLi.append( $( '<span class="wcpp-summary-price"></span>' ).text( '+' + money( setFee ) ) );
+				$list.append( $feeLi );
+			}
+		}
+
 		$content.append( $list );
 
 		if ( parseInt( design.show_total, 10 ) !== 0 && total > 0 ) {

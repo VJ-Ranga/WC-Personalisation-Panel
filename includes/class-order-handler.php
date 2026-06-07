@@ -51,6 +51,10 @@ class WCPP_Order_Handler {
 			$item->add_meta_data( '_wcpp_selections', wp_json_encode( $data['selections'] ), true );
 		}
 
+		if ( isset( $data['set_fee'] ) && (float) $data['set_fee'] > 0 ) {
+			$item->add_meta_data( '_wcpp_set_fee', (float) $data['set_fee'], true );
+		}
+
 		if ( isset( $data['total_price'] ) ) {
 			$item->add_meta_data( '_wcpp_total_price', (float) $data['total_price'], true );
 		}
@@ -103,6 +107,11 @@ class WCPP_Order_Handler {
 		}
 
 		echo '</table>';
+
+		$set_fee = (float) $item->get_meta( '_wcpp_set_fee' );
+		if ( $set_fee > 0 ) {
+			echo '<p style="margin:6px 0 0;font-size:13px;"><span style="color:#888;">' . esc_html__( 'Personalisation fee:', 'wcpp' ) . '</span> <strong>' . wp_kses_post( wc_price( $set_fee ) ) . '</strong></p>';
+		}
 
 		if ( $non_returnable ) {
 			echo '<p class="wcpp-non-returnable" style="color:#b3261e;font-weight:600;font-size:12px;margin:8px 0 0;">&#9888; ' . esc_html__( 'Non-returnable — personalised item', 'wcpp' ) . '</p>';

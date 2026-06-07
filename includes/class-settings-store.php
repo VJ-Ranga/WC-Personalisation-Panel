@@ -196,12 +196,14 @@ class WCPP_Settings_Store {
 		}
 
 		$btn_override = get_post_meta( $set_id, '_wcpp_button_text', true );
+		$set_price    = get_post_meta( $set_id, '_wcpp_set_price', true );
 
 		return array(
 			'id'          => (int) $set_id,
 			'name'        => $post->post_title,
 			'options'     => $options,
 			'button_text' => is_string( $btn_override ) ? $btn_override : '',
+			'set_price'   => ( '' === $set_price || null === $set_price ) ? 0.0 : (float) $set_price,
 			'design'      => self::get_design(),
 			'behaviour'   => self::get_behaviour(),
 		);

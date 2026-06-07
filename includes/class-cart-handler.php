@@ -143,6 +143,7 @@ class WCPP_Cart_Handler {
 			'name'        => $config['name'],
 			'options'     => $config['options'],
 			'button_text' => $config['button_text'],
+			'set_price'   => isset( $config['set_price'] ) ? (float) $config['set_price'] : 0.0,
 			'design'      => $config['design'],
 		);
 
@@ -173,6 +174,7 @@ class WCPP_Cart_Handler {
 					'adding'       => esc_html__( 'Adding...', 'wcpp' ),
 					'stepOf'       => esc_html__( 'Step %1$d of %2$d', 'wcpp' ),
 					'total'        => esc_html__( 'Personalisation total:', 'wcpp' ),
+					'feeLabel'     => esc_html__( 'Personalisation fee', 'wcpp' ),
 				),
 			)
 		);
@@ -277,6 +279,14 @@ class WCPP_Cart_Handler {
 					'value' => $display,
 				);
 			}
+		}
+
+		// Flat set fee line.
+		if ( isset( $data['set_fee'] ) && (float) $data['set_fee'] > 0 ) {
+			$item_data[] = array(
+				'name'  => esc_html__( 'Personalisation fee', 'wcpp' ),
+				'value' => wp_strip_all_tags( wc_price( $data['set_fee'] ) ),
+			);
 		}
 
 		if ( ! empty( $data['non_returnable'] ) ) {

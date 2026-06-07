@@ -90,8 +90,9 @@ class WCPP_Ajax_Handler {
 		$priced_product = $variation_id ? wc_get_product( $variation_id ) : $product;
 		$base_price     = $priced_product ? (float) $priced_product->get_price() : 0.0;
 
-		// 9. Server-side total from the set choice prices.
-		$total_price = WCPP_Price_Calculator::calculate( $clean_selections );
+		// 9. Server-side total: flat set fee + sum of choice prices.
+		$set_fee     = isset( $set['set_price'] ) ? (float) $set['set_price'] : 0.0;
+		$total_price = $set_fee + WCPP_Price_Calculator::calculate( $clean_selections );
 
 		// 10. Non-returnable honours the global Behaviour setting.
 		$non_returnable = ! empty( $set['behaviour']['non_returnable'] );
@@ -100,6 +101,7 @@ class WCPP_Ajax_Handler {
 			'set_id'         => $set['id'],
 			'set_name'       => $set['name'],
 			'selections'     => $clean_selections,
+			'set_fee'        => number_format( $set_fee, 2, '.', '' ),
 			'base_price'     => $base_price,
 			'total_price'    => number_format( $total_price, 2, '.', '' ),
 			'non_returnable' => $non_returnable,

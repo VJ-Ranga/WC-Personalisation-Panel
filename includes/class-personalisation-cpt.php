@@ -98,6 +98,16 @@ class WCPP_Personalisation_CPT {
 			'high'
 		);
 
+		// Pricing — sidebar.
+		add_meta_box(
+			'wcpp_pricing',
+			__( 'Pricing', 'wcpp' ),
+			array( __CLASS__, 'render_pricing_box' ),
+			'wcpp_personalisation',
+			'side',
+			'high'
+		);
+
 		// Button text override — sidebar.
 		add_meta_box(
 			'wcpp_button_override',
@@ -348,6 +358,34 @@ class WCPP_Personalisation_CPT {
 		<?php
 	}
 
+	// ─── PRICING ─────────────────────────────────────────────────────────
+
+	/**
+	 * Render the pricing meta box — a flat fee for the whole set.
+	 *
+	 * @param WP_Post $post Current post.
+	 * @return void
+	 */
+	public static function render_pricing_box( $post ) {
+		$set_price = get_post_meta( $post->ID, '_wcpp_set_price', true );
+		$set_price = ( '' === $set_price ) ? '' : number_format( (float) $set_price, 2, '.', '' );
+		$symbol    = get_woocommerce_currency_symbol();
+		?>
+		<div class="wcpp-pricing-box">
+			<p>
+				<label for="wcpp_set_price"><strong><?php esc_html_e( 'Flat price for this set', 'wcpp' ); ?></strong></label><br />
+				<span style="font-size:14px;"><?php echo esc_html( $symbol ); ?></span>
+				<input type="number" id="wcpp_set_price" name="wcpp_set_price"
+					value="<?php echo esc_attr( $set_price ); ?>"
+					step="0.01" min="0" placeholder="0.00" style="width:100px;" />
+			</p>
+			<p class="description">
+				<?php esc_html_e( 'A one-time fee added when a customer personalises with this set. This is added on top of any per-choice prices. Leave 0 or blank for no flat fee.', 'wcpp' ); ?>
+			</p>
+		</div>
+		<?php
+	}
+
 	// ─── DESIGN SETTINGS ─────────────────────────────────────────────────
 
 	/**
@@ -434,6 +472,24 @@ class WCPP_Personalisation_CPT {
 
 		// Save button-text override.
 		self::save_button_text( $post_id );
+
+		// Save flat set price.
+		self::save_set_price( $post_id );
+	}
+
+	/**
+	 * Save the flat set price.
+	 *
+	 * @param int $post_id Post ID.
+	 * @return void
+	 */
+	private static function save_set_price( $post_id ) {
+		$raw = isset( $_POST['wcpp_set_price'] ) ? wp_unslash( $_POST['wcpp_set_price'] ) : '';
+		if ( '' === trim( $raw ) ) {
+			delete_post_meta( $post_id, '_wcpp_set_price' );
+			return;
+		}
+		update_post_meta( $post_id, '_wcpp_set_price', number_format( (float) $raw, 2, '.', '' ) );
 	}
 
 	/**
