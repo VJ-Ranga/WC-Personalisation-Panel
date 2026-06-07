@@ -181,6 +181,7 @@ class WCPP_Cart_Handler {
 					'addAnother'   => esc_html__( 'Add another placement', 'wcpp' ),
 					'edit'         => esc_html__( 'Edit', 'wcpp' ),
 					'remove'       => esc_html__( 'Remove', 'wcpp' ),
+					'selectVariation' => esc_html__( 'Please choose the product options (e.g. size) before personalising.', 'wcpp' ),
 				),
 			)
 		);

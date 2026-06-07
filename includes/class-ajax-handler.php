@@ -120,7 +120,18 @@ class WCPP_Ajax_Handler {
 		$variation_id = isset( $_POST['variation_id'] ) ? absint( $_POST['variation_id'] ) : 0;
 		$product      = wc_get_product( $product_id );
 		if ( $product && $product->is_type( 'variable' ) && ! $variation_id ) {
-			wp_send_json_error( array( 'message' => __( 'Please select a product option before personalising.', 'wcpp' ) ) );
+			wp_send_json_error( array( 'message' => __( 'Please select a product option (e.g. size) before personalising.', 'wcpp' ) ) );
+		}
+
+		// Variation attributes (attribute_pa_size => …). Sanitised per value.
+		$variation_attrs = array();
+		if ( $variation_id && isset( $_POST['variation'] ) ) {
+			$decoded = json_decode( wp_unslash( $_POST['variation'] ), true ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- sanitised below.
+			if ( is_array( $decoded ) ) {
+				foreach ( $decoded as $k => $v ) {
+					$variation_attrs[ sanitize_text_field( $k ) ] = sanitize_text_field( $v );
+				}
+			}
 		}
 
 		// 7. Base price (the variation/product sell price) for idempotent add-on.
@@ -144,12 +155,12 @@ class WCPP_Ajax_Handler {
 			'non_returnable' => $non_returnable,
 		);
 
-		// 10. Add to cart.
+		// 10. Add to cart (pass variation attributes for reliable variation add).
 		$cart_item_key = WC()->cart->add_to_cart(
 			$product_id,
 			1,
 			$variation_id,
-			array(),
+			$variation_attrs,
 			array( 'wcpp_data' => $personalisation )
 		);
 

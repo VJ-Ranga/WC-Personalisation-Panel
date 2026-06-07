@@ -45,11 +45,31 @@
 		$( document ).on( 'click.wcppPanel', '#wcpp-open-panel', function () {
 			state.productId   = parseInt( $( this ).data( 'product-id' ), 10 ) || 0;
 			state.variationId = 0;
-			var $form = $( 'form.cart' );
-			if ( $form.length ) {
-				var v = parseInt( $form.find( 'input[name="variation_id"]' ).val(), 10 );
-				if ( v ) { state.variationId = v; }
+			state.variation   = {};
+
+			// Variable product: require a variation to be chosen first.
+			var $vform = $( 'form.variations_form' );
+			if ( $vform.length ) {
+				var vid = parseInt( $vform.find( 'input[name="variation_id"]' ).val(), 10 );
+				if ( !vid ) {
+					window.alert( wcpp.i18n.selectVariation || 'Please choose the product options (e.g. size) before personalising.' );
+					return; // Don't open the panel.
+				}
+				state.variationId = vid;
+				// Collect the chosen attributes (attribute_pa_size=…, attribute_color=…).
+				$vform.find( '[name^="attribute_"]' ).each( function () {
+					var n = $( this ).attr( 'name' );
+					if ( n ) { state.variation[ n ] = $( this ).val(); }
+				} );
+			} else {
+				// Simple product — read variation_id if a plugin set one.
+				var $form = $( 'form.cart' );
+				if ( $form.length ) {
+					var v = parseInt( $form.find( 'input[name="variation_id"]' ).val(), 10 );
+					if ( v ) { state.variationId = v; }
+				}
 			}
+
 			openPanel();
 		} );
 
@@ -526,6 +546,7 @@
 				nonce:        wcpp.nonce,
 				product_id:   state.productId,
 				variation_id: state.variationId,
+				variation:    JSON.stringify( state.variation || {} ),
 				set_id:       cfg.id,
 				placements:   JSON.stringify( buildPayload() )
 			},
