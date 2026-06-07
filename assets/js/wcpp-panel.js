@@ -157,36 +157,39 @@
 	}
 
 	// ─── Navigation ────────────────────────────────────────────────────────
+	// Footer "Continue": all steps are on screen, so validate them all here.
 	function goNext() {
 		if ( state.phase !== 'step' ) { return; }
-		var steps = state.current.placement.steps || [];
-		var step  = steps[ state.current.stepIndex ];
+		var steps   = state.current.placement.steps || [];
+		var missing = null;
+		$.each( steps, function ( i, step ) {
+			if ( missing === null && state.current.selections[ step.id ] === undefined ) {
+				missing = step.id;
+			}
+		} );
 
-		if ( step && state.current.selections[ step.id ] === undefined ) {
-			shake();
+		if ( missing !== null ) {
+			// Scroll to the first unanswered step + nudge it.
+			var $sec = $content.find( '.wcpp-step-section[data-step-id="' + missing + '"]' );
+			if ( $sec.length ) {
+				$content.animate( { scrollTop: $content.scrollTop() + $sec.position().top - 20 }, 250 );
+				$sec.addClass( 'wcpp-shake' );
+				setTimeout( function () { $sec.removeClass( 'wcpp-shake' ); }, 500 );
+			}
 			return;
 		}
-		if ( state.current.stepIndex < steps.length - 1 ) {
-			state.current.stepIndex++;
-			render();
-		} else {
-			finishPlacement();
-		}
+		finishPlacement();
 	}
 
 	function goBack() {
 		if ( state.phase === 'step' ) {
-			if ( state.current.stepIndex > 0 ) {
-				// Go back to the previous step.
-				state.current.stepIndex--;
-				render();
-			} else if ( state.current.editIndex !== undefined && state.current.editIndex !== null ) {
+			if ( state.current.editIndex !== undefined && state.current.editIndex !== null ) {
 				// Cancelling an edit → return to Review (original kept).
 				state.current = null;
 				state.phase   = 'review';
 				render();
 			} else {
-				// First step of a new placement → back to the placement picker.
+				// Back from a placement's steps → the placement picker.
 				state.current = null;
 				state.phase   = 'select';
 				render();
@@ -249,7 +252,7 @@
 		$content.empty();
 		updateChrome();
 		if ( state.phase === 'select' )      { renderSelect(); }
-		else if ( state.phase === 'step' )   { renderStep(); }
+		else if ( state.phase === 'step' )   { renderAllSteps(); }
 		else if ( state.phase === 'review' ) { renderReview(); }
 		$content.scrollTop( 0 );
 	}
@@ -268,7 +271,7 @@
 
 		// Footer buttons.
 		if ( state.phase === 'step' ) {
-			$next.show();
+			$next.show().text( i18n.continue || i18n.next || 'Continue' );
 			$addToBag.hide();
 		} else if ( state.phase === 'review' ) {
 			$next.hide();
@@ -282,13 +285,17 @@
 		updateProgress();
 	}
 
+	// Progress reflects how many of the placement's steps are answered.
 	function updateProgress() {
 		var styleAttr = $panel.attr( 'data-progress-style' );
-		var pct = 0, cur = 0, tot = 0;
+		var pct = 0, filled = 0, tot = 0;
 		if ( state.phase === 'step' && state.current ) {
-			tot = ( state.current.placement.steps || [] ).length;
-			cur = state.current.stepIndex;
-			pct = tot ? Math.round( ( cur / tot ) * 100 ) : 0;
+			var steps = state.current.placement.steps || [];
+			tot = steps.length;
+			$.each( steps, function ( i, s ) {
+				if ( state.current.selections[ s.id ] !== undefined ) { filled++; }
+			} );
+			pct = tot ? Math.round( ( filled / tot ) * 100 ) : 0;
 		} else if ( state.phase === 'review' ) {
 			pct = 100;
 		}
@@ -297,11 +304,11 @@
 		} else if ( styleAttr === 'dots' && state.phase === 'step' && state.current ) {
 			var $d = $( '#wcpp-progress-dots' ).empty();
 			for ( var i = 0; i < tot; i++ ) {
-				$d.append( $( '<span></span>' ).addClass( i <= cur ? 'wcpp-dot-active' : '' ) );
+				$d.append( $( '<span></span>' ).addClass( i < filled ? 'wcpp-dot-active' : '' ) );
 			}
 		} else if ( styleAttr === 'text' && state.phase === 'step' && state.current ) {
 			$( '#wcpp-progress-text' ).text(
-				( i18n.stepOf || 'Step %1$d of %2$d' ).replace( '%1$d', cur + 1 ).replace( '%2$d', tot )
+				( i18n.stepOf || 'Step %1$d of %2$d' ).replace( '%1$d', filled ).replace( '%2$d', tot )
 			);
 		} else if ( styleAttr === 'dots' ) {
 			$( '#wcpp-progress-dots' ).empty();
@@ -339,58 +346,68 @@
 		$content.append( $wrap );
 	}
 
-	// ─── Phase: step ────────────────────────────────────────────────────────
-	function renderStep() {
+	// ─── Phase: step — ALL steps of the placement stacked in one panel ──────
+	function renderAllSteps() {
 		var steps = state.current.placement.steps || [];
-		var step  = steps[ state.current.stepIndex ];
-		if ( !step ) { finishPlacement(); return; }
+		$.each( steps, function ( i, step ) {
+			$content.append(
+				$( '<div class="wcpp-step-divider"></div>' ).append(
+					$( '<span></span>' ).text( ( i18n.stepN || 'Step %d' ).replace( '%d', i + 1 ) )
+				)
+			);
+			var $section = $( '<div class="wcpp-step-section"></div>' ).attr( 'data-step-id', step.id );
+			renderStepBody( step, $section );
+			$content.append( $section );
+		} );
+	}
 
+	// Render one step's heading + input into a given container.
+	function renderStepBody( step, $into ) {
 		var currentSel = state.current.selections[ step.id ];
-		$content.append( $( '<h3 class="wcpp-step__heading"></h3>' ).text( step.name ) );
 
 		// ── Text-input step ─────────────────────────────────────────────────
 		if ( step.type === 'text' ) {
 			var maxChars = parseInt( step.max_chars, 10 ) || 0;
 			var curText  = ( currentSel && currentSel.type === 'text' ) ? currentSel.text : '';
 
+			var $head    = $( '<div class="wcpp-step__head"></div>' );
+			$head.append( $( '<h3 class="wcpp-step__heading"></h3>' ).text( step.name ) );
+			var $counter = $( '<span class="wcpp-text-counter"></span>' );
+			if ( maxChars > 0 ) { $head.append( $counter ); }
+			$into.append( $head );
+
 			var $field = $( '<input type="text" class="wcpp-text-input" />' )
 				.attr( 'placeholder', step.placeholder || '' )
 				.val( curText );
 			if ( maxChars > 0 ) { $field.attr( 'maxlength', maxChars ); }
 
-			var $counter = $( '<div class="wcpp-text-counter"></div>' );
 			var updateCounter = function () {
 				if ( maxChars > 0 ) { $counter.text( $field.val().length + ' / ' + maxChars ); }
 			};
-
 			$field.on( 'input.wcppPanel', function () {
 				var v = $field.val();
 				if ( v !== '' ) {
-					state.current.selections[ step.id ] = {
-						type:  'text',
-						text:  v,
-						name:  v,
-						price: parseFloat( step.price ) || 0
-					};
+					state.current.selections[ step.id ] = { type: 'text', text: v, name: v, price: parseFloat( step.price ) || 0 };
 				} else {
 					delete state.current.selections[ step.id ];
 				}
 				updateCounter();
+				updateProgress();
 			} );
 
-			$content.append( $( '<div class="wcpp-text-wrap"></div>' ).append( $field ).append( $counter ) );
-
+			$into.append( $( '<div class="wcpp-text-wrap"></div>' ).append( $field ) );
 			if ( parseInt( design.show_choice_price, 10 ) !== 0 && parseFloat( step.price ) > 0 ) {
-				$content.append( $( '<div class="wcpp-text-price"></div>' ).text( '+' + money( step.price ) ) );
+				$into.append( $( '<div class="wcpp-text-price"></div>' ).text( '+' + money( step.price ) ) );
 			}
 			updateCounter();
-			setTimeout( function () { $field.focus(); }, 50 );
 			return;
 		}
 
+		$into.append( $( '<h3 class="wcpp-step__heading"></h3>' ).text( step.name ) );
+
 		// ── Colour step (swatches) ──────────────────────────────────────────
 		if ( step.type === 'color' ) {
-			var $sw       = $( '<div class="wcpp-swatches"></div>' );
+			var $sw        = $( '<div class="wcpp-swatches"></div>' );
 			var showPriceC = parseInt( design.show_choice_price, 10 ) !== 0;
 			$.each( step.choices || [], function ( i, choice ) {
 				var $item = $( '<div class="wcpp-swatch" role="button" tabindex="0"></div>' );
@@ -400,11 +417,11 @@
 					$item.append( $( '<span class="wcpp-swatch__price"></span>' ).text( '+' + money( choice.price ) ) );
 				}
 				if ( currentSel && currentSel.id === choice.id ) { $item.addClass( 'wcpp-selected' ); }
-
 				var pickC = function () {
 					state.current.selections[ step.id ] = choice;
 					$sw.find( '.wcpp-swatch' ).removeClass( 'wcpp-selected' );
 					$item.addClass( 'wcpp-selected' );
+					updateProgress();
 				};
 				$item.on( 'click.wcppPanel', pickC );
 				$item.on( 'keydown.wcppPanel', function ( e ) {
@@ -412,10 +429,11 @@
 				} );
 				$sw.append( $item );
 			} );
-			$content.append( $sw );
+			$into.append( $sw );
 			return;
 		}
 
+		// ── Choice step (image cards) ───────────────────────────────────────
 		var layout = 'wcpp-options';
 		if ( design.card_layout === 'grid2' ) { layout += ' wcpp-options--grid2'; }
 		else if ( design.card_layout === 'grid3' ) { layout += ' wcpp-options--grid3'; }
@@ -440,11 +458,11 @@
 			$btn.append( $( '<span class="wcpp-option-tick">✓</span>' ) );
 
 			if ( currentSel && currentSel.id === choice.id ) { $btn.addClass( 'wcpp-selected' ); }
-
 			var pick = function () {
 				state.current.selections[ step.id ] = choice;
 				$wrap.find( '.wcpp-option-btn' ).removeClass( 'wcpp-selected' );
 				$btn.addClass( 'wcpp-selected' );
+				updateProgress();
 			};
 			$btn.on( 'click.wcppPanel', pick );
 			$btn.on( 'keydown.wcppPanel', function ( e ) {
@@ -452,7 +470,7 @@
 			} );
 			$wrap.append( $btn );
 		} );
-		$content.append( $wrap );
+		$into.append( $wrap );
 	}
 
 	// ─── Phase: review ──────────────────────────────────────────────────────

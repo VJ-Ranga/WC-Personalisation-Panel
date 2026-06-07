@@ -5,6 +5,17 @@
 
 ---
 
+## [0.7.0] — 2026-06
+### Changed
+- **Wizard flow**: after picking a placement, ALL its steps now show stacked in
+  one scrollable panel (Step 1, Step 2, Step 3…) like the OvH reference, instead
+  of one step at a time. Footer "Continue" validates all steps at once and
+  scrolls to the first unanswered one. Progress reflects steps filled.
+- Modernised admin builder + Panel Settings page UI.
+- Replaced browser alert() with a branded toast.
+### Fixed
+- Order screen no longer shows raw `_wcpp_*` meta (hidden + clean block in admin).
+
 ## [0.6.7] — 2026-06
 ### Added
 - **Colour step type**: pick a hex colour + name in the builder; front-end

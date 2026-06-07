@@ -215,10 +215,43 @@
 	font-size:      22px;
 	font-weight:    600;
 	line-height:    1.25;
-	margin:         0 0 22px;
+	margin:         0 0 18px;
 	color:          var(--wcpp-ink);
 	letter-spacing: -0.01em;
 }
+
+/* Stacked steps: "Step N" divider between sections */
+.wcpp-step-divider {
+	display:        flex;
+	align-items:    center;
+	gap:            14px;
+	margin:         26px 0 18px;
+	color:          var(--wcpp-progress);
+}
+.wcpp-step-divider:first-child { margin-top: 4px; }
+.wcpp-step-divider::before,
+.wcpp-step-divider::after {
+	content: ""; flex: 1; height: 1px; background: var(--wcpp-hair);
+}
+.wcpp-step-divider span {
+	font-size:      12px;
+	font-weight:    700;
+	letter-spacing: .08em;
+	text-transform: uppercase;
+	white-space:    nowrap;
+}
+.wcpp-step-section { animation: wcppFadeUp .4s var(--wcpp-ease) both; }
+
+/* Text step: heading row with counter on the right */
+.wcpp-step__head {
+	display:         flex;
+	align-items:     baseline;
+	justify-content: space-between;
+	gap:             10px;
+	margin-bottom:   14px;
+}
+.wcpp-step__head .wcpp-step__heading { margin: 0; }
+.wcpp-step__head .wcpp-text-counter { margin: 0; }
 
 /* Step fade-in */
 .wcpp-options, .wcpp-summary-list, .wcpp-step__heading {
@@ -301,7 +334,8 @@
 	60% { transform: translateX(-4px); } 80% { transform: translateX(4px); }
 }
 .wcpp-options.wcpp-shake,
-.wcpp-text-wrap.wcpp-shake { animation: wcppShake 0.45s ease; }
+.wcpp-text-wrap.wcpp-shake,
+.wcpp-step-section.wcpp-shake { animation: wcppShake 0.45s ease; }
 
 .wcpp-option-btn {
 	display:        flex;

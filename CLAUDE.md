@@ -120,15 +120,21 @@ woocommerce_order_item_meta_end      → admin order + customer order + EMAIL
 ---
 
 ## 6. FRONT-END WIZARD (assets/js/wcpp-panel.js)
-Phases: `select` (placement picker) → `step` (that placement's steps) → `review`.
+Phases: `select` (placement picker) → `step` → `review`.
 State: `state.completed[]` + `state.current`.
+- **`step` shows ALL of the placement's steps stacked in ONE scrollable panel**
+  (`renderAllSteps` → `renderStepBody` per step), each under a "Step N" divider.
+  Footer **Continue** (`goNext`) validates every step at once; if one is
+  unanswered it scrolls to + shakes that section. Then → review. (v0.7.0 replaced
+  the old one-step-at-a-time flow.)
 - Each placement added **once** (used ones hidden in the picker).
 - **Review**: each placement has **Edit** (re-opens with its values) + **Remove**.
-  (No back button in Review by design — Edit covers changes.)
-- Back arrow: step>0 → prev step; first step → picker; editing → review.
-- Step rendering: choice → image cards; color → swatches; text → input+counter.
-- Cards are `<div role="button" tabindex="0">` (NOT `<button>` — buttons clip
-  tall images). Keyboard: Enter/Space activate.
+  (No back button in Review — Edit covers changes.)
+- Back arrow: in `step` → picker (or review if editing).
+- Step body: choice → image cards; color → swatches; text → input+counter.
+- Progress reflects how many steps are filled (live).
+- Cards/swatches are `<div role="button" tabindex="0">` (NOT `<button>` — buttons
+  clip tall images). Keyboard: Enter/Space activate.
 - Prices formatted with WooCommerce currency (symbol/position/decimals).
 - ES5, IIFE, events namespaced `.wcppPanel`, scoped to `#wcpp-panel`.
 
