@@ -2,231 +2,241 @@
    WC Personalisation Panel — Admin Styles
 ────────────────────────────────────────────────────────────────── */
 
-/* ─── Builder intro ──────────────────────────────────────────────── */
+/* ===================================================================
+   MODERN BUILDER  (placements → steps → choices)
+   Tokens: accent #2563eb · ink #1e2327 · line #e3e6ea · soft #f6f7f9
+=================================================================== */
+
+#wcpp_options_builder .inside,
+#wcpp-builder { --wa: #2563eb; --wink: #1e2327; --wline: #e3e6ea; --wsoft: #f7f8fa; --wmuted: #6b7280; }
+
 .wcpp-builder-intro {
-	color:       #666;
-	font-style:  italic;
-	margin-bottom: 16px;
+	color:         #4b5563;
+	font-size:     13px;
+	line-height:   1.5;
+	font-style:    normal;
+	background:    #f7f8fa;
+	border:        1px solid #e3e6ea;
+	border-left:   3px solid var(--wa);
+	border-radius: 8px;
+	padding:       12px 14px;
+	margin:        2px 0 20px;
 }
 
-/* ─── Placement block (parent) ───────────────────────────────────── */
+/* ─── Placement (parent card) ────────────────────────────────────── */
 .wcpp-placement-block {
-	border:        2px solid #c3c4c7;
-	border-radius: 8px;
+	border:        1px solid #e3e6ea;
+	border-radius: 12px;
 	background:    #fff;
-	margin-bottom: 18px;
-	padding:       0 0 14px;
-	box-shadow:    0 1px 3px rgba(0,0,0,.06);
+	margin-bottom: 22px;
+	box-shadow:    0 1px 2px rgba(16,24,40,.05);
+	overflow:      hidden;
+	transition:    box-shadow .2s ease, border-color .2s ease;
 }
+.wcpp-placement-block:hover { box-shadow: 0 4px 14px rgba(16,24,40,.07); }
+
 .wcpp-placement-header {
 	display:       flex;
 	align-items:   center;
-	gap:           8px;
-	padding:       12px 14px;
-	background:    #1d2327;
-	border-radius: 6px 6px 0 0;
-	margin-bottom: 12px;
+	gap:           14px;
+	padding:       14px 16px;
+	background:    linear-gradient(180deg,#fbfcfe,#f4f6f9);
+	border-bottom: 1px solid #eceef2;
 }
-.wcpp-placement-icon { color: #72aee6; }
+.wcpp-placement-icon { display: none; }
 
-/* Placement image picker in the header */
+/* Placement image */
 .wcpp-placement-image {
-	display: flex; flex-direction: column; align-items: center; gap: 4px;
-	flex-shrink: 0;
+	position: relative; flex-shrink: 0;
+	display: flex; flex-direction: column; align-items: center; gap: 5px;
 }
-.wcpp-placement-image .wcpp-image-preview { width: 44px; height: 44px; }
+.wcpp-placement-image .wcpp-image-preview { width: 50px; height: 50px; }
 .wcpp-placement-image .wcpp-image-preview img {
-	width: 44px; height: 44px; object-fit: cover; border-radius: 4px; border: 1px solid #555; display: block;
+	width: 50px; height: 50px; object-fit: cover;
+	border-radius: 9px; border: 1px solid #d8dce1; display: block;
+	box-shadow: 0 1px 2px rgba(0,0,0,.06);
 }
-.wcpp-placement-select-image { font-size: 10px !important; padding: 2px 6px !important; min-height: 0 !important; }
+.wcpp-placement-select-image {
+	font-size: 10px !important; padding: 3px 8px !important;
+	min-height: 0 !important; height: auto !important; line-height: 1.6 !important;
+	border-radius: 6px !important; color: var(--wa) !important; border-color: #c7d2fe !important;
+}
 
-/* Step type selector + text settings */
-.wcpp-step-type { margin-right: 6px; }
-.wcpp-text-settings { display: flex; flex-wrap: wrap; gap: 14px; padding: 10px 0 4px; }
-.wcpp-text-settings label { display: flex; flex-direction: column; font-size: 12px; font-weight: 600; gap: 4px; color: #50575e; }
-.wcpp-text-settings input { font-weight: 400; }
-
-/* Choice media: show image picker OR colour picker based on step type */
-.wcpp-step-block[data-type="color"] .wcpp-choice-media--image { display: none; }
-.wcpp-step-block:not([data-type="color"]) .wcpp-choice-media--color { display: none; }
-.wcpp-choice-color-wrap {
-	display: flex; align-items: center; justify-content: center;
-	min-width: 80px;
-}
-.wcpp-choice-color {
-	width: 48px; height: 48px; padding: 0; border: 1px solid #ccc;
-	border-radius: 6px; cursor: pointer; background: none;
-}
 .wcpp-placement-name-input {
-	flex:        1;
-	font-size:   15px !important;
-	font-weight: 700 !important;
-	padding:     7px 10px !important;
-	background:  #fff !important;
+	flex:          1;
+	font-size:     17px !important;
+	font-weight:   700 !important;
+	color:         var(--wink) !important;
+	padding:       9px 12px !important;
+	border:        1px solid #e3e6ea !important;
+	border-radius: 8px !important;
+	background:    #fff !important;
+	box-shadow:    none !important;
 }
-.wcpp-duplicate-placement { display: inline-flex !important; align-items: center; gap: 4px; }
+.wcpp-placement-name-input:focus { border-color: var(--wa) !important; box-shadow: 0 0 0 3px rgba(37,99,235,.12) !important; }
+
+/* Header action buttons */
+.wcpp-duplicate-placement {
+	display: inline-flex !important; align-items: center; gap: 5px;
+	border-radius: 8px !important; border-color: #c7d2fe !important; color: var(--wa) !important;
+	background: #eef2ff !important; box-shadow: none !important; font-weight: 600 !important;
+}
+.wcpp-duplicate-placement:hover { background: #e0e7ff !important; }
 .wcpp-duplicate-placement .dashicons,
-.wcpp-delete-placement .dashicons { font-size: 16px; height: 16px; width: 16px; }
-.wcpp-delete-placement { color: #d63638 !important; border-color: #d63638 !important; }
+.wcpp-delete-placement .dashicons,
+.wcpp-delete-option .dashicons { font-size: 16px; height: 16px; width: 16px; line-height: 1; }
+.wcpp-delete-placement {
+	display: inline-flex !important; align-items: center; justify-content: center;
+	color: #b42318 !important; border-color: #fecdca !important; background: #fef3f2 !important;
+	border-radius: 8px !important; box-shadow: none !important;
+}
+.wcpp-delete-placement:hover { background: #b42318 !important; color: #fff !important; border-color: #b42318 !important; }
 
-.wcpp-steps-container { padding: 0 14px; }
-.wcpp-add-step-btn { margin: 0 14px !important; }
+.wcpp-steps-container { padding: 16px 16px 4px; }
+.wcpp-add-step-btn {
+	margin: 0 16px 16px !important;
+	border-radius: 8px !important; border-style: dashed !important;
+	border-color: #cbd5e1 !important; color: #475569 !important;
+	background: #fff !important; box-shadow: none !important; font-weight: 600 !important;
+}
+.wcpp-add-step-btn:hover { border-color: var(--wa) !important; color: var(--wa) !important; background: #f8faff !important; }
 
-/* Step block nested inside placement */
-.wcpp-placement-block .wcpp-option-block { margin-bottom: 12px; }
-
-
-/* ─── Option block ───────────────────────────────────────────────── */
+/* ─── Step block ─────────────────────────────────────────────────── */
 .wcpp-option-block {
-	background:    #f9f9f9;
-	border:        1px solid #ddd;
-	border-radius: 6px;
+	background:    #fff;
+	border:        1px solid #e7eaee;
+	border-radius: 10px;
 	margin-bottom: 14px;
 	overflow:      hidden;
 }
-
-/* ─── Option header ──────────────────────────────────────────────── */
 .wcpp-option-header {
-	display:         flex;
-	align-items:     center;
-	gap:             10px;
-	background:      #fff;
-	border-bottom:   1px solid #e5e5e5;
-	padding:         10px 14px;
+	display:       flex;
+	align-items:   center;
+	gap:           12px;
+	background:    #fafbfc;
+	border-bottom: 1px solid #eef1f4;
+	padding:       11px 14px;
 }
 .wcpp-option-label {
-	font-weight:  700;
-	font-size:    12px;
-	color:        #2271b1;
-	white-space:  nowrap;
-	min-width:    48px;
+	font-weight:    700;
+	font-size:      10px;
+	color:          var(--wa);
+	white-space:    nowrap;
 	text-transform: uppercase;
-	letter-spacing: 0.5px;
+	letter-spacing: 0.8px;
+	background:     #eef2ff;
+	padding:        4px 9px;
+	border-radius:  20px;
 }
 .wcpp-option-name-input {
-	flex:        1;
-	font-size:   14px !important;
-	font-weight: 600 !important;
-	padding:     6px 10px !important;
+	flex:          1;
+	font-size:     14px !important;
+	font-weight:   600 !important;
+	padding:       8px 11px !important;
+	border:        1px solid #e3e6ea !important;
+	border-radius: 7px !important;
+	box-shadow:    none !important;
+}
+.wcpp-option-name-input:focus { border-color: var(--wa) !important; box-shadow: 0 0 0 3px rgba(37,99,235,.12) !important; }
+.wcpp-step-type {
+	border-radius: 7px !important; border-color: #d8dce1 !important;
+	min-height: 34px; font-size: 13px;
 }
 .wcpp-delete-option {
-	color:        #b32d2e !important;
-	border-color: #b32d2e !important;
-	flex-shrink:  0;
+	display: inline-flex !important; align-items: center; justify-content: center;
+	color: #98a2b3 !important; border-color: #e3e6ea !important; background: #fff !important;
+	border-radius: 7px !important; box-shadow: none !important; flex-shrink: 0;
 }
-.wcpp-delete-option:hover {
-	background: #b32d2e !important;
-	color:      #fff !important;
-}
+.wcpp-delete-option:hover { color: #fff !important; background: #b42318 !important; border-color: #b42318 !important; }
 
-/* ─── Choices list ───────────────────────────────────────────────── */
-.wcpp-choices-list {
-	padding: 10px 14px;
+/* Text-step settings */
+.wcpp-step-text { padding: 14px; }
+.wcpp-text-settings { display: flex; flex-wrap: wrap; gap: 16px; }
+.wcpp-text-settings label {
+	display: flex; flex-direction: column; gap: 5px;
+	font-size: 11px; font-weight: 700; color: var(--wmuted);
+	text-transform: uppercase; letter-spacing: .4px;
 }
+.wcpp-text-settings input { font-weight: 400; border-radius: 7px !important; }
+.wcpp-step-text .description { margin-top: 12px; color: var(--wmuted); }
 
-/* ─── Choice row ─────────────────────────────────────────────────── */
+/* ─── Choices ────────────────────────────────────────────────────── */
+.wcpp-step-choices { padding: 14px; }
+.wcpp-choices-list { padding: 0; }
 .wcpp-choice-row {
-	display:         flex;
-	align-items:     flex-end;
-	gap:             12px;
-	background:      #fff;
-	border:          1px solid #e5e5e5;
-	border-radius:   4px;
-	padding:         10px 12px;
-	margin-bottom:   8px;
+	display:       flex;
+	align-items:   flex-end;
+	gap:           14px;
+	background:    #fff;
+	border:        1px solid #e7eaee;
+	border-radius: 9px;
+	padding:       12px;
+	margin-bottom: 10px;
+	transition:    border-color .15s ease;
 }
+.wcpp-choice-row:hover { border-color: #cdd3da; }
 .wcpp-choice-row:last-child { margin-bottom: 0; }
 
-/* ─── Choice image ───────────────────────────────────────────────── */
+/* choice media: image OR colour by step type */
+.wcpp-step-block[data-type="color"] .wcpp-choice-media--image { display: none; }
+.wcpp-step-block:not([data-type="color"]) .wcpp-choice-media--color { display: none; }
+
 .wcpp-choice-image-wrap {
-	display:        flex;
-	flex-direction: column;
-	align-items:    center;
-	gap:            6px;
-	min-width:      80px;
+	display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 84px;
 }
-.wcpp-image-preview {
-	position: relative;
-	width:    72px;
-	height:   72px;
-}
+.wcpp-image-preview { position: relative; width: 72px; height: 72px; }
 .wcpp-image-preview img {
-	width:         72px;
-	height:        72px;
-	object-fit:    cover;
-	border-radius: 4px;
-	border:        1px solid #ddd;
-	display:       block;
+	width: 72px; height: 72px; object-fit: cover;
+	border-radius: 9px; border: 1px solid #d8dce1; display: block;
 }
 .wcpp-remove-image {
-	position:      absolute;
-	top:           -6px;
-	right:         -6px;
-	background:    #b32d2e;
-	color:         #fff;
-	border:        none;
-	border-radius: 50%;
-	width:         20px;
-	height:        20px;
-	font-size:     12px;
-	line-height:   20px;
-	text-align:    center;
-	cursor:        pointer;
-	padding:       0;
+	position: absolute; top: -7px; right: -7px;
+	background: #b42318; color: #fff; border: 2px solid #fff;
+	border-radius: 50%; width: 22px; height: 22px;
+	font-size: 11px; line-height: 18px; text-align: center; cursor: pointer; padding: 0;
+	box-shadow: 0 1px 3px rgba(0,0,0,.2);
 }
 .wcpp-select-image {
-	font-size:  11px !important;
-	padding:    3px 6px !important;
-	white-space: nowrap;
+	font-size: 11px !important; padding: 4px 8px !important; white-space: nowrap;
+	border-radius: 6px !important; color: var(--wa) !important; border-color: #c7d2fe !important;
 }
 
-/* ─── Choice fields ──────────────────────────────────────────────── */
-.wcpp-choice-field {
-	display:        flex;
-	flex-direction: column;
-	gap:            4px;
-	flex:           1;
+.wcpp-choice-color-wrap { display: flex; align-items: flex-end; min-width: 84px; justify-content: center; }
+.wcpp-choice-color {
+	width: 60px; height: 60px; padding: 0; border: 1px solid #d8dce1;
+	border-radius: 10px; cursor: pointer; background: none;
+	box-shadow: 0 1px 2px rgba(0,0,0,.06);
 }
+
+.wcpp-choice-field { display: flex; flex-direction: column; gap: 5px; flex: 1; }
 .wcpp-choice-field label {
-	font-size:   11px;
-	font-weight: 700;
-	color:       #888;
-	text-transform: uppercase;
-	letter-spacing: 0.4px;
+	font-size: 10px; font-weight: 700; color: var(--wmuted);
+	text-transform: uppercase; letter-spacing: .5px;
 }
-.wcpp-choice-field--price {
-	max-width: 90px;
-	flex:      0 0 90px;
-}
+.wcpp-choice-field input { border-radius: 7px !important; }
+.wcpp-choice-field--price { max-width: 110px; flex: 0 0 110px; }
 
-/* ─── Delete choice ──────────────────────────────────────────────── */
 .wcpp-delete-choice {
-	color:        #999 !important;
-	border-color: #ddd !important;
-	align-self:   center;
-	flex-shrink:  0;
+	display: inline-flex !important; align-items: center; justify-content: center;
+	color: #98a2b3 !important; border-color: #e7eaee !important; background: #fff !important;
+	border-radius: 7px !important; box-shadow: none !important; align-self: center; flex-shrink: 0;
 }
-.wcpp-delete-choice:hover {
-	color:        #b32d2e !important;
-	border-color: #b32d2e !important;
-}
+.wcpp-delete-choice:hover { color: #fff !important; background: #b42318 !important; border-color: #b42318 !important; }
 
-/* ─── Add choice / add option buttons ───────────────────────────── */
 .wcpp-add-choice-btn {
-	margin: 0 14px 12px !important;
+	margin: 12px 0 0 !important;
+	border-radius: 8px !important; border-style: dashed !important; border-color: #cbd5e1 !important;
+	color: #475569 !important; background: #fff !important; box-shadow: none !important; font-weight: 600 !important;
 }
-#wcpp-add-option.wcpp-add-option-btn {
-	margin-top: 8px;
-}
+.wcpp-add-choice-btn:hover { border-color: var(--wa) !important; color: var(--wa) !important; background: #f8faff !important; }
 
-/* ─── Empty state ────────────────────────────────────────────────── */
-#wcpp-options-container:empty::before {
-	content:    "No options yet. Click \"+ Create Option\" to add your first step.";
-	display:    block;
-	color:      #999;
-	font-style: italic;
-	font-size:  13px;
-	padding:    10px 0;
+/* ─── Add placement + empty state ────────────────────────────────── */
+#wcpp-add-placement.wcpp-add-placement-btn {
+	border-radius: 9px !important; font-weight: 600 !important; padding: 6px 18px !important; height: auto !important;
+}
+#wcpp-placements-container:empty::before {
+	content: "No placements yet. Click \"+ Add Placement\" to start (e.g. Front, Back).";
+	display: block; color: #98a2b3; font-style: italic; font-size: 13px; padding: 8px 0 16px;
 }
 
 /* ─── Category assignment ────────────────────────────────────────── */
