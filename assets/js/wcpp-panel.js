@@ -294,7 +294,7 @@
 
 		var $wrap = $( '<div class="wcpp-select-list"></div>' );
 		$.each( avail, function ( i, pl ) {
-			var $card = $( '<button type="button" class="wcpp-select-card"></button>' );
+			var $card = $( '<div class="wcpp-select-card" role="button" tabindex="0"></div>' );
 
 			if ( pl.image_url ) {
 				$card.append( $( '<div class="wcpp-select-card__img"></div>' ).append(
@@ -308,6 +308,9 @@
 			$card.append( $foot );
 
 			$card.on( 'click.wcppPanel', function () { startPlacement( pl ); } );
+			$card.on( 'keydown.wcppPanel', function ( e ) {
+				if ( e.key === 'Enter' || e.key === ' ' ) { e.preventDefault(); startPlacement( pl ); }
+			} );
 			$wrap.append( $card );
 		} );
 		$content.append( $wrap );
@@ -371,7 +374,7 @@
 		var imgSize   = parseInt( design.card_img_size, 10 );
 
 		$.each( step.choices || [], function ( i, choice ) {
-			var $btn = $( '<button type="button" class="wcpp-option-btn"></button>' );
+			var $btn = $( '<div class="wcpp-option-btn" role="button" tabindex="0"></div>' );
 			if ( choice.image_url && imgSize > 0 ) {
 				$btn.append( $( '<div class="wcpp-option-img-wrap"></div>' ).append(
 					$( '<img class="wcpp-option-img" />' ).attr( 'src', choice.image_url ).attr( 'alt', choice.name )
@@ -387,10 +390,14 @@
 
 			if ( currentSel && currentSel.id === choice.id ) { $btn.addClass( 'wcpp-selected' ); }
 
-			$btn.on( 'click.wcppPanel', function () {
+			var pick = function () {
 				state.current.selections[ step.id ] = choice;
 				$wrap.find( '.wcpp-option-btn' ).removeClass( 'wcpp-selected' );
 				$btn.addClass( 'wcpp-selected' );
+			};
+			$btn.on( 'click.wcppPanel', pick );
+			$btn.on( 'keydown.wcppPanel', function ( e ) {
+				if ( e.key === 'Enter' || e.key === ' ' ) { e.preventDefault(); pick(); }
 			} );
 			$wrap.append( $btn );
 		} );
