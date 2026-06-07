@@ -1,224 +1,84 @@
 # FOLDER-STRUCTURE.md — WC Personalisation Panel
-> Every file and folder explained. When adding a new file, add it here too.
-> If a file's purpose isn't clear from this doc, the doc is wrong — update it.
-
----
+> Every file explained. Reflects v0.6.0. Update this when adding/removing files.
 
 ```
 wc-personalisation-panel/
 │
-│   ── ROOT FILES ──────────────────────────────────────────────────────────
+├── wc-personalisation-panel.php   Bootstrap: header, constants, WC active-check
+│                                   on plugins_loaded, top-level HPOS declaration,
+│                                   loads + boots all classes, plugin action links.
+├── uninstall.php                  Deletes sets + options ONLY if behaviour
+│                                   "remove_on_uninstall" is on. Keeps order meta.
 │
-├── wc-personalisation-panel.php
-│       Plugin bootstrap. WordPress reads this for the plugin header.
-│       Defines constants. Checks WooCommerce is active. Loads autoloader.
-│       Hooks: plugins_loaded (priority 10).
-│       Nothing else should be bootstrapped from here — delegate to classes.
-│
-├── CLAUDE.md
-│       Standing rules for AI-assisted development. Read every session.
-│       Contains: architecture rules, security rules, non-negotiables, key hooks.
-│
-├── BUILD-PLAN.md
-│       Phase-by-phase task list with checkboxes. The living work log.
-│       Update status as phases complete.
-│
-├── FOLDER-STRUCTURE.md
-│       This file. Annotated map of every file.
-│
-├── LOCAL-DEV.md
-│       Local by Flywheel environment details. Paths, credentials, PHP config.
-│       Dev commands, known issues, test accounts.
-│
-├── DECISIONS.md
-│       Log of architectural decisions and why they were made.
-│       Prevents re-debating settled choices in future sessions.
-│
-├── TESTING.md
-│       Manual test checklist. Step-by-step what to click and what to verify.
-│       One section per phase. Run before marking any phase done.
-│
-├── CHANGELOG.md
-│       Version history. Updated before every release.
-│       Format: Keep a Changelog (keepachangelog.com).
-│
-├── readme.txt
-│       WordPress.org standard plugin readme.
-│       Required for publishing to WordPress.org.
-│       Contains: description, installation, FAQ, changelog, screenshots list.
-│
-├── PUBLISHING.md
-│       Step-by-step guide to deliver the plugin to a client or publish to WP.org.
-│       Includes: pre-publish checklist, zip packaging, SVN instructions.
-│
-├── phpcs.xml
-│       PHP CodeSniffer config. Run: phpcs . from plugin root.
-│       Sets WordPress Coding Standards, wcpp prefix rules, text domain.
-│
-├── wp-cli.yml
-│       WP-CLI config. Points to Local by Flywheel WP installation.
-│       Lets you run `wp plugin activate wc-personalisation-panel` from here.
-│
-├── .editorconfig
-│       Code editor formatting rules. Tabs for PHP/CSS/JS (WordPress standard).
-│       Keeps formatting consistent across VS Code, PhpStorm, etc.
-│
-│   ── INCLUDES (PHP Classes) ────────────────────────────────────────────
+├── CLAUDE.md                      Standing rules + real architecture (read first).
+├── BUILD-PLAN.md                  Phase/task log.
+├── FOLDER-STRUCTURE.md            This file.
+├── DECISIONS.md                   Architectural decisions + why.
+├── TESTING.md                     Manual test checklist.
+├── CHANGELOG.md                   Version history.
+├── LOCAL-DEV.md                   Local by Flywheel env reference.
+├── PUBLISHING.md                  Delivery / WP.org publishing guide.
+├── readme.txt                     WordPress.org plugin readme.
+├── phpcs.xml · wp-cli.yml · .editorconfig · .gitattributes · .gitignore
 │
 ├── includes/
-│   │
-│   ├── class-settings-store.php
-│   │       THE ONLY place settings are read and merged.
-│   │       Public API: WCPP_Settings_Store::get( $product_id ) → array
-│   │       Reads: wcpp_global_settings option + _wcpp_product_settings post meta.
-│   │       Per-product values override global defaults.
-│   │       Everything else calls this — never read options/meta directly.
-│   │
-│   ├── class-cart-handler.php
-│   │       All WooCommerce cart hooks.
-│   │       Hooks owned:
-│   │         - woocommerce_before_add_to_cart_button (render button)
-│   │         - woocommerce_add_cart_item_data (attach data + unique_key)
-│   │         - woocommerce_get_item_data (display in cart/mini-cart)
-│   │
-│   ├── class-order-handler.php
-│   │       All WooCommerce order/checkout hooks.
-│   │       Hooks owned:
-│   │         - woocommerce_checkout_create_order_line_item (persist meta to order)
-│   │         - woocommerce_order_item_meta_end (display in admin + customer order)
-│   │
-│   ├── class-ajax-handler.php
-│   │       All AJAX endpoints. Both logged-in and guest versions.
-│   │       Endpoints:
-│   │         - wp_ajax_wcpp_add_to_cart
-│   │         - wp_ajax_nopriv_wcpp_add_to_cart
-│   │         - wp_ajax_wcpp_get_price
-│   │         - wp_ajax_nopriv_wcpp_get_price
-│   │       Every handler: validate nonce → sanitise → whitelist → respond.
-│   │
-│   ├── class-admin-settings.php
-│   │       Global settings page under WooCommerce admin menu.
-│   │       Hooks owned: admin_menu, admin_init.
-│   │       Capability required: manage_woocommerce.
-│   │
-│   ├── class-product-meta.php
-│   │       Per-product meta box on the product edit screen.
-│   │       Hooks owned: add_meta_boxes, save_post_product.
-│   │       Capability required: edit_product.
-│   │
-│   ├── class-price-calculator.php
-│   │       Server-side price calculation. The one source of truth for pricing.
-│   │       Public API: WCPP_Price_Calculator::calculate( $product_id, $data ) → float
-│   │       Supports: flat fee, per-character fee, or both combined.
-│   │       Hook owned: woocommerce_before_calculate_totals (apply price to cart).
-│   │
-│   ├── class-email-handler.php
-│   │       Personalisation output in WooCommerce order emails.
-│   │       Hook owned: woocommerce_email_order_meta.
-│   │
-│   └── class-activator.php
-│           Plugin activation and deactivation callbacks.
-│           Activation: set default options if not set, flush rewrite rules.
-│           Deactivation: flush rewrite rules (do NOT delete data on deactivate).
-│           Uninstall: handled in uninstall.php (deletes data only on uninstall).
-│
-│   ── ASSETS ────────────────────────────────────────────────────────────
+│   ├── class-settings-store.php     SINGLE source of truth. get()/get_set()
+│   │                                read placements (+legacy fallback), design,
+│   │                                behaviour, set_price. resolve_step() validates
+│   │                                a choice OR text submission server-side.
+│   │                                get_set_id() resolves product→apply_all→category.
+│   ├── class-admin-menu.php         Top-level "Personalisation" menu + Settings
+│   │                                submenu; removes the phantom duplicate item.
+│   ├── class-settings-page.php      Global Panel Settings page (Design + Behaviour
+│   │                                tabs). sanitize() merges per-tab (no wipe);
+│   │                                font whitelist; capability filter.
+│   ├── class-personalisation-cpt.php  The CPT + builder UI: placements (image,
+│   │                                duplicate, delete) → steps (Choice|Text type)
+│   │                                → choices (image/name/price). Category box,
+│   │                                Pricing box (flat fee), Button-text box.
+│   │                                save_placements() + admin list columns.
+│   ├── class-cart-handler.php       Trigger button (placement-aware hooks),
+│   │                                panel render, asset enqueue (design tokens
+│   │                                as inline CSS vars, currency, trimmed config),
+│   │                                add_cart_item_data (+unique key), cart display.
+│   ├── class-price-calculator.php   apply_prices() = base_price + add-on
+│   │                                (idempotent). calculate() sums selections.
+│   ├── class-ajax-handler.php       wcpp_add_to_cart (+nopriv): validate each
+│   │                                placement/step by ID via resolve_step,
+│   │                                server-derive prices, add to cart.
+│   ├── class-order-handler.php      Persist hidden _wcpp_* order meta;
+│   │                                display per-placement in admin/order/email.
+│   ├── class-email-handler.php      Reserved seam (order_item_meta_end covers email).
+│   ├── class-product-meta.php       Per-product set selector (override category).
+│   └── class-activator.php          Activation: seed wcpp_settings defaults.
 │
 ├── assets/
-│   │
 │   ├── css/
-│   │   ├── panel-default.css
-│   │   │       Main drawer styles. Slide-in animation. Step layout.
-│   │   │       Progress bar. Font picker. Colour swatches. Mobile: full-width below breakpoint.
-│   │   │       NO theme-specific selectors. Scoped to #wcpp-panel.
-│   │   │
-│   │   └── admin.css
-│   │           Admin meta box and settings page styles only.
-│   │           Loaded on admin screens only.
-│   │
+│   │   ├── panel-default.css     Front-end. Design CSS custom properties,
+│   │   │                         placement picker cards (.wcpp-select-card),
+│   │   │                         choice grid/list, text-input step, review,
+│   │   │                         mobile full-width. Luxury/editorial styling.
+│   │   └── admin.css             Builder (placements/steps/choices), settings,
+│   │                             order-meta display.
 │   └── js/
-│       ├── wcpp-panel.js
-│       │       Wizard UI. All front-end interactivity.
-│       │       IIFE wrapped. ES5. Reads window.wcpp (localised from PHP).
-│       │       State machine: currentStep, selections object.
-│       │       Events namespaced: .wcppPanel
-│       │       AJAX calls to wcpp_add_to_cart and wcpp_get_price.
-│       │       No console.log in production. No generic WC/theme selectors.
-│       │
-│       └── wcpp-admin.js
-│               Admin JS: meta box dynamic fields, settings page enhancements.
-│               Loaded on admin screens only.
+│       ├── wcpp-panel.js         Front-end wizard (select→step→review), text
+│       │                         steps, edit/remove, currency formatting.
+│       ├── wcpp-admin.js         Builder: add/duplicate/delete placements,
+│       │                         add steps (choice/text toggle), choices,
+│       │                         shared image picker (choices + placements).
+│       └── wcpp-settings.js      Colour pickers on the settings page.
 │
-│   ── TEMPLATES ─────────────────────────────────────────────────────────
+├── templates/                   Theme-overridable (yourtheme/wcpp/…)
+│   ├── button.php               Trigger button.
+│   └── panel.php                Drawer shell (header, progress, content, footer).
 │
-├── templates/
-│   │       Theme-overridable templates. Standard WooCommerce override pattern.
-│   │       Theme devs copy to: yourtheme/wcpp/panel.php (or button.php)
-│   │
-│   ├── panel.php
-│   │       The drawer HTML. Hidden by default (CSS transform).
-│   │       Contains: drawer wrapper, step containers (empty, filled by JS), close button.
-│   │       JS reads this structure — do not change IDs/classes without updating JS.
-│   │
-│   └── button.php
-│           The "Add Personalisation" button HTML.
-│           Auto-injected via woocommerce_before_add_to_cart_button hook.
-│           Also used by shortcode and template tag.
-│
-│   ── LANGUAGES ─────────────────────────────────────────────────────────
-│
-├── languages/
-│   └── wcpp.pot
-│           Translation template. Generated in Phase 8.
-│           Command: wp i18n make-pot . languages/wcpp.pot --domain=wcpp
-│           All strings use text domain: wcpp
-│
-│   ── ELEMENTOR (Phase 7, guarded) ──────────────────────────────────────
-│
-└── elementor/
-    │       Loads ONLY IF: did_action('elementor/loaded') AND elementor toggle is on.
-    │       Core plugin must work 100% with this entire folder absent/ignored.
-    │
-    ├── class-elementor-module.php
-    │       Elementor module bootstrap. Registers the widget. Declares compatibility.
-    │
-    └── widgets/
-        └── class-widget-panel.php
-                Elementor widget. Wraps templates/button.php — no duplicated logic.
-                Appears in Elementor editor panel under "WooCommerce" category.
+└── languages/  wcpp.pot (generated in hardening phase)
 ```
 
----
+## Naming
+- Classes `WCPP_Pascal_Case` · functions `wcpp_snake` · constants `WCPP_UPPER`
+- DB option `wcpp_settings` · post meta `_wcpp_*` · order item meta `_wcpp_*`
+- IDs: placement `pl_*`, step `st_*`, choice `ch_*`
+- JS classes `.wcpp-*` · events `.wcppPanel`
 
-## File Naming Conventions
-
-| Type | Convention | Example |
-|---|---|---|
-| PHP classes | `class-` + kebab-case | `class-settings-store.php` |
-| PHP functions files | kebab-case | `helpers.php` |
-| CSS files | kebab-case | `panel-default.css` |
-| JS files | `wcpp-` prefix + kebab-case | `wcpp-panel.js` |
-| Templates | kebab-case | `panel.php`, `button.php` |
-| Doc files | UPPERCASE | `CLAUDE.md`, `BUILD-PLAN.md` |
-
----
-
-## Class Naming Conventions
-
-| Element | Convention | Example |
-|---|---|---|
-| PHP class | `WCPP_` + PascalCase | `WCPP_Settings_Store` |
-| PHP function | `wcpp_` + snake_case | `wcpp_render_button()` |
-| PHP constant | `WCPP_` + SCREAMING_SNAKE | `WCPP_VERSION` |
-| JS variable | camelCase | `currentStep`, `wcppPanel` |
-| CSS class | `wcpp-` + kebab-case | `.wcpp-panel`, `.wcpp-step` |
-| CSS id | `wcpp-` + kebab-case | `#wcpp-panel`, `#wcpp-open` |
-| DB option | `wcpp_` + snake_case | `wcpp_global_settings` |
-| Post meta key | `_wcpp_` + snake_case | `_wcpp_product_settings` |
-| Order item meta | `wcpp_` + snake_case | `wcpp_location`, `wcpp_text` |
-| AJAX action | `wcpp_` + snake_case | `wcpp_add_to_cart` |
-| Nonce action | `wcpp_` + snake_case | `wcpp_nonce` |
-
----
-
-*Last updated: June 2026*
+*Updated: v0.6.0*

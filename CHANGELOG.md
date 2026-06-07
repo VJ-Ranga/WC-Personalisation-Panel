@@ -5,17 +5,40 @@
 
 ---
 
-## [Unreleased]
+## [0.6.0] — 2026-06
 
 ### Added
-- Plugin scaffold with WooCommerce safety check (Phase 0)
-- Full documentation set: CLAUDE.md, BUILD-PLAN.md, FOLDER-STRUCTURE.md, DECISIONS.md, TESTING.md, LOCAL-DEV.md, PUBLISHING.md
+- **Personalisation Sets** as a CPT under a top-level "Personalisation" menu.
+- **Placements → Steps → Choices** model: each placement (Front/Back…) owns
+  its own steps, so choices can differ per placement (e.g. 2 colours front,
+  3 back). Solves front/back with different text + different options.
+- **Text-input step type** (monogram/name/initials) with placeholder, max
+  characters and optional price; validated + length-capped server-side.
+- **Placement images** + a dedicated full-width image-card picker (OvH style).
+- **Duplicate placement** button in the builder (build Front → duplicate → Back).
+- **Flat set price** (one-time fee per set) on top of per-choice prices.
+- **Add another placement** + **Edit / Remove** in the Review screen
+  (each placement picked once per order).
+- Global **Panel Settings** page (Design + Behaviour tabs): full control of
+  button, drawer, header, progress, cards, footer, pricing display.
+- Button placement options incl. default "under all buttons"
+  (after Add to Cart & Buy Now).
+- Category-level + per-product set assignment.
+- WooCommerce currency formatting in the panel; HPOS compatibility; uninstall.php.
 
 ### Changed
-- —
+- Settings split: global design lives in Panel Settings (not per set).
+- Default card layout = 3-column grid; placement picker uses image cards.
+- Order/email meta hidden (underscore keys) + rendered as a clean block.
 
 ### Fixed
-- —
+- Activation fatal (activator loaded before hooks).
+- Settings tab save no longer wipes the other tab.
+- Price never compounds (idempotent base + add-on).
+- Placement card image clipping (fixed-height box + object-fit contain).
+- Back button returns to the correct previous screen on the first step.
+- Site-visibility access regression (reverted capability/HPOS changes to
+  WC-standard product capability type).
 
 ---
 
