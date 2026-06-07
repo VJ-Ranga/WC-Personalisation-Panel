@@ -21,7 +21,54 @@ class WCPP_Order_Handler {
 	 */
 	public static function init() {
 		add_action( 'woocommerce_checkout_create_order_line_item', array( __CLASS__, 'persist_to_order' ), 10, 4 );
-		add_action( 'woocommerce_order_item_meta_end',             array( __CLASS__, 'display_in_order' ), 10, 3 );
+
+		// Customer-facing order page + emails. Hook passes ( $item_id, $item, $order ).
+		add_action( 'woocommerce_order_item_meta_end', array( __CLASS__, 'display_meta_end' ), 10, 3 );
+
+		// Admin order editor: hide the raw _wcpp_* meta and render a clean block.
+		add_filter( 'woocommerce_hidden_order_itemmeta', array( __CLASS__, 'hide_admin_meta' ) );
+		add_action( 'woocommerce_after_order_itemmeta',  array( __CLASS__, 'display_admin' ), 10, 3 );
+	}
+
+	/**
+	 * Keys to hide from the admin order-item meta table.
+	 *
+	 * @param array $keys Hidden meta keys.
+	 * @return array
+	 */
+	public static function hide_admin_meta( $keys ) {
+		return array_merge(
+			(array) $keys,
+			array( '_wcpp_set_name', '_wcpp_placements', '_wcpp_set_fee', '_wcpp_total_price', '_wcpp_non_returnable' )
+		);
+	}
+
+	/**
+	 * Customer order page + emails. Hook: woocommerce_order_item_meta_end.
+	 *
+	 * @param int           $item_id Item ID.
+	 * @param WC_Order_Item $item    Order item.
+	 * @param WC_Order      $order   Order.
+	 * @return void
+	 */
+	public static function display_meta_end( $item_id, $item, $order ) {
+		if ( is_object( $item ) && method_exists( $item, 'get_meta' ) ) {
+			self::render_personalisation( $item );
+		}
+	}
+
+	/**
+	 * Admin order editor. Hook: woocommerce_after_order_itemmeta.
+	 *
+	 * @param int           $item_id Item ID.
+	 * @param WC_Order_Item $item    Order item.
+	 * @param WC_Product    $product Product (unused).
+	 * @return void
+	 */
+	public static function display_admin( $item_id, $item, $product ) {
+		if ( is_object( $item ) && method_exists( $item, 'get_meta' ) ) {
+			self::render_personalisation( $item );
+		}
 	}
 
 	/**
@@ -65,14 +112,13 @@ class WCPP_Order_Handler {
 	}
 
 	/**
-	 * Display personalisation in admin orders and customer order pages.
+	 * Render the personalisation block for an order item (shared by customer,
+	 * email, and admin). Reads the hidden _wcpp_* meta.
 	 *
-	 * @param WC_Order_Item $item     Order item.
-	 * @param string        $cart_key Not used.
-	 * @param WC_Order      $order    Order.
+	 * @param WC_Order_Item $item Order item.
 	 * @return void
 	 */
-	public static function display_in_order( $item, $cart_key, $order ) {
+	private static function render_personalisation( $item ) {
 		$json = $item->get_meta( '_wcpp_placements' );
 		if ( empty( $json ) ) {
 			return;
@@ -84,12 +130,9 @@ class WCPP_Order_Handler {
 		}
 
 		$non_returnable = $item->get_meta( '_wcpp_non_returnable' );
-		$is_email       = did_action( 'woocommerce_email_header' ) > 0;
 
-		// Inline styles for emails (no external CSS); class hooks for on-site.
-		$wrap_style = $is_email
-			? 'style="margin-top:10px;padding:12px 14px;background:#faf9f7;border-left:3px solid #b8956a;font-size:13px;"'
-			: '';
+		// Always inline-styled: none of these contexts load the plugin CSS.
+		$wrap_style = 'style="margin-top:8px;padding:10px 12px;background:#faf9f7;border-left:3px solid #b8956a;font-size:13px;"';
 
 		echo '<div class="wcpp-order-meta" ' . $wrap_style . '>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		echo '<span class="wcpp-order-meta__title" style="display:block;font-weight:600;letter-spacing:.04em;text-transform:uppercase;font-size:11px;margin-bottom:6px;">' . esc_html__( 'Personalisation', 'wcpp' ) . '</span>';
