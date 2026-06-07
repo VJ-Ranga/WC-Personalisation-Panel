@@ -249,18 +249,23 @@
 	transform:    translateY(-2px);
 	box-shadow:   0 10px 26px -14px rgba(0,0,0,.4);
 }
-.wcpp-select-card__img {
+#wcpp-panel .wcpp-select-card__img {
 	display:         flex;
 	align-items:     center;
 	justify-content: center;
-	padding:         22px;
+	height:          200px;          /* fixed box — guarantees card height */
+	padding:         18px;
 	background:      #fff;
+	box-sizing:      border-box;
 }
-.wcpp-select-card__img img {
-	width:       100%;
-	max-height:  190px;
-	object-fit:  contain;   /* show the whole garment, never crop */
+#wcpp-panel .wcpp-select-card__img img {
+	max-width:   100%;
+	max-height:  100%;
+	width:       auto;
+	height:      auto;
+	object-fit:  contain;            /* show the whole garment, never crop */
 	display:     block;
+	margin:      0;
 }
 .wcpp-select-card__foot {
 	display:         flex;
