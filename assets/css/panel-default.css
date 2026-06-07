@@ -250,22 +250,26 @@
 	box-shadow:   0 10px 26px -14px rgba(0,0,0,.4);
 }
 #wcpp-panel .wcpp-select-card__img {
-	display:         flex;
+	display:         flex !important;
 	align-items:     center;
 	justify-content: center;
-	height:          200px;          /* fixed box — guarantees card height */
+	height:          200px !important;   /* fixed box — guarantees card height */
 	padding:         18px;
 	background:      #fff;
 	box-sizing:      border-box;
+	overflow:        hidden;
 }
+/* !important defeats theme/WooCommerce global <img> rules. */
 #wcpp-panel .wcpp-select-card__img img {
-	max-width:   100%;
-	max-height:  100%;
-	width:       auto;
-	height:      auto;
-	object-fit:  contain;            /* show the whole garment, never crop */
-	display:     block;
-	margin:      0;
+	max-width:    100% !important;
+	max-height:   100% !important;
+	width:        auto !important;
+	height:       auto !important;
+	min-height:   0 !important;
+	object-fit:   contain !important;    /* show the whole garment, never crop */
+	display:      block !important;
+	margin:       0 !important;
+	border:       0 !important;
 }
 .wcpp-select-card__foot {
 	display:         flex;
