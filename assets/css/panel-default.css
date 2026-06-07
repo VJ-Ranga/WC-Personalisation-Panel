@@ -229,6 +229,64 @@
 	to   { opacity: 1; transform: translateY(0); }
 }
 
+/* ─── Placement picker (large image cards) ───────────────────────── */
+.wcpp-select-list { display: flex; flex-direction: column; gap: 14px; }
+.wcpp-select-card {
+	display:        block;
+	width:          100%;
+	padding:        0;
+	background:     #fff;
+	border:         1px solid var(--wcpp-card-border);
+	border-radius:  var(--wcpp-panel-radius);
+	cursor:         pointer;
+	overflow:       hidden;
+	text-align:     left;
+	font-family:    inherit;
+	transition:     border-color .25s var(--wcpp-ease), box-shadow .25s var(--wcpp-ease), transform .12s ease;
+}
+.wcpp-select-card:hover {
+	border-color: var(--wcpp-card-selected);
+	transform:    translateY(-2px);
+	box-shadow:   0 10px 26px -14px rgba(0,0,0,.4);
+}
+.wcpp-select-card__img {
+	display:         flex;
+	align-items:     center;
+	justify-content: center;
+	padding:         22px;
+	background:      #fff;
+}
+.wcpp-select-card__img img {
+	width:       100%;
+	max-height:  190px;
+	object-fit:  contain;   /* show the whole garment, never crop */
+	display:     block;
+}
+.wcpp-select-card__foot {
+	display:         flex;
+	align-items:     center;
+	justify-content: space-between;
+	padding:         13px 18px;
+	border-top:      1px solid var(--wcpp-hair);
+}
+.wcpp-select-card__name {
+	font-size:      13px;
+	font-weight:    600;
+	letter-spacing: .12em;
+	text-transform: uppercase;
+	color:          var(--wcpp-ink);
+}
+.wcpp-select-card__arrow {
+	font-size:   22px;
+	line-height: 1;
+	color:       var(--wcpp-muted);
+	transition:  transform .25s var(--wcpp-ease), color .25s ease;
+}
+.wcpp-select-card:hover .wcpp-select-card__arrow {
+	color:     var(--wcpp-card-selected);
+	transform: translateX(3px);
+}
+
 /* ─── Choice options ─────────────────────────────────────────────── */
 .wcpp-options { display: flex; flex-direction: column; gap: 10px; }
 .wcpp-options--grid2, .wcpp-options--grid3 { display: grid; gap: 10px; }
