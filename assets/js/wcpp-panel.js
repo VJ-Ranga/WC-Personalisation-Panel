@@ -194,10 +194,6 @@
 		} else if ( state.phase === 'select' ) {
 			// From the placement picker, back returns to Review if any exist.
 			if ( state.completed.length ) { state.phase = 'review'; render(); }
-		} else if ( state.phase === 'review' ) {
-			// From Review, back goes to the placement picker (to add/change).
-			state.phase = 'select';
-			render();
 		}
 	}
 
@@ -264,10 +260,10 @@
 		else if ( state.phase === 'review' ) { $title.text( i18n.review || 'Review' ); }
 		else if ( state.current )            { $title.text( state.current.placement.name ); }
 
-		// Back button visibility — shown on steps, the picker (with items), and Review.
+		// Back button visibility — shown on steps and the picker (with items).
+		// Review has no back: each placement has its own Edit button instead.
 		var showBack = ( state.phase === 'step' )
-			|| ( state.phase === 'select' && state.completed.length )
-			|| ( state.phase === 'review' );
+			|| ( state.phase === 'select' && state.completed.length );
 		showBack ? $back.show() : $back.hide();
 
 		// Footer buttons.

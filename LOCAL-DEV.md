@@ -4,6 +4,47 @@
 
 ---
 
+## ⚡ PRACTICAL COMMANDS (verified — for a local AI continuing this work)
+
+There is NO `wp` CLI on PATH and the CLI PHP has NO mysql extension and cannot
+bootstrap WP (it dies with "Requirements Not Met"). So use these instead.
+
+**Lint PHP** (Local's PHP binary):
+```
+PHP="C:/Users/VJR-LAP3/AppData/Roaming/Local/lightning-services/php-8.2.29+0/bin/win64/php.exe"
+"$PHP" -l path/to/file.php
+```
+**Lint JS**: `node -c path/to/file.js`
+
+**MySQL** (port 10042, NOT 3306):
+```
+MYSQL="C:/Users/VJR-LAP3/AppData/Roaming/Local/lightning-services/mysql-8.4.0/bin/win64/bin/mysql.exe"
+"$MYSQL" -u root -proot -P 10042 -h 127.0.0.1 local -e "SQL…"
+```
+
+**Test the front-end via curl** — the store is in WooCommerce "Coming Soon"
+mode (`woocommerce_coming_soon='yes'`), which hides product pages from guests.
+Toggle it off, curl, toggle back on:
+```
+"$MYSQL" … -e "UPDATE wp_options SET option_value='no'  WHERE option_name='woocommerce_coming_soon';"
+curl -sL "http://2202new.local:10029/?p=PRODUCT_ID" -o /tmp/p.html
+"$MYSQL" … -e "UPDATE wp_options SET option_value='yes' WHERE option_name='woocommerce_coming_soon';"
+```
+(Admins bypass coming-soon, so the logged-in user sees pages normally.)
+
+**To run a one-off WP/WC script** (e.g. create products): write a temp PHP file
+in the webroot that `require __DIR__.'/wp-load.php';`, guard it with a `?k=` key,
+curl it once via the web server (NOT CLI), then DELETE it.
+
+## Test data (current)
+- Set "Shirts" (post **3822**): placements Front/Back, text steps, 2 vs 3 colours,
+  flat fee $5. Assigned to categories 167 (Shirts) + 176 (T-shirts).
+- Simple product to test: **1273** "Gray T-shirt for men" (in Shirts cat).
+- Variable product to test: **3827** "Test Personalisation Hoodie" (Size S/M/L).
+- Currency: USD ($). Plugin version constant: see WCPP_VERSION.
+
+---
+
 ## Local Site Details
 
 | Setting | Value |

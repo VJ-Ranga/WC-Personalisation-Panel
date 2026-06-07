@@ -84,5 +84,41 @@
 
 ---
 
-*Last updated: June 2026*
-*Add new decisions as DEC-011, DEC-012, etc.*
+## DEC-011 — Placements own their Steps (parent→child)
+**Decision:** A Set has Placements; each Placement has its own Steps/Choices.
+**Why:** Choices must differ per placement (Front 2 colours, Back 3 colours) and
+text differs per placement (Front "JR", Back "RANGA"). A flat shared-steps model
+cannot express this. Rejected: step-level multi-select (can't carry per-placement
+values), and deep arbitrary nesting (over-engineering). One parent level is enough.
+
+## DEC-012 — Global design, per-set content
+**Decision:** All visual design lives in the global Panel Settings page; a Set
+only defines steps/choices/categories/price + an optional button-text override.
+**Why:** A store wants ONE consistent panel look across all sets; editing design
+per set is repetitive and error-prone.
+
+## DEC-013 — Three step types: choice / colour / text
+**Decision:** Steps are typed. choice = name+image; colour = name+hex (swatches);
+text = free input (placeholder/max_chars/price).
+**Why:** Real monogramming needs typed text + named colours, not just images.
+
+## DEC-014 — Cards are <div role="button">, not <button>
+**Decision:** Clickable cards use divs with role/tabindex + Enter/Space.
+**Why:** `<button>` does not grow to fit a tall image child, so with
+overflow:hidden the image gets clipped to a thin strip. Divs size correctly.
+
+## DEC-015 — Bump WCPP_VERSION on every CSS/JS change
+**Decision:** Asset URLs use `?ver=WCPP_VERSION`; bump it whenever CSS/JS changes.
+**Why:** Without bumping, browsers/optimizers serve the cached old file and the
+change appears to do nothing (this cost hours of debugging).
+
+## DEC-016 — Price baked into the line item price
+**Decision:** Personalisation total is added to the cart line price in
+`woocommerce_before_calculate_totals` (base_price + add-on, idempotent).
+**Why:** WooCommerce then handles subtotal, tax, and coupons natively. Base price
+is captured at add-time so the hook firing multiple times never compounds.
+
+---
+
+*Last updated: 2026-06 (v0.6.7)*
+*Add new decisions as DEC-017, etc.*

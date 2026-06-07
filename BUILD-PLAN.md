@@ -4,6 +4,33 @@
 
 ---
 
+## CURRENT STATE (v0.6.7) — what is BUILT and working
+- [x] Plugin scaffold, WooCommerce safety check, HPOS, uninstall.
+- [x] CPT "Personalisation Sets" under a top-level menu + Add New.
+- [x] Builder: Placements (image, **duplicate**, delete) → Steps → Choices.
+- [x] Step types: **Choices (image)**, **Colours (swatches)**, **Text input**.
+- [x] Category + apply-all + per-product set assignment.
+- [x] Flat set price + per-choice/per-text prices.
+- [x] Global Panel Settings (Design + Behaviour tabs; per-tab save merge).
+- [x] Front wizard: pick placement → steps → review; each placement once.
+- [x] Review: per-placement **Edit** + **Remove** + "Add another".
+- [x] Full-width image placement cards; colour swatches; text + counter.
+- [x] Server validates by ID, re-derives names/prices; text sanitised+capped.
+- [x] Price baked into line price; cart + order + EMAIL show all selections.
+- [x] WooCommerce currency formatting; variable-product aware.
+
+## NOT yet done (candidate next steps — see the UI/UX/security/compat review)
+- [ ] Product-type guard (hide button on external/grouped products).
+- [ ] Quick-view modal support.
+- [ ] Loading spinner + success toast (stay-on-page option).
+- [ ] Focus trap + fuller a11y.
+- [ ] Text allowed-character rule (letters/numbers only).
+- [ ] Cached-nonce refresh for page-cache plugins.
+- [ ] Generate `.pot`; finalise i18n.
+- [ ] Cart/Checkout Blocks display check.
+
+---
+
 ## Status Legend
 - `[ ]` Not started
 - `[~]` In progress

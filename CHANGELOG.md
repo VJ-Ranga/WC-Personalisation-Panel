@@ -5,6 +5,21 @@
 
 ---
 
+## [0.6.7] — 2026-06
+### Added
+- **Colour step type**: pick a hex colour + name in the builder; front-end
+  shows premium circular swatches.
+- **Variable product handling**: blocks the panel until a variation is chosen
+  and passes variation attributes to add_to_cart; base price = variation price.
+### Changed
+- Cards are `<div role=button>` not `<button>` (buttons clipped tall images).
+- Placement picker = full-width image cards; images shown in full (no crop).
+- Removed the Review back button (per-placement **Edit** covers changes).
+### Fixed
+- Image clipping (root cause: `<button>` + cache); simplified image CSS.
+- **Cache rule documented**: bump WCPP_VERSION on every CSS/JS change.
+- Back button returns to correct previous screen.
+
 ## [0.6.0] — 2026-06
 
 ### Added
