@@ -149,15 +149,27 @@
 		var pl  = state.current.placement;
 		var sels = [];
 		$.each( pl.steps || [], function ( i, step ) {
-			var ch = state.current.selections[ step.id ];
-			if ( ch ) {
+			var sel = state.current.selections[ step.id ];
+			if ( ! sel ) { return; }
+			if ( sel.type === 'text' ) {
 				sels.push( {
-					step_id:     step.id,
-					step_name:   step.name,
-					choice_id:   ch.id,
-					choice_name: ch.name,
-					choice_price: ch.price,
-					image_url:   ch.image_url || ''
+					step_id:   step.id,
+					step_name: step.name,
+					type:      'text',
+					text:      sel.text,
+					value:     sel.text,
+					price:     parseFloat( sel.price ) || 0,
+					image_url: ''
+				} );
+			} else {
+				sels.push( {
+					step_id:   step.id,
+					step_name: step.name,
+					type:      'choice',
+					choice_id: sel.id,
+					value:     sel.name,
+					price:     parseFloat( sel.price ) || 0,
+					image_url: sel.image_url || ''
 				} );
 			}
 		} );
@@ -267,6 +279,46 @@
 		var currentSel = state.current.selections[ step.id ];
 		$content.append( $( '<h3 class="wcpp-step__heading"></h3>' ).text( step.name ) );
 
+		// ── Text-input step ─────────────────────────────────────────────────
+		if ( step.type === 'text' ) {
+			var maxChars = parseInt( step.max_chars, 10 ) || 0;
+			var curText  = ( currentSel && currentSel.type === 'text' ) ? currentSel.text : '';
+
+			var $field = $( '<input type="text" class="wcpp-text-input" />' )
+				.attr( 'placeholder', step.placeholder || '' )
+				.val( curText );
+			if ( maxChars > 0 ) { $field.attr( 'maxlength', maxChars ); }
+
+			var $counter = $( '<div class="wcpp-text-counter"></div>' );
+			var updateCounter = function () {
+				if ( maxChars > 0 ) { $counter.text( $field.val().length + ' / ' + maxChars ); }
+			};
+
+			$field.on( 'input.wcppPanel', function () {
+				var v = $field.val();
+				if ( v !== '' ) {
+					state.current.selections[ step.id ] = {
+						type:  'text',
+						text:  v,
+						name:  v,
+						price: parseFloat( step.price ) || 0
+					};
+				} else {
+					delete state.current.selections[ step.id ];
+				}
+				updateCounter();
+			} );
+
+			$content.append( $( '<div class="wcpp-text-wrap"></div>' ).append( $field ).append( $counter ) );
+
+			if ( parseInt( design.show_choice_price, 10 ) !== 0 && parseFloat( step.price ) > 0 ) {
+				$content.append( $( '<div class="wcpp-text-price"></div>' ).text( '+' + money( step.price ) ) );
+			}
+			updateCounter();
+			setTimeout( function () { $field.focus(); }, 50 );
+			return;
+		}
+
 		var layout = 'wcpp-options';
 		if ( design.card_layout === 'grid2' ) { layout += ' wcpp-options--grid2'; }
 		else if ( design.card_layout === 'grid3' ) { layout += ' wcpp-options--grid3'; }
@@ -327,16 +379,16 @@
 				var $li   = $( '<li class="wcpp-summary-item"></li>' );
 				var $left = $( '<div class="wcpp-summary-left"></div>' );
 				if ( sel.image_url ) {
-					$left.append( $( '<img class="wcpp-summary-img" />' ).attr( 'src', sel.image_url ).attr( 'alt', sel.choice_name ) );
+					$left.append( $( '<img class="wcpp-summary-img" />' ).attr( 'src', sel.image_url ).attr( 'alt', sel.value ) );
 				}
 				$left.append( $( '<div class="wcpp-summary-text"></div>' )
 					.append( $( '<span class="wcpp-summary-label"></span>' ).text( sel.step_name ) )
-					.append( $( '<span class="wcpp-summary-value"></span>' ).text( sel.choice_name ) ) );
+					.append( $( '<span class="wcpp-summary-value"></span>' ).text( sel.value ) ) );
 				$li.append( $left );
-				if ( parseFloat( sel.choice_price ) > 0 ) {
-					total += parseFloat( sel.choice_price );
+				if ( parseFloat( sel.price ) > 0 ) {
+					total += parseFloat( sel.price );
 					if ( showPrice ) {
-						$li.append( $( '<span class="wcpp-summary-price"></span>' ).text( '+' + money( sel.choice_price ) ) );
+						$li.append( $( '<span class="wcpp-summary-price"></span>' ).text( '+' + money( sel.price ) ) );
 					}
 				}
 				$ul.append( $li );
@@ -404,22 +456,26 @@
 		} );
 	}
 
-	// Only IDs are sent; the server re-derives names + prices.
+	// Only IDs (and typed text) are sent; the server re-derives names + prices.
 	function buildPayload() {
 		var out = [];
 		$.each( state.completed, function ( i, c ) {
-			var choices = [];
+			var steps = [];
 			$.each( c.selections, function ( j, sel ) {
-				choices.push( { step_id: sel.step_id, choice_id: sel.choice_id } );
+				if ( sel.type === 'text' ) {
+					steps.push( { step_id: sel.step_id, text: sel.text } );
+				} else {
+					steps.push( { step_id: sel.step_id, choice_id: sel.choice_id } );
+				}
 			} );
-			out.push( { placement_id: c.placement_id, choices: choices } );
+			out.push( { placement_id: c.placement_id, steps: steps } );
 		} );
 		return out;
 	}
 
 	// ─── Utils ────────────────────────────────────────────────────────────────
 	function shake() {
-		var $o = $content.find( '.wcpp-options' );
+		var $o = $content.find( '.wcpp-options, .wcpp-text-wrap' );
 		$o.addClass( 'wcpp-shake' );
 		setTimeout( function () { $o.removeClass( 'wcpp-shake' ); }, 500 );
 	}

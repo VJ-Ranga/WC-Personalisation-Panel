@@ -240,7 +240,8 @@
 	20% { transform: translateX(-6px); } 40% { transform: translateX(6px); }
 	60% { transform: translateX(-4px); } 80% { transform: translateX(4px); }
 }
-.wcpp-options.wcpp-shake { animation: wcppShake 0.45s ease; }
+.wcpp-options.wcpp-shake,
+.wcpp-text-wrap.wcpp-shake { animation: wcppShake 0.45s ease; }
 
 .wcpp-option-btn {
 	display:        flex;
@@ -273,7 +274,7 @@
 	flex-direction: column;
 	text-align:     center;
 	gap:            8px;
-	padding:        14px 8px;
+	padding:        10px;
 }
 
 .wcpp-option-img-wrap {
@@ -285,6 +286,47 @@
 	background:    #f4f1ec;
 }
 .wcpp-option-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+/* In grid mode images become full-width squares (512×512 source ideal). */
+.wcpp-options--grid2 .wcpp-option-img-wrap,
+.wcpp-options--grid3 .wcpp-option-img-wrap {
+	width:         100%;
+	height:        auto;
+	aspect-ratio:  1 / 1;
+}
+
+/* ─── Text-input step ────────────────────────────────────────────── */
+.wcpp-text-wrap { position: relative; }
+.wcpp-text-input {
+	width:          100%;
+	box-sizing:     border-box;
+	padding:        14px 16px;
+	font-size:      16px;
+	font-family:    inherit;
+	color:          var(--wcpp-ink);
+	border:         1px solid var(--wcpp-card-border);
+	border-radius:  var(--wcpp-panel-radius);
+	background:     #fff;
+	transition:     border-color .25s var(--wcpp-ease), box-shadow .25s var(--wcpp-ease);
+}
+.wcpp-text-input:focus {
+	outline:      none;
+	border-color: var(--wcpp-card-selected);
+	box-shadow:   0 0 0 3px color-mix(in srgb, var(--wcpp-card-selected) 18%, transparent);
+}
+.wcpp-text-counter {
+	text-align:     right;
+	font-size:      11px;
+	letter-spacing: .04em;
+	color:          var(--wcpp-muted);
+	margin-top:     6px;
+}
+.wcpp-text-price {
+	margin-top:  10px;
+	font-size:   13px;
+	font-weight: 600;
+	color:       var(--wcpp-card-selected);
+}
 
 .wcpp-option-label-wrap { flex: 1; display: flex; flex-direction: column; gap: 3px; }
 .wcpp-option-name  { font-size: 15px; font-weight: 600; color: var(--wcpp-ink); letter-spacing: -0.01em; }

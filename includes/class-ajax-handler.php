@@ -79,27 +79,25 @@ class WCPP_Ajax_Handler {
 			}
 			$seen_placements[ $placement_id ] = true;
 
-			$posted_choices = isset( $pl_in['choices'] ) && is_array( $pl_in['choices'] ) ? $pl_in['choices'] : array();
-			$selections     = array();
+			$posted_steps = isset( $pl_in['steps'] ) && is_array( $pl_in['steps'] ) ? $pl_in['steps'] : array();
+			$selections   = array();
 
-			foreach ( $posted_choices as $ch_in ) {
-				$step_id   = isset( $ch_in['step_id'] ) ? sanitize_text_field( $ch_in['step_id'] ) : '';
-				$choice_id = isset( $ch_in['choice_id'] ) ? sanitize_text_field( $ch_in['choice_id'] ) : '';
+			foreach ( $posted_steps as $st_in ) {
+				$step_id = isset( $st_in['step_id'] ) ? sanitize_text_field( $st_in['step_id'] ) : '';
 
-				$resolved = WCPP_Settings_Store::resolve_choice( $set, $placement_id, $step_id, $choice_id );
+				// Pass through the raw choice_id / text; resolve_step validates + sanitises.
+				$payload = array(
+					'choice_id' => isset( $st_in['choice_id'] ) ? sanitize_text_field( $st_in['choice_id'] ) : '',
+					'text'      => isset( $st_in['text'] ) ? $st_in['text'] : '',
+				);
+
+				$resolved = WCPP_Settings_Store::resolve_step( $set, $placement_id, $step_id, $payload );
 				if ( null === $resolved ) {
-					wp_send_json_error( array( 'message' => __( 'One of your choices is no longer available. Please try again.', 'wcpp' ) ) );
+					wp_send_json_error( array( 'message' => __( 'Please complete all steps for each placement.', 'wcpp' ) ) );
 				}
 
-				$selections[] = array(
-					'step_id'      => $resolved['step_id'],
-					'step_name'    => $resolved['step_name'],
-					'choice_id'    => $resolved['choice_id'],
-					'choice_name'  => $resolved['choice_name'],
-					'choice_price' => $resolved['choice_price'],
-					'image_url'    => $resolved['image_url'],
-				);
-				$choice_total += (float) $resolved['choice_price'];
+				$selections[]  = $resolved;
+				$choice_total += (float) $resolved['price'];
 			}
 
 			// Require an answer for every step in the placement.

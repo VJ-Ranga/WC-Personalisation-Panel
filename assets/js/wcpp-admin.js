@@ -68,14 +68,22 @@
 
 		var stid = $step.data( 'stid' );
 
-		$step.find( '> .wcpp-add-choice-btn' ).off( 'click' ).on( 'click', function () {
+		// Type toggle: show Choices vs Text settings.
+		$step.find( '> .wcpp-option-header .wcpp-step-type' ).off( 'change' ).on( 'change', function () {
+			var isText = ( $( this ).val() === 'text' );
+			$step.attr( 'data-type', isText ? 'text' : 'choice' );
+			$step.find( '> .wcpp-step-choices' ).toggle( ! isText );
+			$step.find( '> .wcpp-step-text' ).toggle( isText );
+		} );
+
+		$step.find( '.wcpp-add-choice-btn' ).off( 'click' ).on( 'click', function () {
 			var $row = $( buildChoiceHTML( plid, stid, uid( 'ch_' ) ) );
-			$step.find( '> .wcpp-choices-list' ).append( $row );
+			$step.find( '.wcpp-choices-list' ).append( $row );
 			bindChoice( $row );
 			$row.find( '.wcpp-choice-name' ).focus();
 		} );
 
-		$step.find( '> .wcpp-choices-list > .wcpp-choice-row' ).each( function () {
+		$step.find( '.wcpp-choices-list > .wcpp-choice-row' ).each( function () {
 			bindChoice( $( this ) );
 		} );
 	}
@@ -199,15 +207,28 @@
 	function buildStepHTML( plid, stid ) {
 		var b = 'wcpp_placements[' + plid + '][steps][' + stid + ']';
 		return '' +
-			'<div class="wcpp-option-block wcpp-step-block" data-stid="' + stid + '">' +
+			'<div class="wcpp-option-block wcpp-step-block" data-stid="' + stid + '" data-type="choice">' +
 				'<div class="wcpp-option-header">' +
 					'<span class="wcpp-option-label">' + esc( wcppAdmin.stepLabel ) + '</span>' +
 					'<input type="hidden" name="' + b + '[id]" value="' + stid + '" />' +
 					'<input type="text" name="' + b + '[name]" value="" placeholder="' + esc( wcppAdmin.stepPlaceholder ) + '" class="wcpp-option-name-input" />' +
+					'<select name="' + b + '[type]" class="wcpp-step-type">' +
+						'<option value="choice">' + esc( wcppAdmin.typeChoices ) + '</option>' +
+						'<option value="text">' + esc( wcppAdmin.typeText ) + '</option>' +
+					'</select>' +
 					'<button type="button" class="button wcpp-delete-option"><span class="dashicons dashicons-trash"></span></button>' +
 				'</div>' +
-				'<div class="wcpp-choices-list"></div>' +
-				'<button type="button" class="button wcpp-add-choice-btn">&#43; ' + esc( wcppAdmin.addChoice ) + '</button>' +
+				'<div class="wcpp-step-choices">' +
+					'<div class="wcpp-choices-list"></div>' +
+					'<button type="button" class="button wcpp-add-choice-btn">&#43; ' + esc( wcppAdmin.addChoice ) + '</button>' +
+				'</div>' +
+				'<div class="wcpp-step-text" style="display:none;">' +
+					'<div class="wcpp-text-settings">' +
+						'<label>' + esc( wcppAdmin.tPlaceholder ) + '<input type="text" name="' + b + '[placeholder]" value="" /></label>' +
+						'<label>' + esc( wcppAdmin.tMax ) + '<input type="number" name="' + b + '[max_chars]" value="20" min="1" max="200" style="width:80px;" /></label>' +
+						'<label>' + esc( wcppAdmin.tPrice ) + '<input type="number" name="' + b + '[price]" value="0.00" step="0.01" min="0" style="width:90px;" /></label>' +
+					'</div>' +
+				'</div>' +
 			'</div>';
 	}
 

@@ -175,6 +175,11 @@ class WCPP_Personalisation_CPT {
 				'duplicate'            => __( 'Duplicate', 'wcpp' ),
 				'addStep'              => __( 'Add Step', 'wcpp' ),
 				'addChoice'            => __( 'Add Choice', 'wcpp' ),
+				'typeChoices'          => __( 'Choices', 'wcpp' ),
+				'typeText'             => __( 'Text input', 'wcpp' ),
+				'tPlaceholder'         => __( 'Placeholder', 'wcpp' ),
+				'tMax'                 => __( 'Max characters', 'wcpp' ),
+				'tPrice'               => __( 'Price', 'wcpp' ),
 			)
 		);
 	}
@@ -298,10 +303,15 @@ class WCPP_Personalisation_CPT {
 	public static function render_step_block( $plid, $step ) {
 		$stid    = isset( $step['id'] ) ? $step['id'] : 'st_' . uniqid();
 		$name    = isset( $step['name'] ) ? $step['name'] : '';
+		$type    = isset( $step['type'] ) ? $step['type'] : 'choice';
 		$choices = isset( $step['choices'] ) && is_array( $step['choices'] ) ? $step['choices'] : array();
+		$ph      = isset( $step['placeholder'] ) ? $step['placeholder'] : '';
+		$maxc    = isset( $step['max_chars'] ) ? (int) $step['max_chars'] : 20;
+		$price   = isset( $step['price'] ) ? $step['price'] : '0.00';
 		$base    = 'wcpp_placements[' . $plid . '][steps][' . $stid . ']';
+		$is_text = ( 'text' === $type );
 		?>
-		<div class="wcpp-option-block wcpp-step-block" data-stid="<?php echo esc_attr( $stid ); ?>">
+		<div class="wcpp-option-block wcpp-step-block" data-stid="<?php echo esc_attr( $stid ); ?>" data-type="<?php echo esc_attr( $type ); ?>">
 			<div class="wcpp-option-header">
 				<span class="wcpp-option-label"><?php esc_html_e( 'Step', 'wcpp' ); ?></span>
 				<input type="hidden" name="<?php echo esc_attr( $base ); ?>[id]" value="<?php echo esc_attr( $stid ); ?>" />
@@ -309,18 +319,49 @@ class WCPP_Personalisation_CPT {
 					value="<?php echo esc_attr( $name ); ?>"
 					placeholder="<?php esc_attr_e( 'Step name, e.g. Colour', 'wcpp' ); ?>"
 					class="wcpp-option-name-input" />
+				<select name="<?php echo esc_attr( $base ); ?>[type]" class="wcpp-step-type">
+					<option value="choice" <?php selected( $type, 'choice' ); ?>><?php esc_html_e( 'Choices', 'wcpp' ); ?></option>
+					<option value="text" <?php selected( $type, 'text' ); ?>><?php esc_html_e( 'Text input', 'wcpp' ); ?></option>
+				</select>
 				<button type="button" class="button wcpp-delete-option" title="<?php esc_attr_e( 'Delete step', 'wcpp' ); ?>">
 					<span class="dashicons dashicons-trash"></span>
 				</button>
 			</div>
-			<div class="wcpp-choices-list">
-				<?php foreach ( $choices as $choice ) : ?>
-					<?php self::render_choice_row( $base, $choice ); ?>
-				<?php endforeach; ?>
+
+			<!-- Choice mode -->
+			<div class="wcpp-step-choices" <?php echo $is_text ? 'style="display:none;"' : ''; ?>>
+				<div class="wcpp-choices-list">
+					<?php foreach ( $choices as $choice ) : ?>
+						<?php self::render_choice_row( $base, $choice ); ?>
+					<?php endforeach; ?>
+				</div>
+				<button type="button" class="button wcpp-add-choice-btn">
+					&#43; <?php esc_html_e( 'Add Choice', 'wcpp' ); ?>
+				</button>
 			</div>
-			<button type="button" class="button wcpp-add-choice-btn">
-				&#43; <?php esc_html_e( 'Add Choice', 'wcpp' ); ?>
-			</button>
+
+			<!-- Text mode -->
+			<div class="wcpp-step-text" <?php echo $is_text ? '' : 'style="display:none;"'; ?>>
+				<div class="wcpp-text-settings">
+					<label>
+						<?php esc_html_e( 'Placeholder', 'wcpp' ); ?>
+						<input type="text" name="<?php echo esc_attr( $base ); ?>[placeholder]"
+							value="<?php echo esc_attr( $ph ); ?>"
+							placeholder="<?php esc_attr_e( 'e.g. Enter initials', 'wcpp' ); ?>" />
+					</label>
+					<label>
+						<?php esc_html_e( 'Max characters', 'wcpp' ); ?>
+						<input type="number" name="<?php echo esc_attr( $base ); ?>[max_chars]"
+							value="<?php echo esc_attr( $maxc ); ?>" min="1" max="200" style="width:80px;" />
+					</label>
+					<label>
+						<?php esc_html_e( 'Price', 'wcpp' ); ?> (<?php echo esc_html( get_woocommerce_currency_symbol() ); ?>)
+						<input type="number" name="<?php echo esc_attr( $base ); ?>[price]"
+							value="<?php echo esc_attr( $price ); ?>" step="0.01" min="0" style="width:90px;" />
+					</label>
+				</div>
+				<p class="description"><?php esc_html_e( 'The customer types their own text (monogram, name, initials). Charged once if a price is set.', 'wcpp' ); ?></p>
+			</div>
 		</div>
 		<?php
 	}
@@ -608,12 +649,21 @@ class WCPP_Personalisation_CPT {
 					if ( '' === $st_name ) {
 						continue;
 					}
+					$st_type    = ( isset( $step['type'] ) && 'text' === $step['type'] ) ? 'text' : 'choice';
 					$clean_step = array(
 						'id'      => sanitize_text_field( wp_unslash( $step['id'] ?? 'st_' . uniqid() ) ),
 						'name'    => $st_name,
+						'type'    => $st_type,
 						'choices' => array(),
 					);
-					if ( ! empty( $step['choices'] ) && is_array( $step['choices'] ) ) {
+
+					if ( 'text' === $st_type ) {
+						$clean_step['placeholder'] = sanitize_text_field( wp_unslash( $step['placeholder'] ?? '' ) );
+						$clean_step['max_chars']   = max( 1, min( 200, (int) ( $step['max_chars'] ?? 20 ) ) );
+						$clean_step['price']       = number_format( (float) ( $step['price'] ?? 0 ), 2, '.', '' );
+					}
+
+					if ( 'choice' === $st_type && ! empty( $step['choices'] ) && is_array( $step['choices'] ) ) {
 						foreach ( $step['choices'] as $ch ) {
 							$ch_name = sanitize_text_field( wp_unslash( $ch['name'] ?? '' ) );
 							if ( '' === $ch_name ) {

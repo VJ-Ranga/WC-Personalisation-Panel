@@ -74,10 +74,10 @@ class WCPP_Settings_Store {
 			'progress_color'    => '#1A56DB',
 
 			// Choice cards.
-			'card_layout'       => 'list',      // list | grid2 | grid3.
+			'card_layout'       => 'grid3',     // list | grid2 | grid3.
 			'card_border'       => '#e0e0e0',
 			'card_selected'     => '#1A56DB',
-			'card_img_size'     => 52,
+			'card_img_size'     => 96,
 
 			// Footer buttons.
 			'next_text'         => 'Next',
@@ -322,17 +322,22 @@ class WCPP_Settings_Store {
 	}
 
 	/**
-	 * Resolve a placement → step → choice by IDs, returning the server-side
-	 * canonical data (names + price). Returns null if any ID is invalid.
-	 * Server trusts only IDs; all displayed values come from here.
+	 * Resolve a step submission (choice OR text) server-side. Trusts only IDs;
+	 * names/prices come from the set, and text is sanitised + length-capped here.
+	 * Returns a normalised selection, or null if invalid.
 	 *
-	 * @param array  $set         Full set array (from get_set).
+	 * Normalised selection shape:
+	 *   step_id, step_name, type ('choice'|'text'),
+	 *   value (display string), price (float), image_url (choice only),
+	 *   choice_id (choice only)
+	 *
+	 * @param array  $set          Full set array (from get_set).
 	 * @param string $placement_id Placement ID.
 	 * @param string $step_id      Step ID.
-	 * @param string $choice_id    Choice ID.
+	 * @param array  $payload      Submitted data: ['choice_id'=>..] or ['text'=>..].
 	 * @return array|null
 	 */
-	public static function resolve_choice( $set, $placement_id, $step_id, $choice_id ) {
+	public static function resolve_step( $set, $placement_id, $step_id, $payload ) {
 		if ( empty( $set['placements'] ) ) {
 			return null;
 		}
@@ -344,20 +349,48 @@ class WCPP_Settings_Store {
 				if ( $step['id'] !== $step_id ) {
 					continue;
 				}
+
+				$type = isset( $step['type'] ) ? $step['type'] : 'choice';
+
+				// ── Text step ───────────────────────────────────────────────
+				if ( 'text' === $type ) {
+					$text = isset( $payload['text'] ) ? sanitize_text_field( $payload['text'] ) : '';
+					$max  = isset( $step['max_chars'] ) ? (int) $step['max_chars'] : 0;
+					if ( $max > 0 && function_exists( 'mb_substr' ) ) {
+						$text = mb_substr( $text, 0, $max );
+					} elseif ( $max > 0 ) {
+						$text = substr( $text, 0, $max );
+					}
+					if ( '' === $text ) {
+						return null; // Text steps are required.
+					}
+					return array(
+						'step_id'   => $step['id'],
+						'step_name' => $step['name'],
+						'type'      => 'text',
+						'value'     => $text,
+						'price'     => isset( $step['price'] ) ? (float) $step['price'] : 0.0,
+						'image_url' => '',
+						'choice_id' => '',
+					);
+				}
+
+				// ── Choice step ─────────────────────────────────────────────
+				$choice_id = isset( $payload['choice_id'] ) ? $payload['choice_id'] : '';
 				foreach ( ( $step['choices'] ?? array() ) as $ch ) {
 					if ( $ch['id'] === $choice_id ) {
 						return array(
-							'placement_id'   => $pl['id'],
-							'placement_name' => $pl['name'],
-							'step_id'        => $step['id'],
-							'step_name'      => $step['name'],
-							'choice_id'      => $ch['id'],
-							'choice_name'    => $ch['name'],
-							'choice_price'   => (float) $ch['price'],
-							'image_url'      => $ch['image_url'],
+							'step_id'   => $step['id'],
+							'step_name' => $step['name'],
+							'type'      => 'choice',
+							'value'     => $ch['name'],
+							'price'     => (float) $ch['price'],
+							'image_url' => $ch['image_url'],
+							'choice_id' => $ch['id'],
 						);
 					}
 				}
+				return null;
 			}
 		}
 		return null;

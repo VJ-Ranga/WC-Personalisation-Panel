@@ -99,13 +99,15 @@ class WCPP_Order_Handler {
 			echo '<strong style="display:block;font-size:12px;text-transform:uppercase;letter-spacing:.04em;">' . esc_html( $placement['placement_name'] ?? '' ) . '</strong>';
 			echo '<table class="wcpp-order-table" style="width:100%;border-collapse:collapse;" cellspacing="0" cellpadding="0">';
 			foreach ( ( $placement['selections'] ?? array() ) as $sel ) {
+				$val   = isset( $sel['value'] ) ? $sel['value'] : ( $sel['choice_name'] ?? '' );
+				$price = isset( $sel['price'] ) ? (float) $sel['price'] : (float) ( $sel['choice_price'] ?? 0 );
 				$price_html = '';
-				if ( ! empty( $sel['choice_price'] ) && (float) $sel['choice_price'] > 0 ) {
-					$price_html = ' <span style="color:#b8956a;">(+' . wp_kses_post( wc_price( $sel['choice_price'] ) ) . ')</span>';
+				if ( $price > 0 ) {
+					$price_html = ' <span style="color:#b8956a;">(+' . wp_kses_post( wc_price( $price ) ) . ')</span>';
 				}
 				echo '<tr>';
 				echo '<td style="padding:3px 8px 3px 0;color:#888;white-space:nowrap;vertical-align:top;">' . esc_html( $sel['step_name'] ?? '' ) . '</td>';
-				echo '<td style="padding:3px 0;font-weight:600;">' . esc_html( $sel['choice_name'] ?? '' ) . $price_html . '</td>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+				echo '<td style="padding:3px 0;font-weight:600;">' . esc_html( $val ) . $price_html . '</td>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 				echo '</tr>';
 			}
 			echo '</table>';

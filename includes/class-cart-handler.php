@@ -276,9 +276,11 @@ class WCPP_Cart_Handler {
 			foreach ( $data['placements'] as $placement ) {
 				$lines = array();
 				foreach ( ( $placement['selections'] ?? array() ) as $sel ) {
-					$line = esc_html( $sel['step_name'] ) . ': ' . esc_html( $sel['choice_name'] );
-					if ( isset( $sel['choice_price'] ) && (float) $sel['choice_price'] > 0 ) {
-						$line .= ' (+' . wp_strip_all_tags( wc_price( $sel['choice_price'] ) ) . ')';
+					$val  = isset( $sel['value'] ) ? $sel['value'] : ( $sel['choice_name'] ?? '' );
+					$line = esc_html( $sel['step_name'] ) . ': ' . esc_html( $val );
+					$price = isset( $sel['price'] ) ? (float) $sel['price'] : (float) ( $sel['choice_price'] ?? 0 );
+					if ( $price > 0 ) {
+						$line .= ' (+' . wp_strip_all_tags( wc_price( $price ) ) . ')';
 					}
 					$lines[] = $line;
 				}
