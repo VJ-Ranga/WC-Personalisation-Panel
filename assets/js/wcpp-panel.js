@@ -111,6 +111,31 @@
 		render();
 	}
 
+	// Re-open a completed placement to change its config. Pulls it out of the
+	// completed list and restores its selections so the customer can edit.
+	function editPlacement( idx ) {
+		var c  = state.completed[ idx ];
+		var pl = null;
+		$.each( cfg.placements, function ( i, p ) { if ( p.id === c.placement_id ) { pl = p; } } );
+		if ( ! pl ) { return; }
+
+		// Rebuild the keyed selections map from the saved (normalised) selections.
+		var selections = {};
+		$.each( c.selections, function ( i, sel ) {
+			if ( sel.type === 'text' ) {
+				selections[ sel.step_id ] = { type: 'text', text: sel.text, name: sel.text, price: parseFloat( sel.price ) || 0 };
+			} else {
+				selections[ sel.step_id ] = { id: sel.choice_id, name: sel.value, price: parseFloat( sel.price ) || 0, image_url: sel.image_url || '' };
+			}
+		} );
+
+		// Keep it in the list; finishPlacement replaces it in place. If the
+		// customer cancels (Back), the original stays untouched.
+		state.current = { placement: pl, stepIndex: 0, selections: selections, editIndex: idx };
+		state.phase   = 'step';
+		render();
+	}
+
 	// ─── Navigation ────────────────────────────────────────────────────────
 	function goNext() {
 		if ( state.phase !== 'step' ) { return; }
@@ -173,11 +198,19 @@
 				} );
 			}
 		} );
-		state.completed.push( {
+		var entry = {
 			placement_id:   pl.id,
 			placement_name: pl.name,
 			selections:     sels
-		} );
+		};
+
+		// Editing an existing placement → replace in place; otherwise append.
+		if ( state.current.editIndex !== undefined && state.current.editIndex !== null && state.completed[ state.current.editIndex ] ) {
+			state.completed[ state.current.editIndex ] = entry;
+		} else {
+			state.completed.push( entry );
+		}
+
 		state.current = null;
 		state.phase   = 'review';
 		render();
@@ -365,13 +398,24 @@
 			var $card = $( '<div class="wcpp-review-placement"></div>' );
 			var $head = $( '<div class="wcpp-review-placement__head"></div>' );
 			$head.append( $( '<span class="wcpp-review-placement__name"></span>' ).text( c.placement_name ) );
-			var $del = $( '<button type="button" class="wcpp-review-remove" title="Remove">&#10005;</button>' );
+
+			var $actions = $( '<span class="wcpp-review-actions"></span>' );
+
+			// Edit — re-open this placement's wizard with its current selections.
+			var $edit = $( '<button type="button" class="wcpp-review-edit"></button>' ).text( i18n.edit || 'Edit' );
+			$edit.on( 'click.wcppPanel', function () { editPlacement( idx ); } );
+			$actions.append( $edit );
+
+			// Remove.
+			var $del = $( '<button type="button" class="wcpp-review-remove" title="' + ( i18n.remove || 'Remove' ) + '">&#10005;</button>' );
 			$del.on( 'click.wcppPanel', function () {
 				state.completed.splice( idx, 1 );
 				if ( !state.completed.length ) { state.phase = 'select'; }
 				render();
 			} );
-			$head.append( $del );
+			$actions.append( $del );
+
+			$head.append( $actions );
 			$card.append( $head );
 
 			var $ul = $( '<ul class="wcpp-summary-list"></ul>' );

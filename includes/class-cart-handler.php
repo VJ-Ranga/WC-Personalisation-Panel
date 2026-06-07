@@ -179,6 +179,8 @@ class WCPP_Cart_Handler {
 					'choosePlacementHeading' => esc_html__( 'Where would you like it?', 'wcpp' ),
 					'review'       => esc_html__( 'Review', 'wcpp' ),
 					'addAnother'   => esc_html__( 'Add another placement', 'wcpp' ),
+					'edit'         => esc_html__( 'Edit', 'wcpp' ),
+					'remove'       => esc_html__( 'Remove', 'wcpp' ),
 				),
 			)
 		);
