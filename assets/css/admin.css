@@ -300,33 +300,82 @@
 	display:     block;
 }
 
-/* ─── Settings page polish ───────────────────────────────────────── */
-.wcpp-settings-wrap { max-width: 880px; }
-.wcpp-settings-wrap > h1 {
-	font-weight:    600;
-	letter-spacing: -0.01em;
-	margin-bottom:  4px;
+/* ===================================================================
+   MODERN PANEL SETTINGS PAGE
+=================================================================== */
+.wcpp-settings-wrap { max-width: 920px; --wa: #2563eb; }
+.wcpp-settings-head { margin: 6px 0 18px; }
+.wcpp-settings-wrap h1 { font-weight: 700; letter-spacing: -0.02em; font-size: 23px; margin: 0; }
+.wcpp-settings-sub { color: #6b7280; font-size: 13px; margin: 4px 0 0; }
+
+/* Tabs */
+.wcpp-settings-wrap .nav-tab-wrapper.wcpp-tabs {
+	border-bottom: 1px solid #e3e6ea; margin: 0 0 22px; padding: 0;
 }
-.wcpp-settings-wrap .nav-tab-wrapper { margin-bottom: 24px; }
-.wcpp-settings-wrap h2.title {
-	margin-top:     34px;
-	padding-bottom: 8px;
-	border-bottom:  1px solid #e4e4e4;
-	font-size:      14px;
-	font-weight:    600;
-	text-transform: uppercase;
-	letter-spacing: 0.06em;
-	color:          #1d2327;
+.wcpp-tabs .nav-tab {
+	display: inline-flex; align-items: center; gap: 6px;
+	background: transparent; border: 0; border-bottom: 2px solid transparent;
+	margin: 0 18px -1px 0; padding: 10px 2px; font-size: 14px; font-weight: 600; color: #6b7280;
 }
-.wcpp-settings-wrap .form-table th {
-	font-weight: 500;
-	width:       220px;
+.wcpp-tabs .nav-tab .dashicons { font-size: 17px; width: 17px; height: 17px; }
+.wcpp-tabs .nav-tab:focus { box-shadow: none; outline: none; }
+.wcpp-tabs .nav-tab-active,
+.wcpp-tabs .nav-tab-active:hover { background: transparent; color: var(--wa); border-bottom-color: var(--wa); }
+.wcpp-tabs .nav-tab:hover { color: #1e2327; }
+
+/* Card */
+.wcpp-settings-card {
+	background: #fff; border: 1px solid #e3e6ea; border-radius: 14px;
+	box-shadow: 0 1px 2px rgba(16,24,40,.05); padding: 8px 28px 24px;
 }
-.wcpp-settings-wrap .form-table td .description {
-	color:      #757575;
-	font-style: normal;
-	margin-top: 4px;
+
+/* Section headers inside the card */
+.wcpp-settings-card h2.title {
+	display: flex; align-items: center; gap: 10px;
+	margin: 28px 0 6px; padding: 0 0 14px;
+	border-bottom: 1px solid #eef1f4;
+	font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: #1e2327;
 }
-.wcpp-settings-wrap select,
-.wcpp-settings-wrap input[type="text"],
-.wcpp-settings-wrap input[type="number"] { border-radius: 5px; }
+.wcpp-settings-card h2.title::before {
+	content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--wa); flex-shrink: 0;
+}
+.wcpp-settings-card > h2.title:first-of-type { margin-top: 12px; }
+.wcpp-settings-card .form-table { margin-top: 4px; }
+.wcpp-settings-card .form-table th {
+	font-weight: 600; width: 230px; color: #374151; font-size: 13px; padding: 16px 10px 16px 0;
+}
+.wcpp-settings-card .form-table td { padding: 12px 10px; }
+.wcpp-settings-card .form-table tr { border-bottom: 1px solid #f4f5f7; }
+.wcpp-settings-card .form-table .description { color: #9097a1; font-style: normal; margin-top: 5px; font-size: 12px; }
+
+/* Inputs */
+.wcpp-settings-card select,
+.wcpp-settings-card input[type="text"],
+.wcpp-settings-card input[type="number"] {
+	border-radius: 8px; border-color: #d8dce1; min-height: 36px; box-shadow: none;
+}
+.wcpp-settings-card input[type="text"] { padding: 6px 12px; }
+.wcpp-settings-card select:focus,
+.wcpp-settings-card input[type="text"]:focus,
+.wcpp-settings-card input[type="number"]:focus {
+	border-color: var(--wa); box-shadow: 0 0 0 3px rgba(37,99,235,.12);
+}
+.wcpp-settings-card .regular-text { max-width: 320px; }
+
+/* Colour picker buttons */
+.wcpp-settings-card .wp-picker-container .button { border-radius: 8px; }
+.wcpp-settings-card .wp-color-result.button { border-radius: 8px; height: 34px; }
+
+/* Checkboxes read as togg384-ish rows */
+.wcpp-settings-card .form-table td label { font-size: 13px; color: #374151; }
+
+/* Sticky-ish save bar */
+.wcpp-settings-actions {
+	position: sticky; bottom: 0; margin-top: 18px; padding: 14px 0;
+	background: linear-gradient(180deg, rgba(240,240,241,0) 0%, #f0f0f1 40%);
+}
+.wcpp-settings-actions .button-primary {
+	border-radius: 9px; padding: 6px 26px; height: auto; font-weight: 600; font-size: 14px;
+	background: var(--wa); border-color: var(--wa);
+}
+.wcpp-settings-actions .button-primary:hover { background: #1d4ed8; border-color: #1d4ed8; }

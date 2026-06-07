@@ -163,14 +163,17 @@ class WCPP_Settings_Page {
 		$base   = admin_url( 'admin.php?page=wcpp-settings' );
 		?>
 		<div class="wrap wcpp-settings-wrap">
-			<h1><?php esc_html_e( 'Panel Settings', 'wcpp' ); ?></h1>
+			<div class="wcpp-settings-head">
+				<h1><?php esc_html_e( 'Panel Settings', 'wcpp' ); ?></h1>
+				<p class="wcpp-settings-sub"><?php esc_html_e( 'Global look & behaviour for the personalisation drawer. Applies to every set.', 'wcpp' ); ?></p>
+			</div>
 
-			<h2 class="nav-tab-wrapper">
+			<h2 class="nav-tab-wrapper wcpp-tabs">
 				<a href="<?php echo esc_url( $base . '&tab=design' ); ?>" class="nav-tab <?php echo 'design' === $tab ? 'nav-tab-active' : ''; ?>">
-					<?php esc_html_e( 'Design', 'wcpp' ); ?>
+					<span class="dashicons dashicons-admin-customizer"></span> <?php esc_html_e( 'Design', 'wcpp' ); ?>
 				</a>
 				<a href="<?php echo esc_url( $base . '&tab=behaviour' ); ?>" class="nav-tab <?php echo 'behaviour' === $tab ? 'nav-tab-active' : ''; ?>">
-					<?php esc_html_e( 'Behaviour', 'wcpp' ); ?>
+					<span class="dashicons dashicons-admin-generic"></span> <?php esc_html_e( 'Behaviour', 'wcpp' ); ?>
 				</a>
 			</h2>
 
@@ -178,13 +181,17 @@ class WCPP_Settings_Page {
 				<?php settings_fields( 'wcpp_settings_group' ); ?>
 				<input type="hidden" name="<?php echo esc_attr( WCPP_Settings_Store::OPTION ); ?>[_tab]" value="<?php echo esc_attr( $tab ); ?>" />
 
-				<?php if ( 'design' === $tab ) : ?>
-					<?php self::render_design_tab( $design, $cur ); ?>
-				<?php else : ?>
-					<?php self::render_behaviour_tab( $behav ); ?>
-				<?php endif; ?>
+				<div class="wcpp-settings-card">
+					<?php if ( 'design' === $tab ) : ?>
+						<?php self::render_design_tab( $design, $cur ); ?>
+					<?php else : ?>
+						<?php self::render_behaviour_tab( $behav ); ?>
+					<?php endif; ?>
+				</div>
 
-				<?php submit_button( __( 'Save Settings', 'wcpp' ) ); ?>
+				<div class="wcpp-settings-actions">
+					<?php submit_button( __( 'Save Settings', 'wcpp' ), 'primary large', 'submit', false ); ?>
+				</div>
 			</form>
 		</div>
 		<?php
