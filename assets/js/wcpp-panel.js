@@ -157,15 +157,22 @@
 	function goBack() {
 		if ( state.phase === 'step' ) {
 			if ( state.current.stepIndex > 0 ) {
+				// Go back to the previous step.
 				state.current.stepIndex--;
 				render();
-			} else {
-				// Cancel this placement.
+			} else if ( state.current.editIndex !== undefined && state.current.editIndex !== null ) {
+				// Cancelling an edit → return to Review (original kept).
 				state.current = null;
-				state.phase   = state.completed.length ? 'review' : 'select';
+				state.phase   = 'review';
+				render();
+			} else {
+				// First step of a new placement → back to the placement picker.
+				state.current = null;
+				state.phase   = 'select';
 				render();
 			}
 		} else if ( state.phase === 'select' ) {
+			// From the placement picker, back returns to Review if any exist.
 			if ( state.completed.length ) { state.phase = 'review'; render(); }
 		}
 	}
