@@ -68,10 +68,11 @@
 
 		var stid = $step.data( 'stid' );
 
-		// Type toggle: show Choices vs Text settings.
+		// Type toggle: Choices (image) / Colours / Text.
 		$step.find( '> .wcpp-option-header .wcpp-step-type' ).off( 'change' ).on( 'change', function () {
-			var isText = ( $( this ).val() === 'text' );
-			$step.attr( 'data-type', isText ? 'text' : 'choice' );
+			var val    = $( this ).val();
+			var isText = ( val === 'text' );
+			$step.attr( 'data-type', val );                 // CSS toggles image vs colour media.
 			$step.find( '> .wcpp-step-choices' ).toggle( ! isText );
 			$step.find( '> .wcpp-step-text' ).toggle( isText );
 		} );
@@ -237,11 +238,14 @@
 		return '' +
 			'<div class="wcpp-choice-row">' +
 				'<input type="hidden" name="' + p + '[id]" value="' + chid + '" />' +
-				'<div class="wcpp-choice-image-wrap">' +
+				'<div class="wcpp-choice-image-wrap wcpp-choice-media--image">' +
 					'<div class="wcpp-image-preview" style="display:none;"><img src="" alt="" /><button type="button" class="wcpp-remove-image">&#10005;</button></div>' +
 					'<button type="button" class="button wcpp-select-image">' + esc( wcppAdmin.addImage ) + '</button>' +
 					'<input type="hidden" name="' + p + '[image_id]" class="wcpp-image-id" value="" />' +
 					'<input type="hidden" name="' + p + '[image_url]" class="wcpp-image-url" value="" />' +
+				'</div>' +
+				'<div class="wcpp-choice-color-wrap wcpp-choice-media--color">' +
+					'<input type="color" name="' + p + '[color]" value="#000000" class="wcpp-choice-color" />' +
 				'</div>' +
 				'<div class="wcpp-choice-field"><label>Name</label>' +
 					'<input type="text" name="' + p + '[name]" value="" placeholder="' + esc( wcppAdmin.choicePlaceholder ) + '" class="wcpp-choice-name" /></div>' +

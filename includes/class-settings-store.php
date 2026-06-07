@@ -382,10 +382,11 @@ class WCPP_Settings_Store {
 						return array(
 							'step_id'   => $step['id'],
 							'step_name' => $step['name'],
-							'type'      => 'choice',
+							'type'      => ( 'color' === $type ) ? 'color' : 'choice',
 							'value'     => $ch['name'],
 							'price'     => (float) $ch['price'],
-							'image_url' => $ch['image_url'],
+							'image_url' => isset( $ch['image_url'] ) ? $ch['image_url'] : '',
+							'color'     => isset( $ch['color'] ) ? $ch['color'] : '',
 							'choice_id' => $ch['id'],
 						);
 					}

@@ -125,7 +125,7 @@
 			if ( sel.type === 'text' ) {
 				selections[ sel.step_id ] = { type: 'text', text: sel.text, name: sel.text, price: parseFloat( sel.price ) || 0 };
 			} else {
-				selections[ sel.step_id ] = { id: sel.choice_id, name: sel.value, price: parseFloat( sel.price ) || 0, image_url: sel.image_url || '' };
+				selections[ sel.step_id ] = { id: sel.choice_id, name: sel.value, price: parseFloat( sel.price ) || 0, image_url: sel.image_url || '', color: sel.color || '' };
 			}
 		} );
 
@@ -197,11 +197,12 @@
 				sels.push( {
 					step_id:   step.id,
 					step_name: step.name,
-					type:      'choice',
+					type:      sel.color ? 'color' : 'choice',
 					choice_id: sel.id,
 					value:     sel.name,
 					price:     parseFloat( sel.price ) || 0,
-					image_url: sel.image_url || ''
+					image_url: sel.image_url || '',
+					color:     sel.color || ''
 				} );
 			}
 		} );
@@ -362,6 +363,34 @@
 			}
 			updateCounter();
 			setTimeout( function () { $field.focus(); }, 50 );
+			return;
+		}
+
+		// ── Colour step (swatches) ──────────────────────────────────────────
+		if ( step.type === 'color' ) {
+			var $sw       = $( '<div class="wcpp-swatches"></div>' );
+			var showPriceC = parseInt( design.show_choice_price, 10 ) !== 0;
+			$.each( step.choices || [], function ( i, choice ) {
+				var $item = $( '<div class="wcpp-swatch" role="button" tabindex="0"></div>' );
+				$item.append( $( '<span class="wcpp-swatch__dot"></span>' ).css( 'background-color', choice.color || '#000' ) );
+				$item.append( $( '<span class="wcpp-swatch__name"></span>' ).text( choice.name ) );
+				if ( showPriceC && parseFloat( choice.price ) > 0 ) {
+					$item.append( $( '<span class="wcpp-swatch__price"></span>' ).text( '+' + money( choice.price ) ) );
+				}
+				if ( currentSel && currentSel.id === choice.id ) { $item.addClass( 'wcpp-selected' ); }
+
+				var pickC = function () {
+					state.current.selections[ step.id ] = choice;
+					$sw.find( '.wcpp-swatch' ).removeClass( 'wcpp-selected' );
+					$item.addClass( 'wcpp-selected' );
+				};
+				$item.on( 'click.wcppPanel', pickC );
+				$item.on( 'keydown.wcppPanel', function ( e ) {
+					if ( e.key === 'Enter' || e.key === ' ' ) { e.preventDefault(); pickC(); }
+				} );
+				$sw.append( $item );
+			} );
+			$content.append( $sw );
 			return;
 		}
 

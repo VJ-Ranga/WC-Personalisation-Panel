@@ -320,7 +320,8 @@ class WCPP_Personalisation_CPT {
 					placeholder="<?php esc_attr_e( 'Step name, e.g. Colour', 'wcpp' ); ?>"
 					class="wcpp-option-name-input" />
 				<select name="<?php echo esc_attr( $base ); ?>[type]" class="wcpp-step-type">
-					<option value="choice" <?php selected( $type, 'choice' ); ?>><?php esc_html_e( 'Choices', 'wcpp' ); ?></option>
+					<option value="choice" <?php selected( $type, 'choice' ); ?>><?php esc_html_e( 'Choices (image)', 'wcpp' ); ?></option>
+					<option value="color" <?php selected( $type, 'color' ); ?>><?php esc_html_e( 'Colours', 'wcpp' ); ?></option>
 					<option value="text" <?php selected( $type, 'text' ); ?>><?php esc_html_e( 'Text input', 'wcpp' ); ?></option>
 				</select>
 				<button type="button" class="button wcpp-delete-option" title="<?php esc_attr_e( 'Delete step', 'wcpp' ); ?>">
@@ -378,12 +379,15 @@ class WCPP_Personalisation_CPT {
 		$ch_name  = isset( $choice['name'] ) ? $choice['name'] : '';
 		$ch_img   = isset( $choice['image_id'] ) ? $choice['image_id'] : '';
 		$ch_url   = isset( $choice['image_url'] ) ? $choice['image_url'] : '';
+		$ch_color = isset( $choice['color'] ) && $choice['color'] ? $choice['color'] : '#000000';
 		$ch_price = isset( $choice['price'] ) ? $choice['price'] : '0.00';
 		$prefix   = $step_base . '[choices][' . $ch_id . ']';
 		?>
 		<div class="wcpp-choice-row">
 			<input type="hidden" name="<?php echo esc_attr( $prefix ); ?>[id]" value="<?php echo esc_attr( $ch_id ); ?>" />
-			<div class="wcpp-choice-image-wrap">
+
+			<!-- Image media (Choices type) -->
+			<div class="wcpp-choice-image-wrap wcpp-choice-media--image">
 				<div class="wcpp-image-preview" <?php echo $ch_url ? '' : 'style="display:none;"'; ?>>
 					<img src="<?php echo esc_url( $ch_url ); ?>" alt="" />
 					<button type="button" class="wcpp-remove-image" title="<?php esc_attr_e( 'Remove', 'wcpp' ); ?>">&#10005;</button>
@@ -393,6 +397,12 @@ class WCPP_Personalisation_CPT {
 				</button>
 				<input type="hidden" name="<?php echo esc_attr( $prefix ); ?>[image_id]" class="wcpp-image-id" value="<?php echo esc_attr( $ch_img ); ?>" />
 				<input type="hidden" name="<?php echo esc_attr( $prefix ); ?>[image_url]" class="wcpp-image-url" value="<?php echo esc_attr( $ch_url ); ?>" />
+			</div>
+
+			<!-- Colour media (Colours type) -->
+			<div class="wcpp-choice-color-wrap wcpp-choice-media--color">
+				<input type="color" name="<?php echo esc_attr( $prefix ); ?>[color]"
+					value="<?php echo esc_attr( $ch_color ); ?>" class="wcpp-choice-color" />
 			</div>
 			<div class="wcpp-choice-field">
 				<label><?php esc_html_e( 'Name', 'wcpp' ); ?></label>
@@ -649,7 +659,7 @@ class WCPP_Personalisation_CPT {
 					if ( '' === $st_name ) {
 						continue;
 					}
-					$st_type    = ( isset( $step['type'] ) && 'text' === $step['type'] ) ? 'text' : 'choice';
+					$st_type    = isset( $step['type'] ) && in_array( $step['type'], array( 'text', 'color' ), true ) ? $step['type'] : 'choice';
 					$clean_step = array(
 						'id'      => sanitize_text_field( wp_unslash( $step['id'] ?? 'st_' . uniqid() ) ),
 						'name'    => $st_name,
@@ -663,7 +673,7 @@ class WCPP_Personalisation_CPT {
 						$clean_step['price']       = number_format( (float) ( $step['price'] ?? 0 ), 2, '.', '' );
 					}
 
-					if ( 'choice' === $st_type && ! empty( $step['choices'] ) && is_array( $step['choices'] ) ) {
+					if ( in_array( $st_type, array( 'choice', 'color' ), true ) && ! empty( $step['choices'] ) && is_array( $step['choices'] ) ) {
 						foreach ( $step['choices'] as $ch ) {
 							$ch_name = sanitize_text_field( wp_unslash( $ch['name'] ?? '' ) );
 							if ( '' === $ch_name ) {
@@ -674,6 +684,7 @@ class WCPP_Personalisation_CPT {
 								'name'      => $ch_name,
 								'image_id'  => absint( $ch['image_id'] ?? 0 ),
 								'image_url' => esc_url_raw( wp_unslash( $ch['image_url'] ?? '' ) ),
+								'color'     => sanitize_hex_color( $ch['color'] ?? '' ) ?: '',
 								'price'     => number_format( (float) ( $ch['price'] ?? 0 ), 2, '.', '' ),
 							);
 						}
