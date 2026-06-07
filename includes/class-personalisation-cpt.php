@@ -162,22 +162,26 @@ class WCPP_Personalisation_CPT {
 			'wcpp-admin',
 			'wcppAdmin',
 			array(
-				'mediaTitle'        => __( 'Select Image', 'wcpp' ),
-				'mediaButton'       => __( 'Use This Image', 'wcpp' ),
-				'changeImage'       => __( 'Change Image', 'wcpp' ),
-				'addImage'          => __( 'Add Image', 'wcpp' ),
-				'confirmDelete'     => __( 'Are you sure you want to delete this?', 'wcpp' ),
-				'namePlaceholder'   => __( 'Option name, e.g. Location', 'wcpp' ),
-				'choicePlaceholder' => __( 'Choice name, e.g. Front', 'wcpp' ),
-				'addChoice'         => __( '+ Add Choice', 'wcpp' ),
+				'mediaTitle'           => __( 'Select Image', 'wcpp' ),
+				'mediaButton'          => __( 'Use This Image', 'wcpp' ),
+				'changeImage'          => __( 'Change Image', 'wcpp' ),
+				'addImage'             => __( 'Add Image', 'wcpp' ),
+				'confirmDelete'        => __( 'Are you sure you want to delete this?', 'wcpp' ),
+				'choicePlaceholder'    => __( 'Choice name, e.g. Gold', 'wcpp' ),
+				'placementPlaceholder' => __( 'Placement name, e.g. Front', 'wcpp' ),
+				'stepPlaceholder'      => __( 'Step name, e.g. Colour', 'wcpp' ),
+				'stepLabel'            => __( 'Step', 'wcpp' ),
+				'duplicate'            => __( 'Duplicate', 'wcpp' ),
+				'addStep'              => __( 'Add Step', 'wcpp' ),
+				'addChoice'            => __( 'Add Choice', 'wcpp' ),
 			)
 		);
 	}
 
-	// ─── OPTIONS BUILDER ─────────────────────────────────────────────────
+	// ─── BUILDER: PLACEMENTS → STEPS → CHOICES ───────────────────────────
 
 	/**
-	 * Render the options builder meta box.
+	 * Render the builder meta box.
 	 *
 	 * @param WP_Post $post Current post.
 	 * @return void
@@ -185,55 +189,120 @@ class WCPP_Personalisation_CPT {
 	public static function render_builder( $post ) {
 		wp_nonce_field( 'wcpp_save_all_meta', 'wcpp_meta_nonce' );
 
-		$options = get_post_meta( $post->ID, '_wcpp_options', true );
-		if ( ! is_array( $options ) ) {
-			$options = array();
-		}
+		$placements = self::get_placements_for_edit( $post->ID );
 		?>
 		<div id="wcpp-builder">
 			<p class="wcpp-builder-intro">
-				<?php esc_html_e( 'Each Option is one step in the panel (e.g. Location, Font, Color). Each Choice is a selectable item within that step.', 'wcpp' ); ?>
+				<?php esc_html_e( 'A Placement (e.g. Front, Back) is something the customer personalises. Each Placement has its own Steps (Font, Colour…), and each Step has Choices. A customer can pick each Placement once per order.', 'wcpp' ); ?>
 			</p>
-			<div id="wcpp-options-container">
-				<?php foreach ( $options as $opt_idx => $option ) : ?>
-					<?php self::render_option_block( $opt_idx, $option ); ?>
+			<div id="wcpp-placements-container">
+				<?php foreach ( $placements as $placement ) : ?>
+					<?php self::render_placement_block( $placement ); ?>
 				<?php endforeach; ?>
 			</div>
-			<button type="button" id="wcpp-add-option" class="button button-primary wcpp-add-option-btn">
-				&#43; <?php esc_html_e( 'Create Option', 'wcpp' ); ?>
+			<button type="button" id="wcpp-add-placement" class="button button-primary wcpp-add-placement-btn">
+				&#43; <?php esc_html_e( 'Add Placement', 'wcpp' ); ?>
 			</button>
 		</div>
-		<script>var wcppOptionCount = <?php echo (int) count( $options ); ?>;</script>
 		<?php
 	}
 
 	/**
-	 * Render a single option block.
+	 * Read placements for the edit screen, falling back to legacy options.
 	 *
-	 * @param int   $opt_idx Option index.
-	 * @param array $option  Option data.
+	 * @param int $post_id Post ID.
+	 * @return array
+	 */
+	private static function get_placements_for_edit( $post_id ) {
+		$placements = get_post_meta( $post_id, '_wcpp_placements', true );
+		if ( is_array( $placements ) && ! empty( $placements ) ) {
+			return $placements;
+		}
+
+		// Legacy: wrap old flat options into a single placement.
+		$options = get_post_meta( $post_id, '_wcpp_options', true );
+		if ( is_array( $options ) && ! empty( $options ) ) {
+			return array(
+				array(
+					'id'    => 'pl_' . uniqid(),
+					'name'  => __( 'Personalisation', 'wcpp' ),
+					'steps' => $options,
+				),
+			);
+		}
+
+		return array();
+	}
+
+	/**
+	 * Render a placement block (parent).
+	 *
+	 * @param array $placement Placement data.
 	 * @return void
 	 */
-	public static function render_option_block( $opt_idx, $option ) {
-		$opt_id   = isset( $option['id'] ) ? $option['id'] : 'opt_' . uniqid();
-		$opt_name = isset( $option['name'] ) ? $option['name'] : '';
-		$choices  = isset( $option['choices'] ) && is_array( $option['choices'] ) ? $option['choices'] : array();
+	public static function render_placement_block( $placement ) {
+		$plid  = isset( $placement['id'] ) ? $placement['id'] : 'pl_' . uniqid();
+		$name  = isset( $placement['name'] ) ? $placement['name'] : '';
+		$steps = isset( $placement['steps'] ) && is_array( $placement['steps'] ) ? $placement['steps'] : array();
+		$base  = 'wcpp_placements[' . $plid . ']';
 		?>
-		<div class="wcpp-option-block" data-option-index="<?php echo esc_attr( $opt_idx ); ?>">
+		<div class="wcpp-placement-block" data-plid="<?php echo esc_attr( $plid ); ?>">
+			<div class="wcpp-placement-header">
+				<span class="dashicons dashicons-tag wcpp-placement-icon"></span>
+				<input type="hidden" name="<?php echo esc_attr( $base ); ?>[id]" value="<?php echo esc_attr( $plid ); ?>" />
+				<input type="text" name="<?php echo esc_attr( $base ); ?>[name]"
+					value="<?php echo esc_attr( $name ); ?>"
+					placeholder="<?php esc_attr_e( 'Placement name, e.g. Front', 'wcpp' ); ?>"
+					class="wcpp-placement-name-input" />
+				<button type="button" class="button wcpp-duplicate-placement" title="<?php esc_attr_e( 'Duplicate this placement', 'wcpp' ); ?>">
+					<span class="dashicons dashicons-admin-page"></span> <?php esc_html_e( 'Duplicate', 'wcpp' ); ?>
+				</button>
+				<button type="button" class="button wcpp-delete-placement" title="<?php esc_attr_e( 'Delete placement', 'wcpp' ); ?>">
+					<span class="dashicons dashicons-trash"></span>
+				</button>
+			</div>
+
+			<div class="wcpp-steps-container">
+				<?php foreach ( $steps as $step ) : ?>
+					<?php self::render_step_block( $plid, $step ); ?>
+				<?php endforeach; ?>
+			</div>
+
+			<button type="button" class="button wcpp-add-step-btn">
+				&#43; <?php esc_html_e( 'Add Step', 'wcpp' ); ?>
+			</button>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Render a step block (child of a placement).
+	 *
+	 * @param string $plid Placement ID.
+	 * @param array  $step Step data.
+	 * @return void
+	 */
+	public static function render_step_block( $plid, $step ) {
+		$stid    = isset( $step['id'] ) ? $step['id'] : 'st_' . uniqid();
+		$name    = isset( $step['name'] ) ? $step['name'] : '';
+		$choices = isset( $step['choices'] ) && is_array( $step['choices'] ) ? $step['choices'] : array();
+		$base    = 'wcpp_placements[' . $plid . '][steps][' . $stid . ']';
+		?>
+		<div class="wcpp-option-block wcpp-step-block" data-stid="<?php echo esc_attr( $stid ); ?>">
 			<div class="wcpp-option-header">
-				<span class="wcpp-option-label"><?php esc_html_e( 'Step', 'wcpp' ); ?> <span class="wcpp-step-num"><?php echo esc_html( $opt_idx + 1 ); ?></span></span>
-				<input type="hidden" name="wcpp_options[<?php echo esc_attr( $opt_idx ); ?>][id]" value="<?php echo esc_attr( $opt_id ); ?>" />
-				<input type="text" name="wcpp_options[<?php echo esc_attr( $opt_idx ); ?>][name]"
-					value="<?php echo esc_attr( $opt_name ); ?>"
-					placeholder="<?php esc_attr_e( 'Option name, e.g. Location', 'wcpp' ); ?>"
+				<span class="wcpp-option-label"><?php esc_html_e( 'Step', 'wcpp' ); ?></span>
+				<input type="hidden" name="<?php echo esc_attr( $base ); ?>[id]" value="<?php echo esc_attr( $stid ); ?>" />
+				<input type="text" name="<?php echo esc_attr( $base ); ?>[name]"
+					value="<?php echo esc_attr( $name ); ?>"
+					placeholder="<?php esc_attr_e( 'Step name, e.g. Colour', 'wcpp' ); ?>"
 					class="wcpp-option-name-input" />
-				<button type="button" class="button wcpp-delete-option" title="<?php esc_attr_e( 'Delete', 'wcpp' ); ?>">
+				<button type="button" class="button wcpp-delete-option" title="<?php esc_attr_e( 'Delete step', 'wcpp' ); ?>">
 					<span class="dashicons dashicons-trash"></span>
 				</button>
 			</div>
 			<div class="wcpp-choices-list">
-				<?php foreach ( $choices as $ch_idx => $choice ) : ?>
-					<?php self::render_choice_row( $opt_idx, $ch_idx, $choice ); ?>
+				<?php foreach ( $choices as $choice ) : ?>
+					<?php self::render_choice_row( $base, $choice ); ?>
 				<?php endforeach; ?>
 			</div>
 			<button type="button" class="button wcpp-add-choice-btn">
@@ -246,18 +315,17 @@ class WCPP_Personalisation_CPT {
 	/**
 	 * Render a single choice row.
 	 *
-	 * @param int   $opt_idx Option index.
-	 * @param int   $ch_idx  Choice index.
-	 * @param array $choice  Choice data.
+	 * @param string $step_base Field-name base for the parent step.
+	 * @param array  $choice    Choice data.
 	 * @return void
 	 */
-	public static function render_choice_row( $opt_idx, $ch_idx, $choice ) {
+	public static function render_choice_row( $step_base, $choice ) {
 		$ch_id    = isset( $choice['id'] ) ? $choice['id'] : 'ch_' . uniqid();
 		$ch_name  = isset( $choice['name'] ) ? $choice['name'] : '';
 		$ch_img   = isset( $choice['image_id'] ) ? $choice['image_id'] : '';
 		$ch_url   = isset( $choice['image_url'] ) ? $choice['image_url'] : '';
 		$ch_price = isset( $choice['price'] ) ? $choice['price'] : '0.00';
-		$prefix   = 'wcpp_options[' . $opt_idx . '][choices][' . $ch_idx . ']';
+		$prefix   = $step_base . '[choices][' . $ch_id . ']';
 		?>
 		<div class="wcpp-choice-row">
 			<input type="hidden" name="<?php echo esc_attr( $prefix ); ?>[id]" value="<?php echo esc_attr( $ch_id ); ?>" />
@@ -276,7 +344,7 @@ class WCPP_Personalisation_CPT {
 				<label><?php esc_html_e( 'Name', 'wcpp' ); ?></label>
 				<input type="text" name="<?php echo esc_attr( $prefix ); ?>[name]"
 					value="<?php echo esc_attr( $ch_name ); ?>"
-					placeholder="<?php esc_attr_e( 'e.g. Front', 'wcpp' ); ?>"
+					placeholder="<?php esc_attr_e( 'e.g. Gold', 'wcpp' ); ?>"
 					class="wcpp-choice-name" />
 			</div>
 			<div class="wcpp-choice-field wcpp-choice-field--price">
@@ -464,8 +532,8 @@ class WCPP_Personalisation_CPT {
 			return;
 		}
 
-		// Save options.
-		self::save_options( $post_id );
+		// Save placements (parent → steps → choices).
+		self::save_placements( $post_id );
 
 		// Save category assignment.
 		self::save_categories( $post_id );
@@ -493,48 +561,67 @@ class WCPP_Personalisation_CPT {
 	}
 
 	/**
-	 * Save options builder data.
+	 * Save the placements builder data (placement → steps → choices).
 	 *
 	 * @param int $post_id Post ID.
 	 * @return void
 	 */
-	private static function save_options( $post_id ) {
-		if ( empty( $_POST['wcpp_options'] ) || ! is_array( $_POST['wcpp_options'] ) ) {
-			update_post_meta( $post_id, '_wcpp_options', array() );
+	private static function save_placements( $post_id ) {
+		if ( empty( $_POST['wcpp_placements'] ) || ! is_array( $_POST['wcpp_placements'] ) ) {
+			update_post_meta( $post_id, '_wcpp_placements', array() );
+			delete_post_meta( $post_id, '_wcpp_options' ); // Drop legacy data once migrated.
 			return;
 		}
 
 		$clean = array();
 
-		foreach ( $_POST['wcpp_options'] as $opt ) { // phpcs:ignore
-			$opt_name = sanitize_text_field( wp_unslash( $opt['name'] ?? '' ) );
-			if ( empty( $opt_name ) ) {
+		foreach ( $_POST['wcpp_placements'] as $placement ) { // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
+			$pl_name = sanitize_text_field( wp_unslash( $placement['name'] ?? '' ) );
+			if ( '' === $pl_name ) {
 				continue;
 			}
-			$clean_opt = array(
-				'id'      => sanitize_text_field( wp_unslash( $opt['id'] ?? 'opt_' . uniqid() ) ),
-				'name'    => $opt_name,
-				'choices' => array(),
+
+			$clean_pl = array(
+				'id'    => sanitize_text_field( wp_unslash( $placement['id'] ?? 'pl_' . uniqid() ) ),
+				'name'  => $pl_name,
+				'steps' => array(),
 			);
-			if ( ! empty( $opt['choices'] ) && is_array( $opt['choices'] ) ) {
-				foreach ( $opt['choices'] as $ch ) {
-					$ch_name = sanitize_text_field( wp_unslash( $ch['name'] ?? '' ) );
-					if ( empty( $ch_name ) ) {
+
+			if ( ! empty( $placement['steps'] ) && is_array( $placement['steps'] ) ) {
+				foreach ( $placement['steps'] as $step ) {
+					$st_name = sanitize_text_field( wp_unslash( $step['name'] ?? '' ) );
+					if ( '' === $st_name ) {
 						continue;
 					}
-					$clean_opt['choices'][] = array(
-						'id'        => sanitize_text_field( wp_unslash( $ch['id'] ?? 'ch_' . uniqid() ) ),
-						'name'      => $ch_name,
-						'image_id'  => absint( $ch['image_id'] ?? 0 ),
-						'image_url' => esc_url_raw( wp_unslash( $ch['image_url'] ?? '' ) ),
-						'price'     => number_format( (float) ( $ch['price'] ?? 0 ), 2, '.', '' ),
+					$clean_step = array(
+						'id'      => sanitize_text_field( wp_unslash( $step['id'] ?? 'st_' . uniqid() ) ),
+						'name'    => $st_name,
+						'choices' => array(),
 					);
+					if ( ! empty( $step['choices'] ) && is_array( $step['choices'] ) ) {
+						foreach ( $step['choices'] as $ch ) {
+							$ch_name = sanitize_text_field( wp_unslash( $ch['name'] ?? '' ) );
+							if ( '' === $ch_name ) {
+								continue;
+							}
+							$clean_step['choices'][] = array(
+								'id'        => sanitize_text_field( wp_unslash( $ch['id'] ?? 'ch_' . uniqid() ) ),
+								'name'      => $ch_name,
+								'image_id'  => absint( $ch['image_id'] ?? 0 ),
+								'image_url' => esc_url_raw( wp_unslash( $ch['image_url'] ?? '' ) ),
+								'price'     => number_format( (float) ( $ch['price'] ?? 0 ), 2, '.', '' ),
+							);
+						}
+					}
+					$clean_pl['steps'][] = $clean_step;
 				}
 			}
-			$clean[] = $clean_opt;
+
+			$clean[] = $clean_pl;
 		}
 
-		update_post_meta( $post_id, '_wcpp_options', $clean );
+		update_post_meta( $post_id, '_wcpp_placements', $clean );
+		delete_post_meta( $post_id, '_wcpp_options' ); // Drop legacy data once migrated.
 	}
 
 	/**
@@ -584,8 +671,8 @@ class WCPP_Personalisation_CPT {
 			'cb'         => $columns['cb'],
 			'title'      => __( 'Set Name', 'wcpp' ),
 			'categories' => __( 'Applies To', 'wcpp' ),
-			'options'    => __( 'Steps', 'wcpp' ),
-			'choices'    => __( 'Total Choices', 'wcpp' ),
+			'options'    => __( 'Placements', 'wcpp' ),
+			'choices'    => __( 'Total Steps', 'wcpp' ),
 			'date'       => __( 'Updated', 'wcpp' ),
 		);
 	}
@@ -598,19 +685,16 @@ class WCPP_Personalisation_CPT {
 	 * @return void
 	 */
 	public static function render_admin_column( $column, $post_id ) {
-		$options = get_post_meta( $post_id, '_wcpp_options', true );
-		if ( ! is_array( $options ) ) {
-			$options = array();
-		}
+		$placements = self::get_placements_for_edit( $post_id );
 
 		if ( 'options' === $column ) {
-			echo esc_html( count( $options ) );
+			echo esc_html( count( $placements ) );
 		}
 
 		if ( 'choices' === $column ) {
 			$total = 0;
-			foreach ( $options as $opt ) {
-				$total += count( $opt['choices'] ?? array() );
+			foreach ( $placements as $pl ) {
+				$total += count( $pl['steps'] ?? array() );
 			}
 			echo esc_html( $total );
 		}

@@ -397,3 +397,56 @@
 	#wcpp-panel, .wcpp-overlay, .wcpp-options, .wcpp-summary-list,
 	.wcpp-step__heading, .wcpp-option-btn { transition: none !important; animation: none !important; }
 }
+
+/* ─── Placement select + review (multi-placement) ─────────────────── */
+.wcpp-placement-choice { justify-content: space-between; }
+.wcpp-option-arrow { color: var(--wcpp-muted); font-size: 18px; }
+
+.wcpp-review-placement {
+	border:        1px solid var(--wcpp-hair);
+	border-radius: var(--wcpp-panel-radius);
+	padding:       12px 14px;
+	margin-bottom: 12px;
+}
+.wcpp-review-placement__head {
+	display:         flex;
+	align-items:     center;
+	justify-content: space-between;
+	margin-bottom:   6px;
+}
+.wcpp-review-placement__name {
+	font-weight:    700;
+	font-size:      13px;
+	letter-spacing: .06em;
+	text-transform: uppercase;
+	color:          var(--wcpp-ink);
+}
+.wcpp-review-remove {
+	background: none; border: none; cursor: pointer;
+	color: var(--wcpp-muted); font-size: 13px; line-height: 1;
+	width: 26px; height: 26px; border-radius: 50%;
+	transition: background .2s, color .2s;
+}
+.wcpp-review-remove:hover { background: #f4f1ec; color: #b3261e; }
+
+.wcpp-summary-fee-line {
+	display: flex; justify-content: space-between;
+	padding: 10px 2px; font-size: 14px;
+	border-top: 1px solid var(--wcpp-hair);
+}
+
+.wcpp-add-another {
+	width: 100%;
+	background: transparent;
+	border: 1.5px dashed var(--wcpp-card-border);
+	color: var(--wcpp-ink);
+	border-radius: var(--wcpp-panel-radius);
+	padding: 13px;
+	cursor: pointer;
+	font-size: 13px;
+	font-weight: 600;
+	letter-spacing: .04em;
+	margin: 4px 0 8px;
+	transition: border-color .25s var(--wcpp-ease), background .25s var(--wcpp-ease);
+}
+.wcpp-add-another:hover { border-color: var(--wcpp-card-selected); background: #faf9f7; }

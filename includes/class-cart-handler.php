@@ -141,7 +141,7 @@ class WCPP_Cart_Handler {
 		$front_config = array(
 			'id'          => $config['id'],
 			'name'        => $config['name'],
-			'options'     => $config['options'],
+			'placements'  => $config['placements'],
 			'button_text' => $config['button_text'],
 			'set_price'   => isset( $config['set_price'] ) ? (float) $config['set_price'] : 0.0,
 			'design'      => $config['design'],
@@ -175,6 +175,10 @@ class WCPP_Cart_Handler {
 					'stepOf'       => esc_html__( 'Step %1$d of %2$d', 'wcpp' ),
 					'total'        => esc_html__( 'Personalisation total:', 'wcpp' ),
 					'feeLabel'     => esc_html__( 'Personalisation fee', 'wcpp' ),
+					'choosePlacement'        => esc_html__( 'Choose placement', 'wcpp' ),
+					'choosePlacementHeading' => esc_html__( 'Where would you like it?', 'wcpp' ),
+					'review'       => esc_html__( 'Review', 'wcpp' ),
+					'addAnother'   => esc_html__( 'Add another placement', 'wcpp' ),
 				),
 			)
 		);
@@ -268,15 +272,19 @@ class WCPP_Cart_Handler {
 
 		$data = $cart_item['wcpp_data'];
 
-		if ( ! empty( $data['selections'] ) && is_array( $data['selections'] ) ) {
-			foreach ( $data['selections'] as $sel ) {
-				$display = esc_html( $sel['choice_name'] );
-				if ( isset( $sel['choice_price'] ) && (float) $sel['choice_price'] > 0 ) {
-					$display .= ' (+' . wp_strip_all_tags( wc_price( $sel['choice_price'] ) ) . ')';
+		if ( ! empty( $data['placements'] ) && is_array( $data['placements'] ) ) {
+			foreach ( $data['placements'] as $placement ) {
+				$lines = array();
+				foreach ( ( $placement['selections'] ?? array() ) as $sel ) {
+					$line = esc_html( $sel['step_name'] ) . ': ' . esc_html( $sel['choice_name'] );
+					if ( isset( $sel['choice_price'] ) && (float) $sel['choice_price'] > 0 ) {
+						$line .= ' (+' . wp_strip_all_tags( wc_price( $sel['choice_price'] ) ) . ')';
+					}
+					$lines[] = $line;
 				}
 				$item_data[] = array(
-					'name'  => esc_html( $sel['option_name'] ),
-					'value' => $display,
+					'name'  => esc_html( $placement['placement_name'] ),
+					'value' => implode( '<br>', $lines ),
 				);
 			}
 		}

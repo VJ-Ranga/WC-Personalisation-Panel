@@ -190,10 +190,7 @@ class WCPP_Settings_Store {
 			return null;
 		}
 
-		$options = get_post_meta( $set_id, '_wcpp_options', true );
-		if ( ! is_array( $options ) ) {
-			$options = array();
-		}
+		$placements = self::read_placements( $set_id );
 
 		$btn_override = get_post_meta( $set_id, '_wcpp_button_text', true );
 		$set_price    = get_post_meta( $set_id, '_wcpp_set_price', true );
@@ -201,12 +198,39 @@ class WCPP_Settings_Store {
 		return array(
 			'id'          => (int) $set_id,
 			'name'        => $post->post_title,
-			'options'     => $options,
+			'placements'  => $placements,
 			'button_text' => is_string( $btn_override ) ? $btn_override : '',
 			'set_price'   => ( '' === $set_price || null === $set_price ) ? 0.0 : (float) $set_price,
 			'design'      => self::get_design(),
 			'behaviour'   => self::get_behaviour(),
 		);
+	}
+
+	/**
+	 * Read placements for a set, falling back to legacy flat options
+	 * (wrapped as a single placement) for backward compatibility.
+	 *
+	 * @param int $set_id Set post ID.
+	 * @return array
+	 */
+	private static function read_placements( $set_id ) {
+		$placements = get_post_meta( $set_id, '_wcpp_placements', true );
+		if ( is_array( $placements ) && ! empty( $placements ) ) {
+			return $placements;
+		}
+
+		$options = get_post_meta( $set_id, '_wcpp_options', true );
+		if ( is_array( $options ) && ! empty( $options ) ) {
+			return array(
+				array(
+					'id'    => 'pl_legacy',
+					'name'  => __( 'Personalisation', 'wcpp' ),
+					'steps' => $options,
+				),
+			);
+		}
+
+		return array();
 	}
 
 	/**
@@ -298,27 +322,63 @@ class WCPP_Settings_Store {
 	}
 
 	/**
-	 * Validate a choice name against a set's option (server-side whitelist).
+	 * Resolve a placement → step → choice by IDs, returning the server-side
+	 * canonical data (names + price). Returns null if any ID is invalid.
+	 * Server trusts only IDs; all displayed values come from here.
 	 *
-	 * @param int    $set_id      Set post ID.
-	 * @param string $option_id   Option ID.
-	 * @param string $choice_name Choice name.
-	 * @return bool
+	 * @param array  $set         Full set array (from get_set).
+	 * @param string $placement_id Placement ID.
+	 * @param string $step_id      Step ID.
+	 * @param string $choice_id    Choice ID.
+	 * @return array|null
 	 */
-	public static function is_valid_choice( $set_id, $option_id, $choice_name ) {
-		$set = self::get_set( $set_id );
-		if ( ! $set ) {
-			return false;
+	public static function resolve_choice( $set, $placement_id, $step_id, $choice_id ) {
+		if ( empty( $set['placements'] ) ) {
+			return null;
 		}
-		foreach ( $set['options'] as $opt ) {
-			if ( $opt['id'] === $option_id ) {
-				foreach ( $opt['choices'] as $ch ) {
-					if ( $ch['name'] === $choice_name ) {
-						return true;
+		foreach ( $set['placements'] as $pl ) {
+			if ( $pl['id'] !== $placement_id ) {
+				continue;
+			}
+			foreach ( ( $pl['steps'] ?? array() ) as $step ) {
+				if ( $step['id'] !== $step_id ) {
+					continue;
+				}
+				foreach ( ( $step['choices'] ?? array() ) as $ch ) {
+					if ( $ch['id'] === $choice_id ) {
+						return array(
+							'placement_id'   => $pl['id'],
+							'placement_name' => $pl['name'],
+							'step_id'        => $step['id'],
+							'step_name'      => $step['name'],
+							'choice_id'      => $ch['id'],
+							'choice_name'    => $ch['name'],
+							'choice_price'   => (float) $ch['price'],
+							'image_url'      => $ch['image_url'],
+						);
 					}
 				}
 			}
 		}
-		return false;
+		return null;
+	}
+
+	/**
+	 * Find a placement in a set by ID.
+	 *
+	 * @param array  $set          Full set array.
+	 * @param string $placement_id Placement ID.
+	 * @return array|null
+	 */
+	public static function get_placement( $set, $placement_id ) {
+		if ( empty( $set['placements'] ) ) {
+			return null;
+		}
+		foreach ( $set['placements'] as $pl ) {
+			if ( $pl['id'] === $placement_id ) {
+				return $pl;
+			}
+		}
+		return null;
 	}
 }

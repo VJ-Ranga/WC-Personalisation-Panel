@@ -47,8 +47,8 @@ class WCPP_Order_Handler {
 			$item->add_meta_data( '_wcpp_set_name', sanitize_text_field( $data['set_name'] ), true );
 		}
 
-		if ( ! empty( $data['selections'] ) && is_array( $data['selections'] ) ) {
-			$item->add_meta_data( '_wcpp_selections', wp_json_encode( $data['selections'] ), true );
+		if ( ! empty( $data['placements'] ) && is_array( $data['placements'] ) ) {
+			$item->add_meta_data( '_wcpp_placements', wp_json_encode( $data['placements'] ), true );
 		}
 
 		if ( isset( $data['set_fee'] ) && (float) $data['set_fee'] > 0 ) {
@@ -73,13 +73,13 @@ class WCPP_Order_Handler {
 	 * @return void
 	 */
 	public static function display_in_order( $item, $cart_key, $order ) {
-		$json = $item->get_meta( '_wcpp_selections' );
+		$json = $item->get_meta( '_wcpp_placements' );
 		if ( empty( $json ) ) {
 			return;
 		}
 
-		$selections = json_decode( $json, true );
-		if ( ! is_array( $selections ) || empty( $selections ) ) {
+		$placements = json_decode( $json, true );
+		if ( ! is_array( $placements ) || empty( $placements ) ) {
 			return;
 		}
 
@@ -93,20 +93,24 @@ class WCPP_Order_Handler {
 
 		echo '<div class="wcpp-order-meta" ' . $wrap_style . '>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		echo '<span class="wcpp-order-meta__title" style="display:block;font-weight:600;letter-spacing:.04em;text-transform:uppercase;font-size:11px;margin-bottom:6px;">' . esc_html__( 'Personalisation', 'wcpp' ) . '</span>';
-		echo '<table class="wcpp-order-table" style="width:100%;border-collapse:collapse;" cellspacing="0" cellpadding="0">';
 
-		foreach ( $selections as $sel ) {
-			$price_html = '';
-			if ( ! empty( $sel['choice_price'] ) && (float) $sel['choice_price'] > 0 ) {
-				$price_html = ' <span style="color:#b8956a;">(+' . wp_kses_post( wc_price( $sel['choice_price'] ) ) . ')</span>';
+		foreach ( $placements as $placement ) {
+			echo '<div style="margin-bottom:8px;">';
+			echo '<strong style="display:block;font-size:12px;text-transform:uppercase;letter-spacing:.04em;">' . esc_html( $placement['placement_name'] ?? '' ) . '</strong>';
+			echo '<table class="wcpp-order-table" style="width:100%;border-collapse:collapse;" cellspacing="0" cellpadding="0">';
+			foreach ( ( $placement['selections'] ?? array() ) as $sel ) {
+				$price_html = '';
+				if ( ! empty( $sel['choice_price'] ) && (float) $sel['choice_price'] > 0 ) {
+					$price_html = ' <span style="color:#b8956a;">(+' . wp_kses_post( wc_price( $sel['choice_price'] ) ) . ')</span>';
+				}
+				echo '<tr>';
+				echo '<td style="padding:3px 8px 3px 0;color:#888;white-space:nowrap;vertical-align:top;">' . esc_html( $sel['step_name'] ?? '' ) . '</td>';
+				echo '<td style="padding:3px 0;font-weight:600;">' . esc_html( $sel['choice_name'] ?? '' ) . $price_html . '</td>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+				echo '</tr>';
 			}
-			echo '<tr>';
-			echo '<td style="padding:3px 8px 3px 0;color:#888;white-space:nowrap;vertical-align:top;">' . esc_html( $sel['option_name'] ) . '</td>';
-			echo '<td style="padding:3px 0;font-weight:600;">' . esc_html( $sel['choice_name'] ) . $price_html . '</td>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-			echo '</tr>';
+			echo '</table>';
+			echo '</div>';
 		}
-
-		echo '</table>';
 
 		$set_fee = (float) $item->get_meta( '_wcpp_set_fee' );
 		if ( $set_fee > 0 ) {

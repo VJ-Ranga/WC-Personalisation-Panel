@@ -1,8 +1,8 @@
 <?php
 /**
- * AJAX Handler — add personalised item to cart.
- * Public endpoint (logged-in + guest). Trusts nothing from the browser
- * except IDs; every name and price is re-derived from the set server-side.
+ * AJAX Handler — add personalised item to cart (placement model).
+ * Public endpoint (logged-in + guest). Trusts only IDs; every name and
+ * price is re-derived from the set server-side.
  *
  * @package WC_Personalisation_Panel
  */
@@ -42,7 +42,7 @@ class WCPP_Ajax_Handler {
 			wp_send_json_error( array( 'message' => __( 'Invalid product.', 'wcpp' ) ) );
 		}
 
-		// 3. Resolve the set — prefer posted set_id, fall back to product rules.
+		// 3. Resolve the set.
 		$set_id = isset( $_POST['set_id'] ) ? absint( $_POST['set_id'] ) : 0;
 		$set    = $set_id ? WCPP_Settings_Store::get_set( $set_id ) : null;
 		if ( ! $set ) {
@@ -52,62 +52,101 @@ class WCPP_Ajax_Handler {
 			wp_send_json_error( array( 'message' => __( 'Personalisation is not available for this product.', 'wcpp' ) ) );
 		}
 
-		// 4. Decode selections. Only IDs are trusted; everything else is derived.
-		$raw        = isset( $_POST['selections'] ) ? wp_unslash( $_POST['selections'] ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- json_decoded + per-field validated below.
-		$posted     = is_string( $raw ) ? json_decode( $raw, true ) : null;
+		// 4. Decode placements payload. Only IDs are trusted.
+		$raw    = isset( $_POST['placements'] ) ? wp_unslash( $_POST['placements'] ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- json + per-field validated below.
+		$posted = is_string( $raw ) ? json_decode( $raw, true ) : null;
 
 		if ( ! is_array( $posted ) || empty( $posted ) ) {
-			wp_send_json_error( array( 'message' => __( 'Please complete all personalisation steps.', 'wcpp' ) ) );
+			wp_send_json_error( array( 'message' => __( 'Please complete your personalisation.', 'wcpp' ) ) );
 		}
 
-		// 5. Build a clean, server-derived selection for every posted ID pair.
-		$clean_selections = array();
-		foreach ( $posted as $sel ) {
-			$option_id = isset( $sel['option_id'] ) ? sanitize_text_field( $sel['option_id'] ) : '';
-			$choice_id = isset( $sel['choice_id'] ) ? sanitize_text_field( $sel['choice_id'] ) : '';
+		// 5. Validate + rebuild each placement from the set (server-derived).
+		$clean_placements = array();
+		$seen_placements  = array();
+		$choice_total     = 0.0;
 
-			$resolved = self::resolve_choice( $set, $option_id, $choice_id );
-			if ( null === $resolved ) {
-				wp_send_json_error( array( 'message' => __( 'One of your choices is no longer available. Please try again.', 'wcpp' ) ) );
+		foreach ( $posted as $pl_in ) {
+			$placement_id = isset( $pl_in['placement_id'] ) ? sanitize_text_field( $pl_in['placement_id'] ) : '';
+			$placement    = WCPP_Settings_Store::get_placement( $set, $placement_id );
+
+			if ( ! $placement ) {
+				wp_send_json_error( array( 'message' => __( 'Invalid placement selected.', 'wcpp' ) ) );
 			}
-			$clean_selections[] = $resolved;
+
+			// Each placement only once per order.
+			if ( isset( $seen_placements[ $placement_id ] ) ) {
+				wp_send_json_error( array( 'message' => __( 'Each placement can only be added once.', 'wcpp' ) ) );
+			}
+			$seen_placements[ $placement_id ] = true;
+
+			$posted_choices = isset( $pl_in['choices'] ) && is_array( $pl_in['choices'] ) ? $pl_in['choices'] : array();
+			$selections     = array();
+
+			foreach ( $posted_choices as $ch_in ) {
+				$step_id   = isset( $ch_in['step_id'] ) ? sanitize_text_field( $ch_in['step_id'] ) : '';
+				$choice_id = isset( $ch_in['choice_id'] ) ? sanitize_text_field( $ch_in['choice_id'] ) : '';
+
+				$resolved = WCPP_Settings_Store::resolve_choice( $set, $placement_id, $step_id, $choice_id );
+				if ( null === $resolved ) {
+					wp_send_json_error( array( 'message' => __( 'One of your choices is no longer available. Please try again.', 'wcpp' ) ) );
+				}
+
+				$selections[] = array(
+					'step_id'      => $resolved['step_id'],
+					'step_name'    => $resolved['step_name'],
+					'choice_id'    => $resolved['choice_id'],
+					'choice_name'  => $resolved['choice_name'],
+					'choice_price' => $resolved['choice_price'],
+					'image_url'    => $resolved['image_url'],
+				);
+				$choice_total += (float) $resolved['choice_price'];
+			}
+
+			// Require an answer for every step in the placement.
+			if ( count( $selections ) < count( $placement['steps'] ?? array() ) ) {
+				wp_send_json_error( array( 'message' => __( 'Please complete all steps for each placement.', 'wcpp' ) ) );
+			}
+
+			$clean_placements[] = array(
+				'placement_id'   => $placement['id'],
+				'placement_name' => $placement['name'],
+				'selections'     => $selections,
+			);
 		}
 
-		// 6. Require a choice for every option in the set.
-		if ( count( $clean_selections ) < count( $set['options'] ) ) {
-			wp_send_json_error( array( 'message' => __( 'Please complete all personalisation steps.', 'wcpp' ) ) );
+		if ( empty( $clean_placements ) ) {
+			wp_send_json_error( array( 'message' => __( 'Please complete your personalisation.', 'wcpp' ) ) );
 		}
 
-		// 7. Variable product — needs a chosen variation.
+		// 6. Variable product needs a chosen variation.
 		$variation_id = isset( $_POST['variation_id'] ) ? absint( $_POST['variation_id'] ) : 0;
 		$product      = wc_get_product( $product_id );
 		if ( $product && $product->is_type( 'variable' ) && ! $variation_id ) {
 			wp_send_json_error( array( 'message' => __( 'Please select a product option before personalising.', 'wcpp' ) ) );
 		}
 
-		// 8. Capture the base price now (the price the variation/product sells at)
-		//    so the price calculator can apply our add-on idempotently.
+		// 7. Base price (the variation/product sell price) for idempotent add-on.
 		$priced_product = $variation_id ? wc_get_product( $variation_id ) : $product;
 		$base_price     = $priced_product ? (float) $priced_product->get_price() : 0.0;
 
-		// 9. Server-side total: flat set fee + sum of choice prices.
+		// 8. Total = flat set fee (once) + all choice prices across placements.
 		$set_fee     = isset( $set['set_price'] ) ? (float) $set['set_price'] : 0.0;
-		$total_price = $set_fee + WCPP_Price_Calculator::calculate( $clean_selections );
+		$total_price = $set_fee + $choice_total;
 
-		// 10. Non-returnable honours the global Behaviour setting.
+		// 9. Non-returnable honours the global Behaviour setting.
 		$non_returnable = ! empty( $set['behaviour']['non_returnable'] );
 
 		$personalisation = array(
 			'set_id'         => $set['id'],
 			'set_name'       => $set['name'],
-			'selections'     => $clean_selections,
+			'placements'     => $clean_placements,
 			'set_fee'        => number_format( $set_fee, 2, '.', '' ),
 			'base_price'     => $base_price,
 			'total_price'    => number_format( $total_price, 2, '.', '' ),
 			'non_returnable' => $non_returnable,
 		);
 
-		// 11. Add to cart (unique key keeps different monograms on separate lines).
+		// 10. Add to cart.
 		$cart_item_key = WC()->cart->add_to_cart(
 			$product_id,
 			1,
@@ -126,35 +165,5 @@ class WCPP_Ajax_Handler {
 				'cart_url' => wc_get_cart_url(),
 			)
 		);
-	}
-
-	/**
-	 * Resolve a posted option/choice ID pair against the set.
-	 * Returns a fully server-derived selection, or null if the IDs are invalid.
-	 *
-	 * @param array  $set       Set array.
-	 * @param string $option_id Posted option ID.
-	 * @param string $choice_id Posted choice ID.
-	 * @return array|null
-	 */
-	private static function resolve_choice( $set, $option_id, $choice_id ) {
-		foreach ( $set['options'] as $opt ) {
-			if ( $opt['id'] !== $option_id ) {
-				continue;
-			}
-			foreach ( $opt['choices'] as $ch ) {
-				if ( $ch['id'] === $choice_id ) {
-					return array(
-						'option_id'        => $opt['id'],
-						'option_name'      => $opt['name'],
-						'choice_id'        => $ch['id'],
-						'choice_name'      => $ch['name'],
-						'choice_price'     => (float) $ch['price'],
-						'choice_image_url' => $ch['image_url'],
-					);
-				}
-			}
-		}
-		return null;
 	}
 }
