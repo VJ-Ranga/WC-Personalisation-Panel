@@ -28,6 +28,9 @@
 
 	// ─── Placement ───────────────────────────────────────────────────────
 	function bindPlacement( $pl ) {
+		// Placement image picker (lives in the header).
+		bindImagePicker( $pl.find( '> .wcpp-placement-header .wcpp-placement-image' ) );
+
 		// Delete placement.
 		$pl.find( '> .wcpp-placement-header .wcpp-delete-placement' ).off( 'click' ).on( 'click', function () {
 			if ( window.confirm( wcppAdmin.confirmDelete ) ) { $pl.remove(); }
@@ -82,8 +85,17 @@
 		$row.find( '.wcpp-delete-choice' ).off( 'click' ).on( 'click', function () {
 			if ( window.confirm( wcppAdmin.confirmDelete ) ) { $row.remove(); }
 		} );
+		bindImagePicker( $row );
+	}
 
-		$row.find( '.wcpp-select-image' ).off( 'click' ).on( 'click', function () {
+	// ─── Shared image picker (choices + placements) ─────────────────────────
+	function bindImagePicker( $scope ) {
+		if ( !$scope || !$scope.length ) { return; }
+		var $select  = $scope.find( '.wcpp-select-image' ).first();
+		var $remove  = $scope.find( '.wcpp-remove-image' ).first();
+		var addLabel = $scope.hasClass( 'wcpp-placement-image' ) ? wcppAdmin.imageShort : wcppAdmin.addImage;
+
+		$select.off( 'click' ).on( 'click', function () {
 			var $btn = $( this );
 			var frame = wp.media( {
 				title: wcppAdmin.mediaTitle,
@@ -94,20 +106,20 @@
 			frame.on( 'select', function () {
 				var att = frame.state().get( 'selection' ).first().toJSON();
 				var url = ( att.sizes && att.sizes.medium ) ? att.sizes.medium.url : att.url;
-				$row.find( '.wcpp-image-id' ).val( att.id );
-				$row.find( '.wcpp-image-url' ).val( att.url );
-				$row.find( '.wcpp-image-preview img' ).attr( 'src', url );
-				$row.find( '.wcpp-image-preview' ).show();
+				$scope.find( '.wcpp-image-id' ).first().val( att.id );
+				$scope.find( '.wcpp-image-url' ).first().val( att.url );
+				$scope.find( '.wcpp-image-preview img' ).first().attr( 'src', url );
+				$scope.find( '.wcpp-image-preview' ).first().show();
 				$btn.text( wcppAdmin.changeImage );
 			} );
 			frame.open();
 		} );
 
-		$row.find( '.wcpp-remove-image' ).off( 'click' ).on( 'click', function () {
-			$row.find( '.wcpp-image-id' ).val( '' );
-			$row.find( '.wcpp-image-url' ).val( '' );
-			$row.find( '.wcpp-image-preview' ).hide().find( 'img' ).attr( 'src', '' );
-			$row.find( '.wcpp-select-image' ).text( wcppAdmin.addImage );
+		$remove.off( 'click' ).on( 'click', function () {
+			$scope.find( '.wcpp-image-id' ).first().val( '' );
+			$scope.find( '.wcpp-image-url' ).first().val( '' );
+			$scope.find( '.wcpp-image-preview' ).first().hide().find( 'img' ).attr( 'src', '' );
+			$select.text( addLabel );
 		} );
 	}
 
@@ -168,7 +180,12 @@
 		return '' +
 			'<div class="wcpp-placement-block" data-plid="' + plid + '">' +
 				'<div class="wcpp-placement-header">' +
-					'<span class="dashicons dashicons-tag wcpp-placement-icon"></span>' +
+					'<div class="wcpp-placement-image">' +
+						'<div class="wcpp-image-preview" style="display:none;"><img src="" alt="" /><button type="button" class="wcpp-remove-image">&#10005;</button></div>' +
+						'<button type="button" class="button wcpp-select-image wcpp-placement-select-image">' + esc( wcppAdmin.imageShort ) + '</button>' +
+						'<input type="hidden" name="' + b + '[image_id]" class="wcpp-image-id" value="" />' +
+						'<input type="hidden" name="' + b + '[image_url]" class="wcpp-image-url" value="" />' +
+					'</div>' +
 					'<input type="hidden" name="' + b + '[id]" value="' + plid + '" />' +
 					'<input type="text" name="' + b + '[name]" value="" placeholder="' + esc( wcppAdmin.placementPlaceholder ) + '" class="wcpp-placement-name-input" />' +
 					'<button type="button" class="button wcpp-duplicate-placement"><span class="dashicons dashicons-admin-page"></span> ' + esc( wcppAdmin.duplicate ) + '</button>' +

@@ -166,6 +166,7 @@ class WCPP_Personalisation_CPT {
 				'mediaButton'          => __( 'Use This Image', 'wcpp' ),
 				'changeImage'          => __( 'Change Image', 'wcpp' ),
 				'addImage'             => __( 'Add Image', 'wcpp' ),
+				'imageShort'           => __( 'Image', 'wcpp' ),
 				'confirmDelete'        => __( 'Are you sure you want to delete this?', 'wcpp' ),
 				'choicePlaceholder'    => __( 'Choice name, e.g. Gold', 'wcpp' ),
 				'placementPlaceholder' => __( 'Placement name, e.g. Front', 'wcpp' ),
@@ -243,12 +244,24 @@ class WCPP_Personalisation_CPT {
 	public static function render_placement_block( $placement ) {
 		$plid  = isset( $placement['id'] ) ? $placement['id'] : 'pl_' . uniqid();
 		$name  = isset( $placement['name'] ) ? $placement['name'] : '';
+		$img   = isset( $placement['image_id'] ) ? $placement['image_id'] : '';
+		$url   = isset( $placement['image_url'] ) ? $placement['image_url'] : '';
 		$steps = isset( $placement['steps'] ) && is_array( $placement['steps'] ) ? $placement['steps'] : array();
 		$base  = 'wcpp_placements[' . $plid . ']';
 		?>
 		<div class="wcpp-placement-block" data-plid="<?php echo esc_attr( $plid ); ?>">
 			<div class="wcpp-placement-header">
-				<span class="dashicons dashicons-tag wcpp-placement-icon"></span>
+				<div class="wcpp-placement-image">
+					<div class="wcpp-image-preview" <?php echo $url ? '' : 'style="display:none;"'; ?>>
+						<img src="<?php echo esc_url( $url ); ?>" alt="" />
+						<button type="button" class="wcpp-remove-image" title="<?php esc_attr_e( 'Remove', 'wcpp' ); ?>">&#10005;</button>
+					</div>
+					<button type="button" class="button wcpp-select-image wcpp-placement-select-image" title="<?php esc_attr_e( 'Placement image', 'wcpp' ); ?>">
+						<?php echo $url ? esc_html__( 'Change', 'wcpp' ) : esc_html__( 'Image', 'wcpp' ); ?>
+					</button>
+					<input type="hidden" name="<?php echo esc_attr( $base ); ?>[image_id]" class="wcpp-image-id" value="<?php echo esc_attr( $img ); ?>" />
+					<input type="hidden" name="<?php echo esc_attr( $base ); ?>[image_url]" class="wcpp-image-url" value="<?php echo esc_attr( $url ); ?>" />
+				</div>
 				<input type="hidden" name="<?php echo esc_attr( $base ); ?>[id]" value="<?php echo esc_attr( $plid ); ?>" />
 				<input type="text" name="<?php echo esc_attr( $base ); ?>[name]"
 					value="<?php echo esc_attr( $name ); ?>"
@@ -582,9 +595,11 @@ class WCPP_Personalisation_CPT {
 			}
 
 			$clean_pl = array(
-				'id'    => sanitize_text_field( wp_unslash( $placement['id'] ?? 'pl_' . uniqid() ) ),
-				'name'  => $pl_name,
-				'steps' => array(),
+				'id'        => sanitize_text_field( wp_unslash( $placement['id'] ?? 'pl_' . uniqid() ) ),
+				'name'      => $pl_name,
+				'image_id'  => absint( $placement['image_id'] ?? 0 ),
+				'image_url' => esc_url_raw( wp_unslash( $placement['image_url'] ?? '' ) ),
+				'steps'     => array(),
 			);
 
 			if ( ! empty( $placement['steps'] ) && is_array( $placement['steps'] ) ) {

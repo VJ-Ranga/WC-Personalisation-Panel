@@ -240,9 +240,15 @@
 		var avail = availablePlacements();
 		$content.append( $( '<h3 class="wcpp-step__heading"></h3>' ).text( i18n.choosePlacementHeading || 'Where would you like it?' ) );
 
-		var $wrap = $( '<div class="wcpp-options"></div>' );
+		var imgSize = parseInt( design.card_img_size, 10 );
+		var $wrap   = $( '<div class="wcpp-options"></div>' );
 		$.each( avail, function ( i, pl ) {
 			var $btn = $( '<button type="button" class="wcpp-option-btn wcpp-placement-choice"></button>' );
+			if ( pl.image_url && imgSize > 0 ) {
+				$btn.append( $( '<div class="wcpp-option-img-wrap"></div>' ).append(
+					$( '<img class="wcpp-option-img" />' ).attr( 'src', pl.image_url ).attr( 'alt', pl.name )
+				) );
+			}
 			$btn.append( $( '<div class="wcpp-option-label-wrap"></div>' )
 				.append( $( '<span class="wcpp-option-name"></span>' ).text( pl.name ) ) );
 			$btn.append( $( '<span class="wcpp-option-arrow dashicons dashicons-arrow-right-alt2"></span>' ) );
