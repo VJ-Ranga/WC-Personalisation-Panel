@@ -34,10 +34,6 @@ define( 'WCPP_BASENAME', plugin_basename( __FILE__ ) );
  */
 add_action( 'plugins_loaded', 'wcpp_init', 10 );
 
-// Declare WooCommerce HPOS compatibility — registered at top level so it runs
-// before WooCommerce fires `before_woocommerce_init`.
-add_action( 'before_woocommerce_init', 'wcpp_declare_hpos_compatibility' );
-
 /**
  * Check WooCommerce is active, then boot the plugin.
  * If WooCommerce is missing, show an admin notice and stop — no fatal error.
@@ -73,6 +69,9 @@ function wcpp_init() {
 	WCPP_Ajax_Handler::init();
 	WCPP_Product_Meta::init();
 	WCPP_Email_Handler::init();
+
+	// Declare WooCommerce HPOS compatibility.
+	add_action( 'before_woocommerce_init', 'wcpp_declare_hpos_compatibility' );
 
 	// Add Settings link in the plugins list.
 	add_filter( 'plugin_action_links_' . WCPP_BASENAME, 'wcpp_plugin_action_links' );

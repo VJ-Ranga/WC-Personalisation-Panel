@@ -23,12 +23,25 @@ class WCPP_Cart_Handler {
 		$design    = WCPP_Settings_Store::get_design();
 		$placement = $design['btn_placement'];
 
-		if ( 'before_cart' === $placement ) {
-			add_action( 'woocommerce_before_add_to_cart_button', array( __CLASS__, 'render_button' ) );
-		} elseif ( 'after_cart' === $placement ) {
-			add_action( 'woocommerce_after_add_to_cart_button', array( __CLASS__, 'render_button' ) );
+		switch ( $placement ) {
+			case 'before_cart':
+				// Above the Add to Cart button.
+				add_action( 'woocommerce_before_add_to_cart_button', array( __CLASS__, 'render_button' ) );
+				break;
+			case 'after_cart':
+				// Right after the Add to Cart button (before Buy Now).
+				add_action( 'woocommerce_after_add_to_cart_button', array( __CLASS__, 'render_button' ) );
+				break;
+			case 'after_form':
+				// Under the whole purchase area (below Add to Cart AND Buy Now).
+				add_action( 'woocommerce_after_add_to_cart_form', array( __CLASS__, 'render_button' ) );
+				break;
+			case 'after_summary':
+				// Below the product summary (price, meta, etc.).
+				add_action( 'woocommerce_single_product_summary', array( __CLASS__, 'render_button' ), 35 );
+				break;
+			// 'shortcode' = no auto hook; use [wcpp_button] or wcpp_render_button().
 		}
-		// 'shortcode' = no auto hook; use [wcpp_button] or wcpp_render_button().
 
 		add_shortcode( 'wcpp_button', array( __CLASS__, 'shortcode_button' ) );
 
@@ -137,9 +150,16 @@ class WCPP_Cart_Handler {
 			'wcpp-panel',
 			'wcpp',
 			array(
-				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
-				'nonce'   => wp_create_nonce( 'wcpp_nonce' ),
-				'config'  => $front_config,
+				'ajaxUrl'   => admin_url( 'admin-ajax.php' ),
+				'nonce'     => wp_create_nonce( 'wcpp_nonce' ),
+				'config'    => $front_config,
+				'currency'  => array(
+					'symbol'    => html_entity_decode( get_woocommerce_currency_symbol() ),
+					'position'  => get_option( 'woocommerce_currency_pos', 'left' ),
+					'decimals'  => wc_get_price_decimals(),
+					'decimal'   => wc_get_price_decimal_separator(),
+					'thousand'  => wc_get_price_thousand_separator(),
+				),
 				'i18n'    => array(
 					'back'         => $design['back_text'],
 					'next'         => $design['next_text'],

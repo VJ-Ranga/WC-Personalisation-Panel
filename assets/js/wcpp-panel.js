@@ -288,6 +288,24 @@
 		});
 	}
 
-	function money( amount ) { return parseFloat( amount ).toFixed( 2 ); }
+	// Format a price using WooCommerce's currency settings (symbol + position).
+	function money( amount ) {
+		var c = wcpp.currency || {};
+		var decimals = ( typeof c.decimals === 'number' ) ? c.decimals : 2;
+		var num = parseFloat( amount || 0 ).toFixed( decimals );
+
+		// Apply thousand + decimal separators.
+		var parts = num.split( '.' );
+		parts[0] = parts[0].replace( /\B(?=(\d{3})+(?!\d))/g, c.thousand || ',' );
+		var formatted = parts.join( c.decimal || '.' );
+
+		var sym = c.symbol || '';
+		switch ( c.position ) {
+			case 'right':        return formatted + sym;
+			case 'left_space':   return sym + ' ' + formatted;
+			case 'right_space':  return formatted + ' ' + sym;
+			default:             return sym + formatted; // 'left'.
+		}
+	}
 
 }( jQuery, window.wcpp || {} ));

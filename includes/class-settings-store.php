@@ -50,7 +50,7 @@ class WCPP_Settings_Store {
 			'btn_bg'            => '#1A56DB',
 			'btn_text_color'    => '#1A56DB',
 			'btn_radius'        => 6,
-			'btn_placement'     => 'after_cart', // before_cart | after_cart | shortcode.
+			'btn_placement'     => 'after_form', // before_cart | after_cart | after_form | after_summary | shortcode.
 			'btn_full_width'    => 1,
 
 			// Drawer / panel.
@@ -78,7 +78,6 @@ class WCPP_Settings_Store {
 			'card_border'       => '#e0e0e0',
 			'card_selected'     => '#1A56DB',
 			'card_img_size'     => 52,
-			'card_show_price'   => 1,
 
 			// Footer buttons.
 			'next_text'         => 'Next',

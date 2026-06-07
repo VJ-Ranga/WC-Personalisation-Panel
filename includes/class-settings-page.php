@@ -73,55 +73,74 @@ class WCPP_Settings_Page {
 	 * @return array
 	 */
 	public static function sanitize( $input ) {
-		$design_defaults    = WCPP_Settings_Store::design_defaults();
-		$behaviour_defaults = WCPP_Settings_Store::behaviour_defaults();
-
+		// Start from the EXISTING saved settings so saving one tab never wipes
+		// the other tab's values.
+		$existing = get_option(
+			WCPP_Settings_Store::OPTION,
+			array(
+				'design'    => WCPP_Settings_Store::design_defaults(),
+				'behaviour' => WCPP_Settings_Store::behaviour_defaults(),
+			)
+		);
 		$out = array(
-			'design'    => array(),
-			'behaviour' => array(),
+			'design'    => wp_parse_args( $existing['design'] ?? array(), WCPP_Settings_Store::design_defaults() ),
+			'behaviour' => wp_parse_args( $existing['behaviour'] ?? array(), WCPP_Settings_Store::behaviour_defaults() ),
 		);
 
-		$d = isset( $input['design'] ) && is_array( $input['design'] ) ? $input['design'] : array();
-		$b = isset( $input['behaviour'] ) && is_array( $input['behaviour'] ) ? $input['behaviour'] : array();
+		// Which tab was submitted? Only that section is rebuilt.
+		$tab = isset( $input['_tab'] ) ? sanitize_key( $input['_tab'] ) : '';
 
-		// Colour fields.
+		if ( 'behaviour' === $tab ) {
+			$b = isset( $input['behaviour'] ) && is_array( $input['behaviour'] ) ? $input['behaviour'] : array();
+			foreach ( array( 'enabled', 'non_returnable', 'elementor', 'remove_on_uninstall' ) as $key ) {
+				$out['behaviour'][ $key ] = empty( $b[ $key ] ) ? 0 : 1;
+			}
+			return $out;
+		}
+
+		// Default: design tab.
+		$out['design'] = self::sanitize_design(
+			isset( $input['design'] ) && is_array( $input['design'] ) ? $input['design'] : array()
+		);
+		return $out;
+	}
+
+	/**
+	 * Sanitise the design section.
+	 *
+	 * @param array $d Raw design input.
+	 * @return array
+	 */
+	private static function sanitize_design( $d ) {
+		$dft = WCPP_Settings_Store::design_defaults();
+		$out = array();
+
 		foreach ( array( 'btn_bg', 'btn_text_color', 'panel_bg', 'overlay_color', 'title_color', 'progress_color', 'card_border', 'card_selected', 'footer_btn_color' ) as $key ) {
-			$out['design'][ $key ] = sanitize_hex_color( $d[ $key ] ?? '' ) ?: $design_defaults[ $key ];
+			$out[ $key ] = sanitize_hex_color( $d[ $key ] ?? '' ) ?: $dft[ $key ];
 		}
-
-		// Text fields.
 		foreach ( array( 'btn_text', 'header_title', 'next_text', 'back_text', 'addbag_text', 'free_label' ) as $key ) {
-			$out['design'][ $key ] = sanitize_text_field( wp_unslash( $d[ $key ] ?? $design_defaults[ $key ] ) );
+			$out[ $key ] = sanitize_text_field( wp_unslash( $d[ $key ] ?? $dft[ $key ] ) );
 		}
 
-		// Font — whitelist against the known list (prevents CSS/URL injection).
-		$font_keys              = array_keys( WCPP_Settings_Store::fonts() );
-		$out['design']['font_family'] = in_array( $d['font_family'] ?? '', $font_keys, true ) ? $d['font_family'] : $design_defaults['font_family'];
+		$font_keys          = array_keys( WCPP_Settings_Store::fonts() );
+		$out['font_family'] = in_array( $d['font_family'] ?? '', $font_keys, true ) ? $d['font_family'] : $dft['font_family'];
 
-		// Enum fields.
-		$out['design']['btn_style']      = in_array( $d['btn_style'] ?? '', array( 'outline', 'filled', 'text' ), true ) ? $d['btn_style'] : $design_defaults['btn_style'];
-		$out['design']['btn_placement']  = in_array( $d['btn_placement'] ?? '', array( 'before_cart', 'after_cart', 'shortcode' ), true ) ? $d['btn_placement'] : $design_defaults['btn_placement'];
-		$out['design']['slide_from']     = in_array( $d['slide_from'] ?? '', array( 'right', 'left' ), true ) ? $d['slide_from'] : $design_defaults['slide_from'];
-		$out['design']['progress_style'] = in_array( $d['progress_style'] ?? '', array( 'bar', 'dots', 'text' ), true ) ? $d['progress_style'] : $design_defaults['progress_style'];
-		$out['design']['card_layout']    = in_array( $d['card_layout'] ?? '', array( 'list', 'grid2', 'grid3' ), true ) ? $d['card_layout'] : $design_defaults['card_layout'];
+		$out['btn_style']      = in_array( $d['btn_style'] ?? '', array( 'outline', 'filled', 'text' ), true ) ? $d['btn_style'] : $dft['btn_style'];
+		$out['btn_placement']  = in_array( $d['btn_placement'] ?? '', array( 'before_cart', 'after_cart', 'after_form', 'after_summary', 'shortcode' ), true ) ? $d['btn_placement'] : $dft['btn_placement'];
+		$out['slide_from']     = in_array( $d['slide_from'] ?? '', array( 'right', 'left' ), true ) ? $d['slide_from'] : $dft['slide_from'];
+		$out['progress_style'] = in_array( $d['progress_style'] ?? '', array( 'bar', 'dots', 'text' ), true ) ? $d['progress_style'] : $dft['progress_style'];
+		$out['card_layout']    = in_array( $d['card_layout'] ?? '', array( 'list', 'grid2', 'grid3' ), true ) ? $d['card_layout'] : $dft['card_layout'];
 
-		// Integer fields with min/max.
-		$out['design']['btn_radius']      = max( 0, min( 50, intval( $d['btn_radius'] ?? $design_defaults['btn_radius'] ) ) );
-		$out['design']['panel_width']     = max( 300, min( 700, intval( $d['panel_width'] ?? $design_defaults['panel_width'] ) ) );
-		$out['design']['mobile_bp']       = max( 320, min( 1024, intval( $d['mobile_bp'] ?? $design_defaults['mobile_bp'] ) ) );
-		$out['design']['panel_radius']    = max( 0, min( 50, intval( $d['panel_radius'] ?? $design_defaults['panel_radius'] ) ) );
-		$out['design']['overlay_opacity'] = max( 0, min( 100, intval( $d['overlay_opacity'] ?? $design_defaults['overlay_opacity'] ) ) );
-		$out['design']['anim_speed']      = max( 100, min( 1000, intval( $d['anim_speed'] ?? $design_defaults['anim_speed'] ) ) );
-		$out['design']['card_img_size']   = max( 0, min( 120, intval( $d['card_img_size'] ?? $design_defaults['card_img_size'] ) ) );
+		$out['btn_radius']      = max( 0, min( 50, intval( $d['btn_radius'] ?? $dft['btn_radius'] ) ) );
+		$out['panel_width']     = max( 300, min( 700, intval( $d['panel_width'] ?? $dft['panel_width'] ) ) );
+		$out['mobile_bp']       = max( 320, min( 1024, intval( $d['mobile_bp'] ?? $dft['mobile_bp'] ) ) );
+		$out['panel_radius']    = max( 0, min( 50, intval( $d['panel_radius'] ?? $dft['panel_radius'] ) ) );
+		$out['overlay_opacity'] = max( 0, min( 100, intval( $d['overlay_opacity'] ?? $dft['overlay_opacity'] ) ) );
+		$out['anim_speed']      = max( 100, min( 1000, intval( $d['anim_speed'] ?? $dft['anim_speed'] ) ) );
+		$out['card_img_size']   = max( 0, min( 120, intval( $d['card_img_size'] ?? $dft['card_img_size'] ) ) );
 
-		// Boolean toggles.
-		foreach ( array( 'btn_full_width', 'progress_show', 'card_show_price', 'show_choice_price', 'show_total' ) as $key ) {
-			$out['design'][ $key ] = empty( $d[ $key ] ) ? 0 : 1;
-		}
-
-		// Behaviour toggles.
-		foreach ( array( 'enabled', 'non_returnable', 'elementor', 'remove_on_uninstall' ) as $key ) {
-			$out['behaviour'][ $key ] = empty( $b[ $key ] ) ? 0 : 1;
+		foreach ( array( 'btn_full_width', 'progress_show', 'show_choice_price', 'show_total' ) as $key ) {
+			$out[ $key ] = empty( $d[ $key ] ) ? 0 : 1;
 		}
 
 		return $out;
@@ -157,6 +176,7 @@ class WCPP_Settings_Page {
 
 			<form method="post" action="options.php">
 				<?php settings_fields( 'wcpp_settings_group' ); ?>
+				<input type="hidden" name="<?php echo esc_attr( WCPP_Settings_Store::OPTION ); ?>[_tab]" value="<?php echo esc_attr( $tab ); ?>" />
 
 				<?php if ( 'design' === $tab ) : ?>
 					<?php self::render_design_tab( $design, $cur ); ?>
@@ -246,8 +266,10 @@ class WCPP_Settings_Page {
 				<th><?php esc_html_e( 'Placement', 'wcpp' ); ?></th>
 				<td>
 					<select name="<?php echo esc_attr( self::name( 'design', 'btn_placement' ) ); ?>">
-						<option value="before_cart" <?php selected( $d['btn_placement'], 'before_cart' ); ?>><?php esc_html_e( 'Before Add to Cart button', 'wcpp' ); ?></option>
-						<option value="after_cart" <?php selected( $d['btn_placement'], 'after_cart' ); ?>><?php esc_html_e( 'After Add to Cart button', 'wcpp' ); ?></option>
+						<option value="after_form" <?php selected( $d['btn_placement'], 'after_form' ); ?>><?php esc_html_e( 'Under all buttons (below Add to Cart & Buy Now) — recommended', 'wcpp' ); ?></option>
+						<option value="before_cart" <?php selected( $d['btn_placement'], 'before_cart' ); ?>><?php esc_html_e( 'Above the Add to Cart button', 'wcpp' ); ?></option>
+						<option value="after_cart" <?php selected( $d['btn_placement'], 'after_cart' ); ?>><?php esc_html_e( 'Between Add to Cart & Buy Now', 'wcpp' ); ?></option>
+						<option value="after_summary" <?php selected( $d['btn_placement'], 'after_summary' ); ?>><?php esc_html_e( 'Below the product summary', 'wcpp' ); ?></option>
 						<option value="shortcode" <?php selected( $d['btn_placement'], 'shortcode' ); ?>><?php esc_html_e( 'Shortcode / manual only [wcpp_button]', 'wcpp' ); ?></option>
 					</select>
 				</td>
