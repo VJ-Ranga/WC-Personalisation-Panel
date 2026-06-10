@@ -15,6 +15,7 @@
 	--wcpp-btn-pad-v:         15px;
 	--wcpp-btn-pad-h:         26px;
 	--wcpp-btn-margin-top:    12px;
+	--wcpp-btn-margin-bottom: 0px;
 	--wcpp-btn-font-size:     13px;
 	--wcpp-btn-border-width:  1.5px;
 	--wcpp-btn-ls:            0.08em;
@@ -49,6 +50,7 @@
 /* ─── Trigger button ─────────────────────────────────────────────── */
 .wcpp-button {
 	margin-top:     var(--wcpp-btn-margin-top);
+	margin-bottom:  var(--wcpp-btn-margin-bottom);
 	padding:        var(--wcpp-btn-pad-v) var(--wcpp-btn-pad-h);
 	font-size:      var(--wcpp-btn-font-size);
 	font-weight:    600;

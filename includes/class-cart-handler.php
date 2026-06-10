@@ -79,6 +79,7 @@ class WCPP_Cart_Handler {
 			'--wcpp-btn-pad-v'          => intval( $design['btn_padding_v'] ?? 15 ) . 'px',
 			'--wcpp-btn-pad-h'          => intval( $design['btn_padding_h'] ?? 26 ) . 'px',
 			'--wcpp-btn-margin-top'     => intval( $design['btn_margin_top'] ?? 12 ) . 'px',
+			'--wcpp-btn-margin-bottom'  => intval( $design['btn_margin_bottom'] ?? 0 ) . 'px',
 			'--wcpp-btn-font-size'      => intval( $design['btn_font_size'] ?? 13 ) . 'px',
 			'--wcpp-btn-border-width'   => floatval( $design['btn_border_width'] ?? 1.5 ) . 'px',
 			'--wcpp-btn-ls'             => round( floatval( $design['btn_letter_spacing'] ?? 0.08 ), 3 ) . 'em',

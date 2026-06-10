@@ -5,6 +5,11 @@
 
 ---
 
+## [0.7.4] — 2026-06
+### Added
+- **Button margin bottom** setting — shown alongside margin top on a single row
+  ("Top / Bottom") so both sides are controlled in one place.
+
 ## [0.7.3] — 2026-06
 ### Added
 - **9 new design settings** — all now driven by CSS custom properties so changes

@@ -138,6 +138,7 @@ class WCPP_Settings_Page {
 		$out['btn_padding_v']      = max( 0, min( 60, intval( $d['btn_padding_v'] ?? $dft['btn_padding_v'] ) ) );
 		$out['btn_padding_h']      = max( 0, min( 100, intval( $d['btn_padding_h'] ?? $dft['btn_padding_h'] ) ) );
 		$out['btn_margin_top']     = max( 0, min( 80, intval( $d['btn_margin_top'] ?? $dft['btn_margin_top'] ) ) );
+		$out['btn_margin_bottom']  = max( 0, min( 80, intval( $d['btn_margin_bottom'] ?? $dft['btn_margin_bottom'] ) ) );
 		$out['btn_font_size']      = max( 10, min( 30, intval( $d['btn_font_size'] ?? $dft['btn_font_size'] ) ) );
 		$out['btn_border_width']   = max( 0.0, min( 10.0, round( floatval( $d['btn_border_width'] ?? $dft['btn_border_width'] ) * 2 ) / 2 ) );
 		$out['btn_letter_spacing'] = max( 0.0, min( 0.5, round( floatval( $d['btn_letter_spacing'] ?? $dft['btn_letter_spacing'] ), 3 ) ) );
@@ -325,8 +326,12 @@ class WCPP_Settings_Page {
 				</td>
 			</tr>
 			<tr>
-				<th><?php esc_html_e( 'Button margin top', 'wcpp' ); ?></th>
-				<td><input type="number" name="<?php echo esc_attr( self::name( 'design', 'btn_margin_top' ) ); ?>" value="<?php echo esc_attr( $d['btn_margin_top'] ); ?>" min="0" max="80" class="small-text" /> px <span class="description"><?php esc_html_e( 'Space above the button.', 'wcpp' ); ?></span></td>
+				<th><?php esc_html_e( 'Button margin', 'wcpp' ); ?></th>
+				<td>
+					<label><?php esc_html_e( 'Top', 'wcpp' ); ?> <input type="number" name="<?php echo esc_attr( self::name( 'design', 'btn_margin_top' ) ); ?>" value="<?php echo esc_attr( $d['btn_margin_top'] ); ?>" min="0" max="80" class="small-text" /> px</label>
+					&nbsp;&nbsp;
+					<label><?php esc_html_e( 'Bottom', 'wcpp' ); ?> <input type="number" name="<?php echo esc_attr( self::name( 'design', 'btn_margin_bottom' ) ); ?>" value="<?php echo esc_attr( $d['btn_margin_bottom'] ); ?>" min="0" max="80" class="small-text" /> px</label>
+				</td>
 			</tr>
 			<tr>
 				<th><?php esc_html_e( 'Button font size', 'wcpp' ); ?></th>

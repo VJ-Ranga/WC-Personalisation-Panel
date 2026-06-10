@@ -58,6 +58,7 @@ class WCPP_Settings_Store {
 			'btn_padding_v'        => 15,   // vertical padding (top/bottom) px.
 			'btn_padding_h'        => 26,   // horizontal padding (left/right) px.
 			'btn_margin_top'       => 12,   // gap above the button px.
+			'btn_margin_bottom'    => 0,    // gap below the button px.
 			'btn_font_size'        => 13,   // font-size px.
 			'btn_border_width'     => 1.5,  // border-width px (outline/filled styles).
 			'btn_letter_spacing'   => 0.08, // letter-spacing em (e.g. 0.08 = 0.08em).

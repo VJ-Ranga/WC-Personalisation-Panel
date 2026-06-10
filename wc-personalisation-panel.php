@@ -3,7 +3,7 @@
  * Plugin Name:       WC Personalisation Panel
  * Plugin URI:        https://github.com/VJ-Ranga/WC-Personalisation-Panel
  * Description:       Adds a slide-in personalisation drawer to WooCommerce product pages. Customers choose location, type, text, font and colour before adding to cart.
- * Version:           0.7.3
+ * Version:           0.7.4
  * Author:            Cloudycode
  * Author URI:        https://github.com/VJ-Ranga
  * License:           GPL-2.0-or-later
@@ -24,7 +24,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Plugin constants.
-define( 'WCPP_VERSION',  '0.7.3' );
+define( 'WCPP_VERSION',  '0.7.4' );
 define( 'WCPP_PATH',     plugin_dir_path( __FILE__ ) );
 define( 'WCPP_URL',      plugin_dir_url( __FILE__ ) );
 define( 'WCPP_BASENAME', plugin_basename( __FILE__ ) );
