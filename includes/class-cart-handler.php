@@ -75,11 +75,16 @@ class WCPP_Cart_Handler {
 			'--wcpp-btn-text'      => $design['btn_text_color'],
 			'--wcpp-btn-radius'    => intval( $design['btn_radius'] ) . 'px',
 
-			// Trigger button — dimension tokens.
-			'--wcpp-btn-pad-v'          => intval( $design['btn_padding_v'] ?? 15 ) . 'px',
-			'--wcpp-btn-pad-h'          => intval( $design['btn_padding_h'] ?? 26 ) . 'px',
-			'--wcpp-btn-margin-top'     => intval( $design['btn_margin_top'] ?? 12 ) . 'px',
-			'--wcpp-btn-margin-bottom'  => intval( $design['btn_margin_bottom'] ?? 0 ) . 'px',
+			// Trigger button — padding (4 sides).
+			'--wcpp-btn-pad-top'        => intval( $design['btn_pad_top']    ?? 15 ) . 'px',
+			'--wcpp-btn-pad-right'      => intval( $design['btn_pad_right']  ?? 26 ) . 'px',
+			'--wcpp-btn-pad-bottom'     => intval( $design['btn_pad_bottom'] ?? 15 ) . 'px',
+			'--wcpp-btn-pad-left'       => intval( $design['btn_pad_left']   ?? 26 ) . 'px',
+			// Trigger button — margin (4 sides).
+			'--wcpp-btn-margin-top'    => intval( $design['btn_margin_top']    ?? 12 ) . 'px',
+			'--wcpp-btn-margin-right'  => intval( $design['btn_margin_right']  ?? 0  ) . 'px',
+			'--wcpp-btn-margin-bottom' => intval( $design['btn_margin_bottom'] ?? 0  ) . 'px',
+			'--wcpp-btn-margin-left'   => intval( $design['btn_margin_left']   ?? 0  ) . 'px',
 			'--wcpp-btn-font-size'      => intval( $design['btn_font_size'] ?? 13 ) . 'px',
 			'--wcpp-btn-border-width'   => floatval( $design['btn_border_width'] ?? 1.5 ) . 'px',
 			'--wcpp-btn-ls'             => round( floatval( $design['btn_letter_spacing'] ?? 0.08 ), 3 ) . 'em',

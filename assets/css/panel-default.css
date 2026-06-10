@@ -11,11 +11,16 @@
 	--wcpp-btn-text:      #1A56DB;
 	--wcpp-btn-radius:    6px;
 
-	/* Trigger button — dimension tokens */
-	--wcpp-btn-pad-v:         15px;
-	--wcpp-btn-pad-h:         26px;
+	/* Trigger button — padding (4 sides) */
+	--wcpp-btn-pad-top:       15px;
+	--wcpp-btn-pad-right:     26px;
+	--wcpp-btn-pad-bottom:    15px;
+	--wcpp-btn-pad-left:      26px;
+	/* Trigger button — margin (4 sides) */
 	--wcpp-btn-margin-top:    12px;
+	--wcpp-btn-margin-right:  0px;
 	--wcpp-btn-margin-bottom: 0px;
+	--wcpp-btn-margin-left:   0px;
 	--wcpp-btn-font-size:     13px;
 	--wcpp-btn-border-width:  1.5px;
 	--wcpp-btn-ls:            0.08em;
@@ -49,9 +54,8 @@
 
 /* ─── Trigger button ─────────────────────────────────────────────── */
 .wcpp-button {
-	margin-top:     var(--wcpp-btn-margin-top);
-	margin-bottom:  var(--wcpp-btn-margin-bottom);
-	padding:        var(--wcpp-btn-pad-v) var(--wcpp-btn-pad-h);
+	margin:  var(--wcpp-btn-margin-top) var(--wcpp-btn-margin-right) var(--wcpp-btn-margin-bottom) var(--wcpp-btn-margin-left);
+	padding: var(--wcpp-btn-pad-top) var(--wcpp-btn-pad-right) var(--wcpp-btn-pad-bottom) var(--wcpp-btn-pad-left);
 	font-size:      var(--wcpp-btn-font-size);
 	font-weight:    600;
 	letter-spacing: var(--wcpp-btn-ls);

@@ -5,6 +5,17 @@
 
 ---
 
+## [0.7.5] — 2026-06
+### Added
+- **4-side padding & margin controls** — trigger button padding and margin now use
+  a DevTools-style box-model UI (Top centred above, Left · box · Right in the
+  middle, Bottom below) instead of paired V/H fields. Each side is independently
+  controllable from the Design settings tab.
+- CSS custom properties renamed to 4-side tokens (`--wcpp-btn-pad-top/right/bottom/left`,
+  `--wcpp-btn-margin-top/right/bottom/left`) for clean shorthand output.
+- `.wcpp-sides` admin CSS component: box-model layout with styled number inputs,
+  focus ring, and a labelled centre box.
+
 ## [0.7.4] — 2026-06
 ### Added
 - **Button margin bottom** setting — shown alongside margin top on a single row

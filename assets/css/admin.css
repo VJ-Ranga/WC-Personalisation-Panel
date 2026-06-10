@@ -379,3 +379,87 @@
 	background: var(--wa); border-color: var(--wa);
 }
 .wcpp-settings-actions .button-primary:hover { background: #1d4ed8; border-color: #1d4ed8; }
+
+/* ===================================================================
+   4-SIDE SPACING BOX  (padding / margin visual editor)
+   Renders like browser DevTools — Top centered above, L + box + R in
+   the middle, Bottom centered below.
+=================================================================== */
+.wcpp-sides {
+	display:        inline-flex;
+	flex-direction: column;
+	align-items:    center;
+	gap:            2px;
+}
+
+/* Each horizontal row */
+.wcpp-sides__row {
+	display:     flex;
+	align-items: center;
+	gap:         6px;
+}
+
+/* Visual box in the centre */
+.wcpp-sides__box {
+	width:           112px;
+	height:          54px;
+	border:          2px dashed #d0d5dd;
+	border-radius:   8px;
+	display:         flex;
+	align-items:     center;
+	justify-content: center;
+	font-size:       10px;
+	font-weight:     700;
+	color:           #9097a1;
+	text-transform:  uppercase;
+	letter-spacing:  0.1em;
+	background:      #f8f9fb;
+	user-select:     none;
+}
+
+/* Each individual side (label + input + unit stacked) */
+.wcpp-sides__side {
+	display:         flex;
+	flex-direction:  column;
+	align-items:     center;
+	gap:             3px;
+	min-width:       62px;
+}
+
+.wcpp-sides__label {
+	font-size:      9px;
+	font-weight:    700;
+	color:          #9097a1;
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
+	line-height:    1;
+}
+
+.wcpp-sides__unit {
+	font-size:  10px;
+	color:      #b0b7c1;
+	line-height: 1;
+}
+
+/* Number inputs inside the box */
+.wcpp-sides input[type="number"] {
+	width:      56px !important;
+	min-height: 0 !important;
+	height:     32px !important;
+	padding:    4px 6px !important;
+	font-size:  13px !important;
+	text-align: center !important;
+	border:     1.5px solid #d0d5dd !important;
+	border-radius: 7px !important;
+	box-shadow: none !important;
+	background: #fff !important;
+	transition: border-color .2s, box-shadow .2s;
+}
+.wcpp-sides input[type="number"]:focus {
+	border-color: var(--wa) !important;
+	box-shadow:   0 0 0 3px rgba(37,99,235,.12) !important;
+	outline:      none !important;
+}
+/* Chrome/Safari: hide spinner arrows for a cleaner look */
+.wcpp-sides input[type="number"]::-webkit-inner-spin-button,
+.wcpp-sides input[type="number"]::-webkit-outer-spin-button { opacity: .4; }

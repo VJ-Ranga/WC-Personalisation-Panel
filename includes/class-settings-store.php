@@ -54,11 +54,16 @@ class WCPP_Settings_Store {
 			'btn_full_width'    => 1,
 			'btn_animation'     => 'lift',  // none | lift | pulse | shine | scale | bounce
 
-			// Trigger button — dimensions & typography.
-			'btn_padding_v'        => 15,   // vertical padding (top/bottom) px.
-			'btn_padding_h'        => 26,   // horizontal padding (left/right) px.
-			'btn_margin_top'       => 12,   // gap above the button px.
-			'btn_margin_bottom'    => 0,    // gap below the button px.
+			// Trigger button — padding (all 4 sides).
+			'btn_pad_top'          => 15,
+			'btn_pad_right'        => 26,
+			'btn_pad_bottom'       => 15,
+			'btn_pad_left'         => 26,
+			// Trigger button — margin (all 4 sides).
+			'btn_margin_top'       => 12,
+			'btn_margin_right'     => 0,
+			'btn_margin_bottom'    => 0,
+			'btn_margin_left'      => 0,
 			'btn_font_size'        => 13,   // font-size px.
 			'btn_border_width'     => 1.5,  // border-width px (outline/filled styles).
 			'btn_letter_spacing'   => 0.08, // letter-spacing em (e.g. 0.08 = 0.08em).

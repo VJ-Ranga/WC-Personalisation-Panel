@@ -134,11 +134,17 @@ class WCPP_Settings_Page {
 
 		$out['btn_radius']      = max( 0, min( 50, intval( $d['btn_radius'] ?? $dft['btn_radius'] ) ) );
 
-		// Trigger button — dimension extras.
-		$out['btn_padding_v']      = max( 0, min( 60, intval( $d['btn_padding_v'] ?? $dft['btn_padding_v'] ) ) );
-		$out['btn_padding_h']      = max( 0, min( 100, intval( $d['btn_padding_h'] ?? $dft['btn_padding_h'] ) ) );
-		$out['btn_margin_top']     = max( 0, min( 80, intval( $d['btn_margin_top'] ?? $dft['btn_margin_top'] ) ) );
-		$out['btn_margin_bottom']  = max( 0, min( 80, intval( $d['btn_margin_bottom'] ?? $dft['btn_margin_bottom'] ) ) );
+		// Trigger button — padding (4 sides).
+		foreach ( array( 'btn_pad_top', 'btn_pad_bottom' ) as $key ) {
+			$out[ $key ] = max( 0, min( 80, intval( $d[ $key ] ?? $dft[ $key ] ) ) );
+		}
+		foreach ( array( 'btn_pad_right', 'btn_pad_left' ) as $key ) {
+			$out[ $key ] = max( 0, min( 120, intval( $d[ $key ] ?? $dft[ $key ] ) ) );
+		}
+		// Trigger button — margin (4 sides).
+		foreach ( array( 'btn_margin_top', 'btn_margin_right', 'btn_margin_bottom', 'btn_margin_left' ) as $key ) {
+			$out[ $key ] = max( 0, min( 120, intval( $d[ $key ] ?? $dft[ $key ] ) ) );
+		}
 		$out['btn_font_size']      = max( 10, min( 30, intval( $d['btn_font_size'] ?? $dft['btn_font_size'] ) ) );
 		$out['btn_border_width']   = max( 0.0, min( 10.0, round( floatval( $d['btn_border_width'] ?? $dft['btn_border_width'] ) * 2 ) / 2 ) );
 		$out['btn_letter_spacing'] = max( 0.0, min( 0.5, round( floatval( $d['btn_letter_spacing'] ?? $dft['btn_letter_spacing'] ), 3 ) ) );
@@ -320,17 +326,69 @@ class WCPP_Settings_Page {
 			<tr>
 				<th><?php esc_html_e( 'Button padding', 'wcpp' ); ?></th>
 				<td>
-					<label><?php esc_html_e( 'Top / Bottom', 'wcpp' ); ?> <input type="number" name="<?php echo esc_attr( self::name( 'design', 'btn_padding_v' ) ); ?>" value="<?php echo esc_attr( $d['btn_padding_v'] ); ?>" min="0" max="60" class="small-text" /> px</label>
-					&nbsp;&nbsp;
-					<label><?php esc_html_e( 'Left / Right', 'wcpp' ); ?> <input type="number" name="<?php echo esc_attr( self::name( 'design', 'btn_padding_h' ) ); ?>" value="<?php echo esc_attr( $d['btn_padding_h'] ); ?>" min="0" max="100" class="small-text" /> px</label>
+					<div class="wcpp-sides">
+						<div class="wcpp-sides__row">
+							<div class="wcpp-sides__side">
+								<span class="wcpp-sides__label"><?php esc_html_e( 'Top', 'wcpp' ); ?></span>
+								<input type="number" name="<?php echo esc_attr( self::name( 'design', 'btn_pad_top' ) ); ?>" value="<?php echo esc_attr( $d['btn_pad_top'] ); ?>" min="0" max="80" />
+								<span class="wcpp-sides__unit">px</span>
+							</div>
+						</div>
+						<div class="wcpp-sides__row">
+							<div class="wcpp-sides__side">
+								<span class="wcpp-sides__label"><?php esc_html_e( 'Left', 'wcpp' ); ?></span>
+								<input type="number" name="<?php echo esc_attr( self::name( 'design', 'btn_pad_left' ) ); ?>" value="<?php echo esc_attr( $d['btn_pad_left'] ); ?>" min="0" max="120" />
+								<span class="wcpp-sides__unit">px</span>
+							</div>
+							<div class="wcpp-sides__box"><?php esc_html_e( 'Padding', 'wcpp' ); ?></div>
+							<div class="wcpp-sides__side">
+								<span class="wcpp-sides__label"><?php esc_html_e( 'Right', 'wcpp' ); ?></span>
+								<input type="number" name="<?php echo esc_attr( self::name( 'design', 'btn_pad_right' ) ); ?>" value="<?php echo esc_attr( $d['btn_pad_right'] ); ?>" min="0" max="120" />
+								<span class="wcpp-sides__unit">px</span>
+							</div>
+						</div>
+						<div class="wcpp-sides__row">
+							<div class="wcpp-sides__side">
+								<span class="wcpp-sides__label"><?php esc_html_e( 'Bottom', 'wcpp' ); ?></span>
+								<input type="number" name="<?php echo esc_attr( self::name( 'design', 'btn_pad_bottom' ) ); ?>" value="<?php echo esc_attr( $d['btn_pad_bottom'] ); ?>" min="0" max="80" />
+								<span class="wcpp-sides__unit">px</span>
+							</div>
+						</div>
+					</div>
 				</td>
 			</tr>
 			<tr>
 				<th><?php esc_html_e( 'Button margin', 'wcpp' ); ?></th>
 				<td>
-					<label><?php esc_html_e( 'Top', 'wcpp' ); ?> <input type="number" name="<?php echo esc_attr( self::name( 'design', 'btn_margin_top' ) ); ?>" value="<?php echo esc_attr( $d['btn_margin_top'] ); ?>" min="0" max="80" class="small-text" /> px</label>
-					&nbsp;&nbsp;
-					<label><?php esc_html_e( 'Bottom', 'wcpp' ); ?> <input type="number" name="<?php echo esc_attr( self::name( 'design', 'btn_margin_bottom' ) ); ?>" value="<?php echo esc_attr( $d['btn_margin_bottom'] ); ?>" min="0" max="80" class="small-text" /> px</label>
+					<div class="wcpp-sides">
+						<div class="wcpp-sides__row">
+							<div class="wcpp-sides__side">
+								<span class="wcpp-sides__label"><?php esc_html_e( 'Top', 'wcpp' ); ?></span>
+								<input type="number" name="<?php echo esc_attr( self::name( 'design', 'btn_margin_top' ) ); ?>" value="<?php echo esc_attr( $d['btn_margin_top'] ); ?>" min="0" max="120" />
+								<span class="wcpp-sides__unit">px</span>
+							</div>
+						</div>
+						<div class="wcpp-sides__row">
+							<div class="wcpp-sides__side">
+								<span class="wcpp-sides__label"><?php esc_html_e( 'Left', 'wcpp' ); ?></span>
+								<input type="number" name="<?php echo esc_attr( self::name( 'design', 'btn_margin_left' ) ); ?>" value="<?php echo esc_attr( $d['btn_margin_left'] ); ?>" min="0" max="120" />
+								<span class="wcpp-sides__unit">px</span>
+							</div>
+							<div class="wcpp-sides__box"><?php esc_html_e( 'Margin', 'wcpp' ); ?></div>
+							<div class="wcpp-sides__side">
+								<span class="wcpp-sides__label"><?php esc_html_e( 'Right', 'wcpp' ); ?></span>
+								<input type="number" name="<?php echo esc_attr( self::name( 'design', 'btn_margin_right' ) ); ?>" value="<?php echo esc_attr( $d['btn_margin_right'] ); ?>" min="0" max="120" />
+								<span class="wcpp-sides__unit">px</span>
+							</div>
+						</div>
+						<div class="wcpp-sides__row">
+							<div class="wcpp-sides__side">
+								<span class="wcpp-sides__label"><?php esc_html_e( 'Bottom', 'wcpp' ); ?></span>
+								<input type="number" name="<?php echo esc_attr( self::name( 'design', 'btn_margin_bottom' ) ); ?>" value="<?php echo esc_attr( $d['btn_margin_bottom'] ); ?>" min="0" max="120" />
+								<span class="wcpp-sides__unit">px</span>
+							</div>
+						</div>
+					</div>
 				</td>
 			</tr>
 			<tr>
