@@ -13,7 +13,7 @@
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * WC requires at least: 7.0
- * WC tested up to:   9.0
+ * WC tested up to:   10.8.1
  *
  * @package WC_Personalisation_Panel
  */
