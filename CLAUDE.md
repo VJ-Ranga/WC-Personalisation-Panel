@@ -1,5 +1,5 @@
 # CLAUDE.md — WC Personalisation Panel
-> Master reference. Read this FIRST. Reflects the real built plugin (v0.6.7).
+> Master reference. Read this FIRST. Reflects the real built plugin (v0.7.1).
 > If you are a fresh/local AI continuing this work: this file + FOLDER-STRUCTURE.md
 > tell you everything. Detail: BUILD-PLAN.md · Decisions: DECISIONS.md.
 
@@ -125,8 +125,7 @@ State: `state.completed[]` + `state.current`.
 - **`step` shows ALL of the placement's steps stacked in ONE scrollable panel**
   (`renderAllSteps` → `renderStepBody` per step), each under a "Step N" divider.
   Footer **Continue** (`goNext`) validates every step at once; if one is
-  unanswered it scrolls to + shakes that section. Then → review. (v0.7.0 replaced
-  the old one-step-at-a-time flow.)
+  unanswered it scrolls to + shakes that section. Then → review.
 - Each placement added **once** (used ones hidden in the picker).
 - **Review**: each placement has **Edit** (re-opens with its values) + **Remove**.
   (No back button in Review — Edit covers changes.)
@@ -135,6 +134,7 @@ State: `state.completed[]` + `state.current`.
 - Progress reflects how many steps are filled (live).
 - Cards/swatches are `<div role="button" tabindex="0">` (NOT `<button>` — buttons
   clip tall images). Keyboard: Enter/Space activate.
+- Errors shown via a **branded toast** — no `alert()` anywhere in the plugin.
 - Prices formatted with WooCommerce currency (symbol/position/decimals).
 - ES5, IIFE, events namespaced `.wcppPanel`, scoped to `#wcpp-panel`.
 
@@ -157,7 +157,7 @@ State: `state.completed[]` + `state.current`.
 Assets are enqueued with `?ver=WCPP_VERSION`. **If you change any CSS or JS,
 you MUST bump `WCPP_VERSION`** (in `wc-personalisation-panel.php`, both the
 header and the constant) — otherwise browsers/optimizers keep serving the old
-cached file and your change appears to "do nothing". Current: 0.6.7.
+cached file and your change appears to "do nothing". Current: 0.7.1.
 
 ---
 
@@ -188,4 +188,4 @@ cached file and your change appears to "do nothing". Current: 0.6.7.
 - Don't add `Co-Authored-By` trailers to commits.
 
 ---
-*v0.6.7 · placements model · choice/colour/text steps · variable-product aware.*
+*v0.7.1 · placements model · choice/colour/text steps · stacked wizard · variable-product aware.*

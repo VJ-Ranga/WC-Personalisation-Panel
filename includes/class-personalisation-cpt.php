@@ -176,6 +176,7 @@ class WCPP_Personalisation_CPT {
 				'addStep'              => __( 'Add Step', 'wcpp' ),
 				'addChoice'            => __( 'Add Choice', 'wcpp' ),
 				'typeChoices'          => __( 'Choices', 'wcpp' ),
+				'typeColor'            => __( 'Colours', 'wcpp' ),
 				'typeText'             => __( 'Text input', 'wcpp' ),
 				'tPlaceholder'         => __( 'Placeholder', 'wcpp' ),
 				'tMax'                 => __( 'Max characters', 'wcpp' ),

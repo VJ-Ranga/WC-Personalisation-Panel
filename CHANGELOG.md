@@ -5,6 +5,23 @@
 
 ---
 
+## [0.7.1] — 2026-06
+### Changed
+- **Non-returnable default**: changed to OFF — the notice is opt-in (admin must
+  enable it in Behaviour settings before it shows in the cart).
+- **UI polish**: header separator, pill-style step badges, selected card tint,
+  larger swatches, left-accent review cards, better mobile padding, stronger
+  footer shadow, improved non-returnable notice styling in cart.
+- Panel radius increased from 8 px to 10 px; progress bar thicker (3 px);
+  overlay blur deepened slightly.
+### Fixed
+- Admin step builder "Add Step" dropdown was missing the **Colours** option
+  (only worked on existing PHP-rendered steps). Added `typeColor` i18n key and
+  `<option value="color">` in `buildStepHTML()`.
+- `WCPP_Price_Calculator::calculate()` used wrong key `choice_price` instead of
+  `price` when summing selections (method was unused in main flow; fixed for
+  future use).
+
 ## [0.7.0] — 2026-06
 ### Changed
 - **Wizard flow**: after picking a placement, ALL its steps now show stacked in

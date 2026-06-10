@@ -100,7 +100,7 @@ class WCPP_Settings_Store {
 	public static function behaviour_defaults() {
 		return array(
 			'enabled'             => 1,
-			'non_returnable'      => 1,
+			'non_returnable'      => 0,
 			'elementor'           => 0,
 			'remove_on_uninstall' => 0,
 		);

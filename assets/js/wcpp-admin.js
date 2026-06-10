@@ -215,7 +215,8 @@
 					'<input type="text" name="' + b + '[name]" value="" placeholder="' + esc( wcppAdmin.stepPlaceholder ) + '" class="wcpp-option-name-input" />' +
 					'<select name="' + b + '[type]" class="wcpp-step-type">' +
 						'<option value="choice">' + esc( wcppAdmin.typeChoices ) + '</option>' +
-						'<option value="text">' + esc( wcppAdmin.typeText ) + '</option>' +
+						'<option value="color">'  + esc( wcppAdmin.typeColor )  + '</option>' +
+						'<option value="text">'   + esc( wcppAdmin.typeText )   + '</option>' +
 					'</select>' +
 					'<button type="button" class="button wcpp-delete-option"><span class="dashicons dashicons-trash"></span></button>' +
 				'</div>' +

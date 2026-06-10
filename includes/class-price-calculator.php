@@ -71,7 +71,7 @@ class WCPP_Price_Calculator {
 	public static function calculate( array $selections ) {
 		$total = 0.0;
 		foreach ( $selections as $sel ) {
-			$total += (float) ( $sel['choice_price'] ?? 0 );
+			$total += (float) ( $sel['price'] ?? 0 );
 		}
 		return round( $total, 2 );
 	}
