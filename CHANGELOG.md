@@ -5,6 +5,15 @@
 
 ---
 
+## [0.7.8] — 2026-06
+### Changed
+- **Padding & margin side by side** — "Button padding" and "Button margin"
+  settings are now in a single row with both box-model controls next to each
+  other (divider between them), halving the vertical space used.
+- **Collapse toggle hover colour** — the placement ▲/▼ button now uses the
+  same blue accent hover (background `#eef2ff`, border `#c7d2fe`, icon blue)
+  as the Duplicate button, keeping all header actions visually consistent.
+
 ## [0.7.7] — 2026-06
 ### Fixed
 - **Removed wrong font/colour sub-pickers from text steps** — the admin Font

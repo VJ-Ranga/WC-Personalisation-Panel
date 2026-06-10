@@ -494,13 +494,17 @@
 	justify-content: center;
 	color:           var(--wmuted) !important;
 	border-color:    #e3e6ea !important;
-	background:      #fff !important;
+	background:      #f7f8fa !important;
 	border-radius:   8px !important;
 	box-shadow:      none !important;
 	flex-shrink:     0;
-	transition:      background .15s ease, color .15s ease;
+	transition:      background .15s ease, color .15s ease, border-color .15s ease;
 }
-.wcpp-toggle-placement:hover { background: #f0f0f0 !important; color: var(--wink) !important; }
+.wcpp-toggle-placement:hover {
+	background:   #eef2ff !important;
+	color:        var(--wa) !important;
+	border-color: #c7d2fe !important;
+}
 .wcpp-toggle-placement .dashicons {
 	font-size: 16px; height: 16px; width: 16px; line-height: 1;
 	transition: transform .25s ease;
@@ -510,3 +514,36 @@
 .wcpp-placement-block--collapsed > .wcpp-steps-container,
 .wcpp-placement-block--collapsed > .wcpp-add-step-btn { display: none !important; }
 .wcpp-placement-block--collapsed .wcpp-toggle-placement .dashicons { transform: rotate(180deg); }
+
+/* ===================================================================
+   SIDE-BY-SIDE PADDING + MARGIN  (settings page)
+=================================================================== */
+.wcpp-sides-pair {
+	display:     flex;
+	align-items: flex-start;
+	gap:         0;
+}
+.wcpp-sides-pair__item {
+	display:        flex;
+	flex-direction: column;
+	align-items:    center;
+	gap:            6px;
+}
+.wcpp-sides-pair__title {
+	font-size:      10px;
+	font-weight:    700;
+	text-transform: uppercase;
+	letter-spacing: .08em;
+	color:          var(--wa);
+	background:     #eef2ff;
+	padding:        3px 12px;
+	border-radius:  20px;
+	line-height:    1;
+}
+.wcpp-sides-pair__divider {
+	width:      1px;
+	background: #e3e6ea;
+	align-self: stretch;
+	margin:     0 18px;
+	flex-shrink: 0;
+}

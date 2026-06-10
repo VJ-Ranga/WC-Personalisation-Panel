@@ -328,68 +328,74 @@ class WCPP_Settings_Page {
 				<td><label><input type="checkbox" name="<?php echo esc_attr( self::name( 'design', 'btn_full_width' ) ); ?>" value="1" <?php checked( $d['btn_full_width'] ); ?> /> <?php esc_html_e( 'Make button full width', 'wcpp' ); ?></label></td>
 			</tr>
 			<tr>
-				<th><?php esc_html_e( 'Button padding', 'wcpp' ); ?></th>
+				<th><?php esc_html_e( 'Button padding &amp; margin', 'wcpp' ); ?></th>
 				<td>
-					<div class="wcpp-sides">
-						<div class="wcpp-sides__row">
-							<div class="wcpp-sides__side">
-								<span class="wcpp-sides__label"><?php esc_html_e( 'Top', 'wcpp' ); ?></span>
-								<input type="number" name="<?php echo esc_attr( self::name( 'design', 'btn_pad_top' ) ); ?>" value="<?php echo esc_attr( $d['btn_pad_top'] ); ?>" min="0" max="80" />
-								<span class="wcpp-sides__unit">px</span>
+					<div class="wcpp-sides-pair">
+						<!-- Padding -->
+						<div class="wcpp-sides-pair__item">
+							<span class="wcpp-sides-pair__title"><?php esc_html_e( 'Padding', 'wcpp' ); ?></span>
+							<div class="wcpp-sides">
+								<div class="wcpp-sides__row">
+									<div class="wcpp-sides__side">
+										<span class="wcpp-sides__label"><?php esc_html_e( 'Top', 'wcpp' ); ?></span>
+										<input type="number" name="<?php echo esc_attr( self::name( 'design', 'btn_pad_top' ) ); ?>" value="<?php echo esc_attr( $d['btn_pad_top'] ); ?>" min="0" max="80" />
+										<span class="wcpp-sides__unit">px</span>
+									</div>
+								</div>
+								<div class="wcpp-sides__row">
+									<div class="wcpp-sides__side">
+										<span class="wcpp-sides__label"><?php esc_html_e( 'Left', 'wcpp' ); ?></span>
+										<input type="number" name="<?php echo esc_attr( self::name( 'design', 'btn_pad_left' ) ); ?>" value="<?php echo esc_attr( $d['btn_pad_left'] ); ?>" min="0" max="120" />
+										<span class="wcpp-sides__unit">px</span>
+									</div>
+									<div class="wcpp-sides__box"><?php esc_html_e( 'PAD', 'wcpp' ); ?></div>
+									<div class="wcpp-sides__side">
+										<span class="wcpp-sides__label"><?php esc_html_e( 'Right', 'wcpp' ); ?></span>
+										<input type="number" name="<?php echo esc_attr( self::name( 'design', 'btn_pad_right' ) ); ?>" value="<?php echo esc_attr( $d['btn_pad_right'] ); ?>" min="0" max="120" />
+										<span class="wcpp-sides__unit">px</span>
+									</div>
+								</div>
+								<div class="wcpp-sides__row">
+									<div class="wcpp-sides__side">
+										<span class="wcpp-sides__label"><?php esc_html_e( 'Bottom', 'wcpp' ); ?></span>
+										<input type="number" name="<?php echo esc_attr( self::name( 'design', 'btn_pad_bottom' ) ); ?>" value="<?php echo esc_attr( $d['btn_pad_bottom'] ); ?>" min="0" max="80" />
+										<span class="wcpp-sides__unit">px</span>
+									</div>
+								</div>
 							</div>
 						</div>
-						<div class="wcpp-sides__row">
-							<div class="wcpp-sides__side">
-								<span class="wcpp-sides__label"><?php esc_html_e( 'Left', 'wcpp' ); ?></span>
-								<input type="number" name="<?php echo esc_attr( self::name( 'design', 'btn_pad_left' ) ); ?>" value="<?php echo esc_attr( $d['btn_pad_left'] ); ?>" min="0" max="120" />
-								<span class="wcpp-sides__unit">px</span>
-							</div>
-							<div class="wcpp-sides__box"><?php esc_html_e( 'Padding', 'wcpp' ); ?></div>
-							<div class="wcpp-sides__side">
-								<span class="wcpp-sides__label"><?php esc_html_e( 'Right', 'wcpp' ); ?></span>
-								<input type="number" name="<?php echo esc_attr( self::name( 'design', 'btn_pad_right' ) ); ?>" value="<?php echo esc_attr( $d['btn_pad_right'] ); ?>" min="0" max="120" />
-								<span class="wcpp-sides__unit">px</span>
-							</div>
-						</div>
-						<div class="wcpp-sides__row">
-							<div class="wcpp-sides__side">
-								<span class="wcpp-sides__label"><?php esc_html_e( 'Bottom', 'wcpp' ); ?></span>
-								<input type="number" name="<?php echo esc_attr( self::name( 'design', 'btn_pad_bottom' ) ); ?>" value="<?php echo esc_attr( $d['btn_pad_bottom'] ); ?>" min="0" max="80" />
-								<span class="wcpp-sides__unit">px</span>
-							</div>
-						</div>
-					</div>
-				</td>
-			</tr>
-			<tr>
-				<th><?php esc_html_e( 'Button margin', 'wcpp' ); ?></th>
-				<td>
-					<div class="wcpp-sides">
-						<div class="wcpp-sides__row">
-							<div class="wcpp-sides__side">
-								<span class="wcpp-sides__label"><?php esc_html_e( 'Top', 'wcpp' ); ?></span>
-								<input type="number" name="<?php echo esc_attr( self::name( 'design', 'btn_margin_top' ) ); ?>" value="<?php echo esc_attr( $d['btn_margin_top'] ); ?>" min="0" max="120" />
-								<span class="wcpp-sides__unit">px</span>
-							</div>
-						</div>
-						<div class="wcpp-sides__row">
-							<div class="wcpp-sides__side">
-								<span class="wcpp-sides__label"><?php esc_html_e( 'Left', 'wcpp' ); ?></span>
-								<input type="number" name="<?php echo esc_attr( self::name( 'design', 'btn_margin_left' ) ); ?>" value="<?php echo esc_attr( $d['btn_margin_left'] ); ?>" min="0" max="120" />
-								<span class="wcpp-sides__unit">px</span>
-							</div>
-							<div class="wcpp-sides__box"><?php esc_html_e( 'Margin', 'wcpp' ); ?></div>
-							<div class="wcpp-sides__side">
-								<span class="wcpp-sides__label"><?php esc_html_e( 'Right', 'wcpp' ); ?></span>
-								<input type="number" name="<?php echo esc_attr( self::name( 'design', 'btn_margin_right' ) ); ?>" value="<?php echo esc_attr( $d['btn_margin_right'] ); ?>" min="0" max="120" />
-								<span class="wcpp-sides__unit">px</span>
-							</div>
-						</div>
-						<div class="wcpp-sides__row">
-							<div class="wcpp-sides__side">
-								<span class="wcpp-sides__label"><?php esc_html_e( 'Bottom', 'wcpp' ); ?></span>
-								<input type="number" name="<?php echo esc_attr( self::name( 'design', 'btn_margin_bottom' ) ); ?>" value="<?php echo esc_attr( $d['btn_margin_bottom'] ); ?>" min="0" max="120" />
-								<span class="wcpp-sides__unit">px</span>
+						<!-- Margin -->
+						<div class="wcpp-sides-pair__divider"></div>
+						<div class="wcpp-sides-pair__item">
+							<span class="wcpp-sides-pair__title"><?php esc_html_e( 'Margin', 'wcpp' ); ?></span>
+							<div class="wcpp-sides">
+								<div class="wcpp-sides__row">
+									<div class="wcpp-sides__side">
+										<span class="wcpp-sides__label"><?php esc_html_e( 'Top', 'wcpp' ); ?></span>
+										<input type="number" name="<?php echo esc_attr( self::name( 'design', 'btn_margin_top' ) ); ?>" value="<?php echo esc_attr( $d['btn_margin_top'] ); ?>" min="0" max="120" />
+										<span class="wcpp-sides__unit">px</span>
+									</div>
+								</div>
+								<div class="wcpp-sides__row">
+									<div class="wcpp-sides__side">
+										<span class="wcpp-sides__label"><?php esc_html_e( 'Left', 'wcpp' ); ?></span>
+										<input type="number" name="<?php echo esc_attr( self::name( 'design', 'btn_margin_left' ) ); ?>" value="<?php echo esc_attr( $d['btn_margin_left'] ); ?>" min="0" max="120" />
+										<span class="wcpp-sides__unit">px</span>
+									</div>
+									<div class="wcpp-sides__box"><?php esc_html_e( 'MAR', 'wcpp' ); ?></div>
+									<div class="wcpp-sides__side">
+										<span class="wcpp-sides__label"><?php esc_html_e( 'Right', 'wcpp' ); ?></span>
+										<input type="number" name="<?php echo esc_attr( self::name( 'design', 'btn_margin_right' ) ); ?>" value="<?php echo esc_attr( $d['btn_margin_right'] ); ?>" min="0" max="120" />
+										<span class="wcpp-sides__unit">px</span>
+									</div>
+								</div>
+								<div class="wcpp-sides__row">
+									<div class="wcpp-sides__side">
+										<span class="wcpp-sides__label"><?php esc_html_e( 'Bottom', 'wcpp' ); ?></span>
+										<input type="number" name="<?php echo esc_attr( self::name( 'design', 'btn_margin_bottom' ) ); ?>" value="<?php echo esc_attr( $d['btn_margin_bottom'] ); ?>" min="0" max="120" />
+										<span class="wcpp-sides__unit">px</span>
+									</div>
+								</div>
 							</div>
 						</div>
 					</div>
