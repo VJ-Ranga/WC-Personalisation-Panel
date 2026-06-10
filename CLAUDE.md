@@ -97,6 +97,30 @@ option and only rebuilds the submitted tab (hidden `_tab` field tracks which).
 
 ---
 
+## 4b. GITHUB UPDATE CHECKER (`includes/class-github-updater.php`)
+`WCPP_GitHub_Updater` — loaded at plugin load time (outside `wcpp_init()`), does
+NOT need WooCommerce.
+
+- **API**: `GET https://api.github.com/repos/VJ-Ranga/WC-Personalisation-Panel/releases/latest`
+- **Cache**: transient `wcpp_gh_release_cache` — 12 h on success, 1 h back-off on error.
+- **`inject_update`** (`pre_set_site_transient_update_plugins`) — when GitHub tag
+  is newer than `WCPP_VERSION`, injects an update object so the WP Plugins page
+  shows the "update available" badge and one-click update.
+- **`plugin_info`** (`plugins_api`) — fills the "View details" thickbox popup.
+- **`fix_source_dir`** (`upgrader_source_selection`) — renames GitHub's
+  auto-zip folder (`Owner-Repo-<sha>/`) to `wc-personalisation-panel/` so
+  the plugin installs under the correct directory.
+- **`handle_force_check`** (`admin_init`) — handles `?wcpp_check_update=1&_wpnonce=…`;
+  deletes both the release cache transient and `update_plugins` site transient,
+  then redirects back.
+- **`add_check_link`** (`plugin_action_links_`) — appends "Check for updates" to
+  the plugin row.
+- Release asset preference: if the GitHub release contains a `.zip` asset whose
+  name includes `wc-personalisation-panel`, that is used as the download URL
+  instead of the auto-generated zipball (avoids folder rename).
+
+---
+
 ## 5. DATA FLOW (sacred path)
 ```
 Builder save → _wcpp_placements
@@ -160,7 +184,7 @@ State: `state.completed[]` + `state.current`.
 Assets are enqueued with `?ver=WCPP_VERSION`. **If you change any CSS or JS,
 you MUST bump `WCPP_VERSION`** (in `wc-personalisation-panel.php`, both the
 header and the constant) — otherwise browsers/optimizers keep serving the old
-cached file and your change appears to "do nothing". Current: 0.7.8.
+cached file and your change appears to "do nothing". Current: 0.7.9.
 
 ---
 
@@ -191,4 +215,4 @@ cached file and your change appears to "do nothing". Current: 0.7.8.
 - Don't add `Co-Authored-By` trailers to commits.
 
 ---
-*v0.7.8 · placements model · choice/colour/text steps · sequential/stacked wizard · font+colour sub-pickers · grid2 placement picker · step descriptions · card image fit/aspect · inline validation badge · variable-product aware.*
+*v0.7.9 · placements model · choice/colour/text steps · sequential/stacked wizard · grid2 placement picker · step descriptions · card image fit/aspect · inline validation badge · variable-product aware · step locking (stacked) · placement collapse · GitHub update checker.*

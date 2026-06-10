@@ -5,6 +5,16 @@
 
 ---
 
+## [0.7.9] — 2026-06
+### Added
+- **GitHub releases update checker** — the plugin now polls the GitHub Releases
+  API (`/repos/VJ-Ranga/WC-Personalisation-Panel/releases/latest`) every 12 hours
+  and injects update info into the WordPress plugin-update transient. When a newer
+  tag is published on GitHub, admins see the standard "update available" banner on
+  the Plugins page and can one-click-update like any other plugin. A "Check for
+  updates" link in the plugin row action links forces an immediate re-check.
+  No external libraries — pure WP HTTP API + transient cache.
+
 ## [0.7.8] — 2026-06
 ### Changed
 - **Padding & margin side by side** — "Button padding" and "Button margin"
