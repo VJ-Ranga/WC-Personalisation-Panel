@@ -133,6 +133,23 @@ class WCPP_Settings_Page {
 		$out['card_layout']    = in_array( $d['card_layout'] ?? '', array( 'list', 'grid2', 'grid3' ), true ) ? $d['card_layout'] : $dft['card_layout'];
 
 		$out['btn_radius']      = max( 0, min( 50, intval( $d['btn_radius'] ?? $dft['btn_radius'] ) ) );
+
+		// Trigger button — dimension extras.
+		$out['btn_padding_v']      = max( 0, min( 60, intval( $d['btn_padding_v'] ?? $dft['btn_padding_v'] ) ) );
+		$out['btn_padding_h']      = max( 0, min( 100, intval( $d['btn_padding_h'] ?? $dft['btn_padding_h'] ) ) );
+		$out['btn_margin_top']     = max( 0, min( 80, intval( $d['btn_margin_top'] ?? $dft['btn_margin_top'] ) ) );
+		$out['btn_font_size']      = max( 10, min( 30, intval( $d['btn_font_size'] ?? $dft['btn_font_size'] ) ) );
+		$out['btn_border_width']   = max( 0.0, min( 10.0, round( floatval( $d['btn_border_width'] ?? $dft['btn_border_width'] ) * 2 ) / 2 ) );
+		$out['btn_letter_spacing'] = max( 0.0, min( 0.5, round( floatval( $d['btn_letter_spacing'] ?? $dft['btn_letter_spacing'] ), 3 ) ) );
+
+		// Panel content.
+		$out['panel_content_pad']    = max( 8, min( 60, intval( $d['panel_content_pad'] ?? $dft['panel_content_pad'] ) ) );
+
+		// Footer buttons.
+		$out['footer_btn_radius']    = max( 0, min( 50, intval( $d['footer_btn_radius'] ?? $dft['footer_btn_radius'] ) ) );
+		$out['footer_btn_font_size'] = max( 10, min( 24, intval( $d['footer_btn_font_size'] ?? $dft['footer_btn_font_size'] ) ) );
+		$out['footer_btn_padding_v'] = max( 8, min( 40, intval( $d['footer_btn_padding_v'] ?? $dft['footer_btn_padding_v'] ) ) );
+
 		$out['panel_width']     = max( 300, min( 700, intval( $d['panel_width'] ?? $dft['panel_width'] ) ) );
 		$out['mobile_bp']       = max( 320, min( 1024, intval( $d['mobile_bp'] ?? $dft['mobile_bp'] ) ) );
 		$out['panel_radius']    = max( 0, min( 50, intval( $d['panel_radius'] ?? $dft['panel_radius'] ) ) );
@@ -299,6 +316,30 @@ class WCPP_Settings_Page {
 				<th><?php esc_html_e( 'Full width', 'wcpp' ); ?></th>
 				<td><label><input type="checkbox" name="<?php echo esc_attr( self::name( 'design', 'btn_full_width' ) ); ?>" value="1" <?php checked( $d['btn_full_width'] ); ?> /> <?php esc_html_e( 'Make button full width', 'wcpp' ); ?></label></td>
 			</tr>
+			<tr>
+				<th><?php esc_html_e( 'Button padding', 'wcpp' ); ?></th>
+				<td>
+					<label><?php esc_html_e( 'Top / Bottom', 'wcpp' ); ?> <input type="number" name="<?php echo esc_attr( self::name( 'design', 'btn_padding_v' ) ); ?>" value="<?php echo esc_attr( $d['btn_padding_v'] ); ?>" min="0" max="60" class="small-text" /> px</label>
+					&nbsp;&nbsp;
+					<label><?php esc_html_e( 'Left / Right', 'wcpp' ); ?> <input type="number" name="<?php echo esc_attr( self::name( 'design', 'btn_padding_h' ) ); ?>" value="<?php echo esc_attr( $d['btn_padding_h'] ); ?>" min="0" max="100" class="small-text" /> px</label>
+				</td>
+			</tr>
+			<tr>
+				<th><?php esc_html_e( 'Button margin top', 'wcpp' ); ?></th>
+				<td><input type="number" name="<?php echo esc_attr( self::name( 'design', 'btn_margin_top' ) ); ?>" value="<?php echo esc_attr( $d['btn_margin_top'] ); ?>" min="0" max="80" class="small-text" /> px <span class="description"><?php esc_html_e( 'Space above the button.', 'wcpp' ); ?></span></td>
+			</tr>
+			<tr>
+				<th><?php esc_html_e( 'Button font size', 'wcpp' ); ?></th>
+				<td><input type="number" name="<?php echo esc_attr( self::name( 'design', 'btn_font_size' ) ); ?>" value="<?php echo esc_attr( $d['btn_font_size'] ); ?>" min="10" max="30" class="small-text" /> px</td>
+			</tr>
+			<tr>
+				<th><?php esc_html_e( 'Button border width', 'wcpp' ); ?></th>
+				<td><input type="number" name="<?php echo esc_attr( self::name( 'design', 'btn_border_width' ) ); ?>" value="<?php echo esc_attr( $d['btn_border_width'] ); ?>" min="0" max="10" step="0.5" class="small-text" /> px <span class="description"><?php esc_html_e( 'Applies to Outline and Filled styles.', 'wcpp' ); ?></span></td>
+			</tr>
+			<tr>
+				<th><?php esc_html_e( 'Button letter spacing', 'wcpp' ); ?></th>
+				<td><input type="number" name="<?php echo esc_attr( self::name( 'design', 'btn_letter_spacing' ) ); ?>" value="<?php echo esc_attr( $d['btn_letter_spacing'] ); ?>" min="0" max="0.5" step="0.01" class="small-text" /> em <span class="description"><?php esc_html_e( '0 = no spacing, 0.08 = default, 0.2 = wide.', 'wcpp' ); ?></span></td>
+			</tr>
 		</table>
 
 		<h2 class="title"><?php esc_html_e( 'Drawer / Panel', 'wcpp' ); ?></h2>
@@ -352,6 +393,10 @@ class WCPP_Settings_Page {
 			<tr>
 				<th><?php esc_html_e( 'Animation speed', 'wcpp' ); ?></th>
 				<td><input type="number" name="<?php echo esc_attr( self::name( 'design', 'anim_speed' ) ); ?>" value="<?php echo esc_attr( $d['anim_speed'] ); ?>" min="100" max="1000" step="50" class="small-text" /> ms</td>
+			</tr>
+			<tr>
+				<th><?php esc_html_e( 'Content padding', 'wcpp' ); ?></th>
+				<td><input type="number" name="<?php echo esc_attr( self::name( 'design', 'panel_content_pad' ) ); ?>" value="<?php echo esc_attr( $d['panel_content_pad'] ); ?>" min="8" max="60" class="small-text" /> px <span class="description"><?php esc_html_e( 'Left/right padding inside the panel content area.', 'wcpp' ); ?></span></td>
 			</tr>
 		</table>
 
@@ -428,6 +473,18 @@ class WCPP_Settings_Page {
 			<tr>
 				<th><?php esc_html_e( 'Footer button colour', 'wcpp' ); ?></th>
 				<td><?php self::color_field( $d, 'footer_btn_color' ); ?></td>
+			</tr>
+			<tr>
+				<th><?php esc_html_e( 'Footer button radius', 'wcpp' ); ?></th>
+				<td><input type="number" name="<?php echo esc_attr( self::name( 'design', 'footer_btn_radius' ) ); ?>" value="<?php echo esc_attr( $d['footer_btn_radius'] ); ?>" min="0" max="50" class="small-text" /> px</td>
+			</tr>
+			<tr>
+				<th><?php esc_html_e( 'Footer button font size', 'wcpp' ); ?></th>
+				<td><input type="number" name="<?php echo esc_attr( self::name( 'design', 'footer_btn_font_size' ) ); ?>" value="<?php echo esc_attr( $d['footer_btn_font_size'] ); ?>" min="10" max="24" class="small-text" /> px</td>
+			</tr>
+			<tr>
+				<th><?php esc_html_e( 'Footer button padding', 'wcpp' ); ?></th>
+				<td><input type="number" name="<?php echo esc_attr( self::name( 'design', 'footer_btn_padding_v' ) ); ?>" value="<?php echo esc_attr( $d['footer_btn_padding_v'] ); ?>" min="8" max="40" class="small-text" /> px <span class="description"><?php esc_html_e( 'Top / bottom padding on the Continue and Add to Bag buttons.', 'wcpp' ); ?></span></td>
 			</tr>
 			<tr>
 				<th><?php esc_html_e( 'Show price on each choice', 'wcpp' ); ?></th>

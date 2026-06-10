@@ -10,6 +10,15 @@
 	--wcpp-btn-bg:        #1A56DB;
 	--wcpp-btn-text:      #1A56DB;
 	--wcpp-btn-radius:    6px;
+
+	/* Trigger button — dimension tokens */
+	--wcpp-btn-pad-v:         15px;
+	--wcpp-btn-pad-h:         26px;
+	--wcpp-btn-margin-top:    12px;
+	--wcpp-btn-font-size:     13px;
+	--wcpp-btn-border-width:  1.5px;
+	--wcpp-btn-ls:            0.08em;
+
 	--wcpp-panel-width:   440px;
 	--wcpp-mobile-bp:     500px;
 	--wcpp-panel-bg:      #ffffff;
@@ -27,15 +36,23 @@
 	--wcpp-ink:           #1a1a1a;
 	--wcpp-muted:         #8c8782;
 	--wcpp-hair:          #ece9e4;
+
+	/* Panel content padding */
+	--wcpp-content-pad:   22px;
+
+	/* Footer button tokens */
+	--wcpp-footer-btn-radius: 6px;
+	--wcpp-footer-btn-font:   12px;
+	--wcpp-footer-btn-pad-v:  16px;
 }
 
 /* ─── Trigger button ─────────────────────────────────────────────── */
 .wcpp-button {
-	margin-top:     12px;
-	padding:        15px 26px;
-	font-size:      13px;
+	margin-top:     var(--wcpp-btn-margin-top);
+	padding:        var(--wcpp-btn-pad-v) var(--wcpp-btn-pad-h);
+	font-size:      var(--wcpp-btn-font-size);
 	font-weight:    600;
-	letter-spacing: 0.08em;
+	letter-spacing: var(--wcpp-btn-ls);
 	text-transform: uppercase;
 	border-radius:  var(--wcpp-btn-radius);
 	cursor:         pointer;
@@ -48,7 +65,7 @@
 .wcpp-button--outline {
 	background: transparent;
 	color:      var(--wcpp-btn-text);
-	border:     1.5px solid var(--wcpp-btn-bg);
+	border:     var(--wcpp-btn-border-width) solid var(--wcpp-btn-bg);
 }
 .wcpp-button--outline:hover {
 	background: var(--wcpp-btn-bg);
@@ -58,7 +75,7 @@
 .wcpp-button--filled {
 	background: var(--wcpp-btn-bg);
 	color:      #fff;
-	border:     1.5px solid var(--wcpp-btn-bg);
+	border:     var(--wcpp-btn-border-width) solid var(--wcpp-btn-bg);
 }
 .wcpp-button--filled:hover { box-shadow: 0 10px 24px -8px var(--wcpp-btn-bg); transform: translateY(-1px); }
 .wcpp-button--text {
@@ -67,7 +84,7 @@
 	border:         none;
 	min-height:     auto;
 	padding:        10px 0;
-	border-bottom:  1.5px solid currentColor;
+	border-bottom:  var(--wcpp-btn-border-width) solid currentColor;
 	border-radius:  0;
 	display:        inline-block;
 	width:          auto;
@@ -259,7 +276,7 @@
 .wcpp-panel__content {
 	flex:                       1;
 	overflow-y:                 auto;
-	padding:                    24px 22px 28px;
+	padding:                    24px var(--wcpp-content-pad) 28px;
 	-webkit-overflow-scrolling: touch;
 }
 .wcpp-panel__content::-webkit-scrollbar { width: 5px; }
@@ -643,14 +660,14 @@
 .wcpp-panel__next,
 .wcpp-panel__add-to-bag {
 	width:          100%;
-	padding:        16px;
-	font-size:      12px;
+	padding:        var(--wcpp-footer-btn-pad-v) 16px;
+	font-size:      var(--wcpp-footer-btn-font);
 	font-weight:    700;
 	letter-spacing: 0.12em;
 	text-transform: uppercase;
-	border-radius:  var(--wcpp-btn-radius);
+	border-radius:  var(--wcpp-footer-btn-radius);
 	cursor:         pointer;
-	min-height:     52px;
+	min-height:     48px;
 	background:     var(--wcpp-footer-btn);
 	color:          #fff;
 	border:         none;
@@ -683,7 +700,7 @@
 	#wcpp-panel          { width: 100% !important; }
 	.wcpp-step__heading  { font-size: 19px; }
 	.wcpp-panel__header  { padding: 14px 16px 12px; }
-	.wcpp-panel__content { padding: 20px 16px 24px; }
+	.wcpp-panel__content { padding: 20px max(14px, calc(var(--wcpp-content-pad) - 6px)) 24px; }
 	.wcpp-panel__footer  { padding: 12px 16px 20px; }
 	.wcpp-swatches       { gap: 16px 12px; }
 	.wcpp-swatch         { width: 60px; }

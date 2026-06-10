@@ -5,6 +5,15 @@
 
 ---
 
+## [0.7.3] — 2026-06
+### Added
+- **9 new design settings** — all now driven by CSS custom properties so changes
+  take effect without touching code:
+  - *Trigger button*: Padding V, Padding H, Margin top, Font size, Border width,
+    Letter spacing
+  - *Panel content*: Content padding (left/right inside the drawer)
+  - *Footer buttons*: Border radius, Font size, Padding V (top/bottom)
+
 ## [0.7.2] — 2026-06
 ### Added
 - **Button animation setting** — choose from 6 styles in Panel Settings → Design:

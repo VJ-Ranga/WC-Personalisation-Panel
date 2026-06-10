@@ -54,6 +54,22 @@ class WCPP_Settings_Store {
 			'btn_full_width'    => 1,
 			'btn_animation'     => 'lift',  // none | lift | pulse | shine | scale | bounce
 
+			// Trigger button — dimensions & typography.
+			'btn_padding_v'        => 15,   // vertical padding (top/bottom) px.
+			'btn_padding_h'        => 26,   // horizontal padding (left/right) px.
+			'btn_margin_top'       => 12,   // gap above the button px.
+			'btn_font_size'        => 13,   // font-size px.
+			'btn_border_width'     => 1.5,  // border-width px (outline/filled styles).
+			'btn_letter_spacing'   => 0.08, // letter-spacing em (e.g. 0.08 = 0.08em).
+
+			// Panel content area.
+			'panel_content_pad'    => 22,   // horizontal padding inside the content px.
+
+			// Footer buttons (Next / Add to Bag).
+			'footer_btn_radius'    => 6,    // border-radius px.
+			'footer_btn_font_size' => 12,   // font-size px.
+			'footer_btn_padding_v' => 16,   // vertical padding (top/bottom) px.
+
 			// Drawer / panel.
 			'slide_from'        => 'right',     // right | left.
 			'panel_width'       => 420,

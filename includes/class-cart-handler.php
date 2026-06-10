@@ -74,6 +74,15 @@ class WCPP_Cart_Handler {
 			'--wcpp-btn-bg'        => $design['btn_bg'],
 			'--wcpp-btn-text'      => $design['btn_text_color'],
 			'--wcpp-btn-radius'    => intval( $design['btn_radius'] ) . 'px',
+
+			// Trigger button — dimension tokens.
+			'--wcpp-btn-pad-v'          => intval( $design['btn_padding_v'] ?? 15 ) . 'px',
+			'--wcpp-btn-pad-h'          => intval( $design['btn_padding_h'] ?? 26 ) . 'px',
+			'--wcpp-btn-margin-top'     => intval( $design['btn_margin_top'] ?? 12 ) . 'px',
+			'--wcpp-btn-font-size'      => intval( $design['btn_font_size'] ?? 13 ) . 'px',
+			'--wcpp-btn-border-width'   => floatval( $design['btn_border_width'] ?? 1.5 ) . 'px',
+			'--wcpp-btn-ls'             => round( floatval( $design['btn_letter_spacing'] ?? 0.08 ), 3 ) . 'em',
+
 			'--wcpp-panel-width'   => intval( $design['panel_width'] ) . 'px',
 			'--wcpp-mobile-bp'     => intval( $design['mobile_bp'] ) . 'px',
 			'--wcpp-panel-bg'      => $design['panel_bg'],
@@ -81,12 +90,21 @@ class WCPP_Cart_Handler {
 			'--wcpp-panel-radius'  => intval( $design['panel_radius'] ) . 'px',
 			'--wcpp-overlay'       => $overlay,
 			'--wcpp-anim'          => intval( $design['anim_speed'] ) . 'ms',
+
+			// Panel content.
+			'--wcpp-content-pad'   => intval( $design['panel_content_pad'] ?? 22 ) . 'px',
+
 			'--wcpp-title-color'   => $design['title_color'],
 			'--wcpp-progress'      => $design['progress_color'],
 			'--wcpp-card-border'   => $design['card_border'],
 			'--wcpp-card-selected' => $design['card_selected'],
 			'--wcpp-img-size'      => intval( $design['card_img_size'] ) . 'px',
 			'--wcpp-footer-btn'    => $design['footer_btn_color'],
+
+			// Footer button tokens.
+			'--wcpp-footer-btn-radius' => intval( $design['footer_btn_radius'] ?? 6 ) . 'px',
+			'--wcpp-footer-btn-font'   => intval( $design['footer_btn_font_size'] ?? 12 ) . 'px',
+			'--wcpp-footer-btn-pad-v'  => intval( $design['footer_btn_padding_v'] ?? 16 ) . 'px',
 		);
 
 		$css = ':root{';
