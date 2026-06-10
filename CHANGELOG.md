@@ -5,6 +5,21 @@
 
 ---
 
+## [0.7.16] — 2026-06
+### Added
+- **Fee type option per set** — the Pricing meta box now has a "Fee type" selector:
+  - **One-time fee** — charged once per personalisation, regardless of how many
+    units are ordered. The price calculator amortises it across the cart item
+    quantity so the line total is always `base×qty + choice_addon×qty + set_fee`.
+  - **Per-item fee** — charged for every unit ordered (qty 3 = 3× fee). Original
+    pre-0.7.15 behaviour, now available as an explicit setting.
+  Stored as `_wcpp_set_price_type` on the set post. Default for existing sets
+  without the meta is `line` (one-time). The choice is persisted through to
+  order meta (`_wcpp_fee_type`) and restored on Order Again.
+- Cart and order displays now label the fee **"Personalisation fee (one-time)"**
+  or **"Personalisation fee (per item)"** so customers can see exactly what they
+  are being charged.
+
 ## [0.7.15] — 2026-06
 ### Fixed
 - **Set fee no longer multiplies by quantity** — the flat personalisation fee

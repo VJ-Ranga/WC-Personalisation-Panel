@@ -168,8 +168,9 @@ class WCPP_Ajax_Handler {
 		$priced_product = $variation_id ? wc_get_product( $variation_id ) : $product;
 		$base_price     = $priced_product ? (float) $priced_product->get_price() : 0.0;
 
-		// 8. Total = flat set fee (once) + all choice prices across placements.
+		// 8. Total = flat set fee + all choice prices across placements.
 		$set_fee     = isset( $set['set_price'] ) ? (float) $set['set_price'] : 0.0;
+		$fee_type    = isset( $set['set_price_type'] ) ? $set['set_price_type'] : 'line';
 		$total_price = $set_fee + $choice_total;
 
 		// 9. Non-returnable honours the global Behaviour setting.
@@ -180,6 +181,7 @@ class WCPP_Ajax_Handler {
 			'set_name'       => $set['name'],
 			'placements'     => $clean_placements,
 			'set_fee'        => number_format( $set_fee, 2, '.', '' ),
+			'fee_type'       => $fee_type,  // 'line' = one-time; 'unit' = per item ordered.
 			'base_price'     => $base_price,
 			'total_price'    => number_format( $total_price, 2, '.', '' ),
 			'non_returnable' => $non_returnable,

@@ -527,15 +527,19 @@ class WCPP_Personalisation_CPT {
 	// ─── PRICING ─────────────────────────────────────────────────────────
 
 	/**
-	 * Render the pricing meta box — a flat fee for the whole set.
+	 * Render the pricing meta box — flat fee + fee-type selector.
 	 *
 	 * @param WP_Post $post Current post.
 	 * @return void
 	 */
 	public static function render_pricing_box( $post ) {
-		$set_price = get_post_meta( $post->ID, '_wcpp_set_price', true );
-		$set_price = ( '' === $set_price ) ? '' : number_format( (float) $set_price, 2, '.', '' );
-		$symbol    = get_woocommerce_currency_symbol();
+		$set_price      = get_post_meta( $post->ID, '_wcpp_set_price', true );
+		$set_price      = ( '' === $set_price ) ? '' : number_format( (float) $set_price, 2, '.', '' );
+		$set_price_type = get_post_meta( $post->ID, '_wcpp_set_price_type', true );
+		if ( ! in_array( $set_price_type, array( 'line', 'unit' ), true ) ) {
+			$set_price_type = 'line';
+		}
+		$symbol = get_woocommerce_currency_symbol();
 		?>
 		<div class="wcpp-pricing-box">
 			<p>
@@ -545,8 +549,29 @@ class WCPP_Personalisation_CPT {
 					value="<?php echo esc_attr( $set_price ); ?>"
 					step="0.01" min="0" placeholder="0.00" style="width:100px;" />
 			</p>
+			<p style="margin-bottom:4px;"><strong><?php esc_html_e( 'Fee type', 'wcpp' ); ?></strong></p>
+			<p style="margin:0 0 6px;">
+				<label>
+					<input type="radio" name="wcpp_set_price_type" value="line"
+						<?php checked( $set_price_type, 'line' ); ?> />
+					<strong><?php esc_html_e( 'One-time fee', 'wcpp' ); ?></strong>
+				</label><br />
+				<span class="description" style="margin-left:20px;">
+					<?php esc_html_e( 'Charged once per personalisation, regardless of how many units are ordered.', 'wcpp' ); ?>
+				</span>
+			</p>
+			<p style="margin:0 0 8px;">
+				<label>
+					<input type="radio" name="wcpp_set_price_type" value="unit"
+						<?php checked( $set_price_type, 'unit' ); ?> />
+					<strong><?php esc_html_e( 'Per-item fee', 'wcpp' ); ?></strong>
+				</label><br />
+				<span class="description" style="margin-left:20px;">
+					<?php esc_html_e( 'Charged for every unit ordered (e.g. qty 3 = 3× fee).', 'wcpp' ); ?>
+				</span>
+			</p>
 			<p class="description">
-				<?php esc_html_e( 'A one-time fee added when a customer personalises with this set. This is added on top of any per-choice prices. Leave 0 or blank for no flat fee.', 'wcpp' ); ?>
+				<?php esc_html_e( 'Added on top of any per-choice prices. Leave 0 or blank for no flat fee.', 'wcpp' ); ?>
 			</p>
 		</div>
 		<?php
@@ -648,18 +673,26 @@ class WCPP_Personalisation_CPT {
 	}
 
 	/**
-	 * Save the flat set price.
+	 * Save the flat set price and fee type.
 	 *
 	 * @param int $post_id Post ID.
 	 * @return void
 	 */
 	private static function save_set_price( $post_id ) {
+		// Price.
 		$raw = isset( $_POST['wcpp_set_price'] ) ? wp_unslash( $_POST['wcpp_set_price'] ) : '';
 		if ( '' === trim( $raw ) ) {
 			delete_post_meta( $post_id, '_wcpp_set_price' );
-			return;
+		} else {
+			update_post_meta( $post_id, '_wcpp_set_price', number_format( max( 0.0, (float) $raw ), 2, '.', '' ) );
 		}
-		update_post_meta( $post_id, '_wcpp_set_price', number_format( max( 0.0, (float) $raw ), 2, '.', '' ) );
+
+		// Fee type: 'line' = one-time per cart line; 'unit' = per item ordered.
+		$fee_type = isset( $_POST['wcpp_set_price_type'] ) ? sanitize_key( $_POST['wcpp_set_price_type'] ) : 'line';
+		if ( ! in_array( $fee_type, array( 'line', 'unit' ), true ) ) {
+			$fee_type = 'line';
+		}
+		update_post_meta( $post_id, '_wcpp_set_price_type', $fee_type );
 	}
 
 	/**

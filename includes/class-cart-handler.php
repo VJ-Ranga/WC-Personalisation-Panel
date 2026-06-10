@@ -330,10 +330,14 @@ class WCPP_Cart_Handler {
 			}
 		}
 
-		// Flat set fee line.
+		// Flat set fee line — label reflects whether it's one-time or per-item.
 		if ( isset( $data['set_fee'] ) && (float) $data['set_fee'] > 0 ) {
+			$fee_type  = isset( $data['fee_type'] ) ? $data['fee_type'] : 'line';
+			$fee_label = ( 'unit' === $fee_type )
+				? esc_html__( 'Personalisation fee (per item)', 'wcpp' )
+				: esc_html__( 'Personalisation fee (one-time)', 'wcpp' );
 			$item_data[] = array(
-				'name'  => esc_html__( 'Personalisation fee', 'wcpp' ),
+				'name'  => $fee_label,
 				'value' => wp_strip_all_tags( wc_price( $data['set_fee'] ) ),
 			);
 		}

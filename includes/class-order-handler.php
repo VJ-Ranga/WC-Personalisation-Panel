@@ -44,7 +44,7 @@ class WCPP_Order_Handler {
 	public static function hide_admin_meta( $keys ) {
 		return array_merge(
 			(array) $keys,
-			array( '_wcpp_set_name', '_wcpp_placements', '_wcpp_set_fee', '_wcpp_total_price', '_wcpp_non_returnable' )
+			array( '_wcpp_set_name', '_wcpp_placements', '_wcpp_set_fee', '_wcpp_fee_type', '_wcpp_total_price', '_wcpp_non_returnable' )
 		);
 	}
 
@@ -111,6 +111,10 @@ class WCPP_Order_Handler {
 			$item->add_meta_data( '_wcpp_set_fee', (float) $data['set_fee'], true );
 		}
 
+		if ( isset( $data['fee_type'] ) ) {
+			$item->add_meta_data( '_wcpp_fee_type', sanitize_key( $data['fee_type'] ), true );
+		}
+
 		if ( isset( $data['total_price'] ) ) {
 			$item->add_meta_data( '_wcpp_total_price', (float) $data['total_price'], true );
 		}
@@ -157,12 +161,17 @@ class WCPP_Order_Handler {
 		$set_fee     = (float) $item->get_meta( '_wcpp_set_fee' );
 		$total_price = (float) $item->get_meta( '_wcpp_total_price' );
 		$set_name    = (string) $item->get_meta( '_wcpp_set_name' );
+		$fee_type    = (string) $item->get_meta( '_wcpp_fee_type' );
+		if ( ! in_array( $fee_type, array( 'line', 'unit' ), true ) ) {
+			$fee_type = 'line';
+		}
 
 		$cart_item_data['wcpp_data'] = array(
 			'set_id'         => 0,  // Not stored in order meta; 0 is safe (display only).
 			'set_name'       => sanitize_text_field( $set_name ),
 			'placements'     => $placements,
 			'set_fee'        => number_format( $set_fee, 2, '.', '' ),
+			'fee_type'       => $fee_type,
 			'base_price'     => $base_price,
 			'total_price'    => number_format( $total_price, 2, '.', '' ),
 			'non_returnable' => (bool) $item->get_meta( '_wcpp_non_returnable' ),
@@ -220,9 +229,13 @@ class WCPP_Order_Handler {
 			echo '</div>';
 		}
 
-		$set_fee = (float) $item->get_meta( '_wcpp_set_fee' );
+		$set_fee  = (float) $item->get_meta( '_wcpp_set_fee' );
+		$fee_type = (string) $item->get_meta( '_wcpp_fee_type' );
 		if ( $set_fee > 0 ) {
-			echo '<p style="margin:6px 0 0;font-size:13px;"><span style="color:#888;">' . esc_html__( 'Personalisation fee:', 'wcpp' ) . '</span> <strong>' . wp_kses_post( wc_price( $set_fee ) ) . '</strong></p>';
+			$fee_label = ( 'unit' === $fee_type )
+				? esc_html__( 'Personalisation fee (per item):', 'wcpp' )
+				: esc_html__( 'Personalisation fee (one-time):', 'wcpp' );
+			echo '<p style="margin:6px 0 0;font-size:13px;"><span style="color:#888;">' . $fee_label . '</span> <strong>' . wp_kses_post( wc_price( $set_fee ) ) . '</strong></p>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		}
 
 		if ( $non_returnable ) {

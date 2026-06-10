@@ -221,17 +221,22 @@ class WCPP_Settings_Store {
 
 		$placements = self::read_placements( $set_id );
 
-		$btn_override = get_post_meta( $set_id, '_wcpp_button_text', true );
-		$set_price    = get_post_meta( $set_id, '_wcpp_set_price', true );
+		$btn_override   = get_post_meta( $set_id, '_wcpp_button_text', true );
+		$set_price      = get_post_meta( $set_id, '_wcpp_set_price', true );
+		$set_price_type = get_post_meta( $set_id, '_wcpp_set_price_type', true );
+		if ( ! in_array( $set_price_type, array( 'line', 'unit' ), true ) ) {
+			$set_price_type = 'line'; // Default: one-time fee per cart line.
+		}
 
 		return array(
-			'id'          => (int) $set_id,
-			'name'        => $post->post_title,
-			'placements'  => $placements,
-			'button_text' => is_string( $btn_override ) ? $btn_override : '',
-			'set_price'   => ( '' === $set_price || null === $set_price ) ? 0.0 : (float) $set_price,
-			'design'      => self::get_design(),
-			'behaviour'   => self::get_behaviour(),
+			'id'             => (int) $set_id,
+			'name'           => $post->post_title,
+			'placements'     => $placements,
+			'button_text'    => is_string( $btn_override ) ? $btn_override : '',
+			'set_price'      => ( '' === $set_price || null === $set_price ) ? 0.0 : (float) $set_price,
+			'set_price_type' => $set_price_type,
+			'design'         => self::get_design(),
+			'behaviour'      => self::get_behaviour(),
 		);
 	}
 
