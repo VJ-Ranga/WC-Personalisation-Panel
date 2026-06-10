@@ -5,6 +5,24 @@
 
 ---
 
+## [0.7.7] — 2026-06
+### Fixed
+- **Removed wrong font/colour sub-pickers from text steps** — the admin Font
+  Options / Colour Options sections inside text steps have been stripped out.
+  Font and colour choices already exist as separate step types (Choice image
+  cards, Colour swatches). The wrong feature was added in 0.7.6 based on a
+  misread of the original request.
+
+### Added
+- **Step locking in stacked mode** — in the customer-facing panel, steps 2, 3…
+  are greyed out and unclickable until the previous step is answered. Answering
+  a step immediately unlocks the next one (live, no page reload). This applies
+  only to stacked flow; sequential flow already enforces order naturally.
+- **Placement collapse/expand** — each placement card in the admin builder now
+  has a chevron toggle button (▲/▼). Click it to collapse that placement's
+  steps to just the header, making it easy to manage sets with many placements
+  without scrolling through all steps at once.
+
 ## [0.7.6] — 2026-06
 ### Added
 - **Text-step font & colour sub-pickers** — each Text step in the admin builder

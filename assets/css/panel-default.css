@@ -748,70 +748,14 @@
 	vertical-align: middle;
 }
 
-/* ─── Step sub-section heading (Font / Colour inside text step) ── */
-.wcpp-step__subheading {
-	font-size:      11px;
-	font-weight:    700;
-	letter-spacing: .1em;
-	text-transform: uppercase;
-	color:          var(--wcpp-muted);
-	margin:         18px 0 10px;
+/* ─── Step locking (stacked mode — unlocks when previous step done) ─ */
+.wcpp-step-section--locked {
+	opacity:        0.32;
+	pointer-events: none;
+	user-select:    none;
+	transition:     opacity .3s var(--wcpp-ease);
 }
-
-/* ─── Font swatches (inside text step) ──────────────────────────── */
-.wcpp-font-swatches {
-	display:   flex;
-	flex-wrap: wrap;
-	gap:       10px;
-	margin-bottom: 14px;
-}
-.wcpp-font-swatch {
-	display:        flex;
-	flex-direction: column;
-	align-items:    center;
-	gap:            6px;
-	cursor:         pointer;
-	padding:        10px 14px;
-	border:         1.5px solid var(--wcpp-card-border);
-	border-radius:  var(--wcpp-panel-radius);
-	background:     #fff;
-	transition:     border-color .2s var(--wcpp-ease), box-shadow .2s var(--wcpp-ease);
-	min-width:      72px;
-	text-align:     center;
-}
-.wcpp-font-swatch:hover {
-	border-color: var(--wcpp-card-selected);
-	box-shadow:   0 4px 14px -8px rgba(0,0,0,.25);
-}
-.wcpp-font-swatch.wcpp-selected {
-	border-color: var(--wcpp-card-selected);
-	box-shadow:   inset 0 0 0 1.5px var(--wcpp-card-selected);
-	background:   color-mix(in srgb, var(--wcpp-card-selected) 7%, #fff);
-}
-.wcpp-font-swatch__preview {
-	font-size:   24px;
-	line-height: 1.2;
-	color:       var(--wcpp-ink);
-}
-.wcpp-font-swatch__name {
-	font-size:      10px;
-	font-weight:    700;
-	letter-spacing: .06em;
-	text-transform: uppercase;
-	color:          var(--wcpp-muted);
-	line-height:    1;
-}
-
-/* ─── Text-input live font preview ──────────────────────────────── */
-.wcpp-text-input { transition: font-family .2s ease, border-color .25s var(--wcpp-ease), box-shadow .25s var(--wcpp-ease); }
-
-/* ─── Review summary sub-line (font / colour names) ─────────────── */
-.wcpp-summary-sub {
-	font-size:   11px;
-	color:       var(--wcpp-muted);
-	font-weight: 500;
-	margin-top:  2px;
-}
+.wcpp-step-section--locked .wcpp-step__heading { color: var(--wcpp-muted); }
 
 /* ─── Mobile ─────────────────────────────────────────────────────── */
 @media (max-width: 500px) {

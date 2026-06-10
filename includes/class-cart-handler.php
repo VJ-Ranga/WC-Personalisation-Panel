@@ -315,20 +315,7 @@ class WCPP_Cart_Handler {
 			foreach ( $data['placements'] as $placement ) {
 				$lines = array();
 				foreach ( ( $placement['selections'] ?? array() ) as $sel ) {
-					$val = isset( $sel['value'] ) ? $sel['value'] : ( $sel['choice_name'] ?? '' );
-					// Append font/colour info for text steps that have sub-choices.
-					if ( isset( $sel['type'] ) && 'text' === $sel['type'] ) {
-						$extras = array();
-						if ( ! empty( $sel['font_name'] ) ) {
-							$extras[] = esc_html__( 'Font', 'wcpp' ) . ': ' . esc_html( $sel['font_name'] );
-						}
-						if ( ! empty( $sel['color_name'] ) ) {
-							$extras[] = esc_html__( 'Colour', 'wcpp' ) . ': ' . esc_html( $sel['color_name'] );
-						}
-						if ( $extras ) {
-							$val .= ' (' . implode( ', ', $extras ) . ')';
-						}
-					}
+					$val  = isset( $sel['value'] ) ? $sel['value'] : ( $sel['choice_name'] ?? '' );
 					$line = esc_html( $sel['step_name'] ) . ': ' . esc_html( $val );
 					$price = isset( $sel['price'] ) ? (float) $sel['price'] : (float) ( $sel['choice_price'] ?? 0 );
 					if ( $price > 0 ) {

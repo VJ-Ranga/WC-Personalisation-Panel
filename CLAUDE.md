@@ -1,5 +1,5 @@
 # CLAUDE.md — WC Personalisation Panel
-> Master reference. Read this FIRST. Reflects the real built plugin (v0.7.6).
+> Master reference. Read this FIRST. Reflects the real built plugin (v0.7.7).
 > If you are a fresh/local AI continuing this work: this file + FOLDER-STRUCTURE.md
 > tell you everything. Detail: BUILD-PLAN.md · Decisions: DECISIONS.md.
 
@@ -160,7 +160,7 @@ State: `state.completed[]` + `state.current`.
 Assets are enqueued with `?ver=WCPP_VERSION`. **If you change any CSS or JS,
 you MUST bump `WCPP_VERSION`** (in `wc-personalisation-panel.php`, both the
 header and the constant) — otherwise browsers/optimizers keep serving the old
-cached file and your change appears to "do nothing". Current: 0.7.6.
+cached file and your change appears to "do nothing". Current: 0.7.7.
 
 ---
 
@@ -191,4 +191,4 @@ cached file and your change appears to "do nothing". Current: 0.7.6.
 - Don't add `Co-Authored-By` trailers to commits.
 
 ---
-*v0.7.6 · placements model · choice/colour/text steps · sequential/stacked wizard · font+colour sub-pickers · grid2 placement picker · step descriptions · card image fit/aspect · inline validation badge · variable-product aware.*
+*v0.7.7 · placements model · choice/colour/text steps · sequential/stacked wizard · font+colour sub-pickers · grid2 placement picker · step descriptions · card image fit/aspect · inline validation badge · variable-product aware.*

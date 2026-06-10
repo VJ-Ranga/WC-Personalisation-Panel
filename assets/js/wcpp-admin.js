@@ -2,7 +2,7 @@
  * WC Personalisation Panel — Admin Builder JS
  *
  * Structure: Placement (parent) → Steps → Choices.
- * Field names are keyed by unique IDs (pl_/st_/ch_/fc_/cc_), so PHP just
+ * Field names are keyed by unique IDs (pl_/st_/ch_), so PHP just
  * iterates values — no numeric re-indexing needed.
  */
 (function ($) {
@@ -45,6 +45,11 @@
 			$copy.find( '.wcpp-placement-name-input' ).focus();
 		} );
 
+		// Collapse / expand.
+		$pl.find( '> .wcpp-placement-header .wcpp-toggle-placement' ).off( 'click' ).on( 'click', function () {
+			$pl.toggleClass( 'wcpp-placement-block--collapsed' );
+		} );
+
 		// Add step.
 		$pl.find( '> .wcpp-add-step-btn' ).off( 'click' ).on( 'click', function () {
 			var plid = $pl.data( 'plid' );
@@ -72,7 +77,7 @@
 		$step.find( '> .wcpp-option-header .wcpp-step-type' ).off( 'change' ).on( 'change', function () {
 			var val    = $( this ).val();
 			var isText = ( val === 'text' );
-			$step.attr( 'data-type', val );                 // CSS toggles image vs colour media.
+			$step.attr( 'data-type', val );
 			$step.find( '> .wcpp-step-choices' ).toggle( ! isText );
 			$step.find( '> .wcpp-step-text' ).toggle( isText );
 		} );
@@ -87,28 +92,6 @@
 		$step.find( '.wcpp-choices-list > .wcpp-choice-row' ).each( function () {
 			bindChoice( $( this ) );
 		} );
-
-		// Font sub-choices (text steps).
-		$step.find( '.wcpp-add-font-btn' ).off( 'click' ).on( 'click', function () {
-			var $row = $( buildFontChoiceHTML( plid, stid, uid( 'fc_' ) ) );
-			$step.find( '.wcpp-font-choices-list' ).append( $row );
-			bindFontChoice( $row );
-			$row.find( '.wcpp-font-name-input' ).focus();
-		} );
-		$step.find( '.wcpp-font-choices-list > .wcpp-font-choice-row' ).each( function () {
-			bindFontChoice( $( this ) );
-		} );
-
-		// Colour sub-choices (text steps).
-		$step.find( '.wcpp-add-text-color-btn' ).off( 'click' ).on( 'click', function () {
-			var $row = $( buildTextColorHTML( plid, stid, uid( 'cc_' ) ) );
-			$step.find( '.wcpp-text-color-list' ).append( $row );
-			bindTextColor( $row );
-			$row.find( '.wcpp-text-color-name' ).focus();
-		} );
-		$step.find( '.wcpp-text-color-list > .wcpp-text-color-row' ).each( function () {
-			bindTextColor( $( this ) );
-		} );
 	}
 
 	// ─── Choice ───────────────────────────────────────────────────────────
@@ -117,25 +100,6 @@
 			if ( window.confirm( wcppAdmin.confirmDelete ) ) { $row.remove(); }
 		} );
 		bindImagePicker( $row );
-	}
-
-	// ─── Font choice ──────────────────────────────────────────────────────
-	function bindFontChoice( $row ) {
-		$row.find( '.wcpp-delete-font-choice' ).off( 'click' ).on( 'click', function () {
-			if ( window.confirm( wcppAdmin.confirmDelete ) ) { $row.remove(); }
-		} );
-		// Live preview: update "Abc" when the CSS family field changes.
-		$row.find( '.wcpp-font-family-input' ).off( 'input' ).on( 'input', function () {
-			var family = $( this ).val() || 'inherit';
-			$row.find( '.wcpp-font-preview' ).css( 'font-family', family );
-		} );
-	}
-
-	// ─── Text colour choice ───────────────────────────────────────────────
-	function bindTextColor( $row ) {
-		$row.find( '.wcpp-delete-text-color' ).off( 'click' ).on( 'click', function () {
-			if ( window.confirm( wcppAdmin.confirmDelete ) ) { $row.remove(); }
-		} );
 	}
 
 	// ─── Shared image picker (choices + placements) ─────────────────────────
@@ -180,6 +144,7 @@
 		var oldPlid = $pl.data( 'plid' );
 
 		$copy.attr( 'data-plid', newPlid ).data( 'plid', newPlid );
+		$copy.removeClass( 'wcpp-placement-block--collapsed' );
 
 		// Placement id field + name.
 		$copy.find( '> .wcpp-placement-header input[name$="[id]"]' ).val( newPlid );
@@ -220,32 +185,6 @@
 			}
 		} );
 
-		// Fresh font choice ids.
-		$copy.find( '.wcpp-font-choice-row' ).each( function () {
-			var $fc = $( this );
-			var oldFc = $fc.find( 'input[name$="[id]"]' ).val();
-			var newFc = uid( 'fc_' );
-			if ( oldFc ) {
-				$fc.find( '[name]' ).each( function () {
-					var nm = $( this ).attr( 'name' );
-					if ( nm ) { $( this ).attr( 'name', nm.split( oldFc ).join( newFc ) ); }
-				} );
-			}
-		} );
-
-		// Fresh text colour ids.
-		$copy.find( '.wcpp-text-color-row' ).each( function () {
-			var $tc = $( this );
-			var oldTc = $tc.find( 'input[name$="[id]"]' ).val();
-			var newTc = uid( 'cc_' );
-			if ( oldTc ) {
-				$tc.find( '[name]' ).each( function () {
-					var nm = $( this ).attr( 'name' );
-					if ( nm ) { $( this ).attr( 'name', nm.split( oldTc ).join( newTc ) ); }
-				} );
-			}
-		} );
-
 		return $copy;
 	}
 
@@ -265,6 +204,7 @@
 					'<input type="text" name="' + b + '[name]" value="" placeholder="' + esc( wcppAdmin.placementPlaceholder ) + '" class="wcpp-placement-name-input" />' +
 					'<button type="button" class="button wcpp-duplicate-placement"><span class="dashicons dashicons-admin-page"></span> ' + esc( wcppAdmin.duplicate ) + '</button>' +
 					'<button type="button" class="button wcpp-delete-placement"><span class="dashicons dashicons-trash"></span></button>' +
+					'<button type="button" class="button wcpp-toggle-placement"><span class="dashicons dashicons-arrow-up-alt2"></span></button>' +
 				'</div>' +
 				'<div class="wcpp-steps-container"></div>' +
 				'<button type="button" class="button wcpp-add-step-btn">&#43; ' + esc( wcppAdmin.addStep ) + '</button>' +
@@ -299,16 +239,7 @@
 						'<label>' + esc( wcppAdmin.tMax ) + '<input type="number" name="' + b + '[max_chars]" value="20" min="1" max="200" style="width:80px;" /></label>' +
 						'<label>' + esc( wcppAdmin.tPrice ) + '<input type="number" name="' + b + '[price]" value="0.00" step="0.01" min="0" style="width:90px;" /></label>' +
 					'</div>' +
-					'<div class="wcpp-text-sub-section">' +
-						'<div class="wcpp-text-sub-header"><strong>' + esc( wcppAdmin.tFontLabel ) + '</strong><small>' + esc( wcppAdmin.tFontOptional ) + '</small></div>' +
-						'<div class="wcpp-font-choices-list"></div>' +
-						'<button type="button" class="button wcpp-add-font-btn">' + esc( wcppAdmin.addFont ) + '</button>' +
-					'</div>' +
-					'<div class="wcpp-text-sub-section">' +
-						'<div class="wcpp-text-sub-header"><strong>' + esc( wcppAdmin.tColorLabel ) + '</strong><small>' + esc( wcppAdmin.tColorOptional ) + '</small></div>' +
-						'<div class="wcpp-text-color-list"></div>' +
-						'<button type="button" class="button wcpp-add-text-color-btn">' + esc( wcppAdmin.addTextColor ) + '</button>' +
-					'</div>' +
+					'<p class="description" style="padding:0 0 10px;">' + esc( wcppAdmin.tTextNote || 'Customer types their own text. Charged once if a price is set.' ) + '</p>' +
 				'</div>' +
 			'</div>';
 	}
@@ -332,29 +263,6 @@
 				'<div class="wcpp-choice-field wcpp-choice-field--price"><label>Price</label>' +
 					'<input type="number" name="' + p + '[price]" value="0.00" step="0.01" min="0" class="wcpp-choice-price" /></div>' +
 				'<button type="button" class="button wcpp-delete-choice"><span class="dashicons dashicons-trash"></span></button>' +
-			'</div>';
-	}
-
-	function buildFontChoiceHTML( plid, stid, fcid ) {
-		var p = 'wcpp_placements[' + plid + '][steps][' + stid + '][font_choices][' + fcid + ']';
-		return '' +
-			'<div class="wcpp-font-choice-row">' +
-				'<input type="hidden" name="' + p + '[id]" value="' + fcid + '" />' +
-				'<input type="text" name="' + p + '[name]" value="" placeholder="' + esc( wcppAdmin.tFontNamePh ) + '" class="wcpp-font-name-input" />' +
-				'<input type="text" name="' + p + '[family]" value="" placeholder="' + esc( wcppAdmin.tFontFamilyPh ) + '" class="wcpp-font-family-input" />' +
-				'<span class="wcpp-font-preview">Abc</span>' +
-				'<button type="button" class="button wcpp-delete-font-choice"><span class="dashicons dashicons-trash"></span></button>' +
-			'</div>';
-	}
-
-	function buildTextColorHTML( plid, stid, ccid ) {
-		var p = 'wcpp_placements[' + plid + '][steps][' + stid + '][color_choices][' + ccid + ']';
-		return '' +
-			'<div class="wcpp-text-color-row">' +
-				'<input type="hidden" name="' + p + '[id]" value="' + ccid + '" />' +
-				'<input type="color" name="' + p + '[color]" value="#000000" class="wcpp-text-color-picker" />' +
-				'<input type="text" name="' + p + '[name]" value="" placeholder="' + esc( wcppAdmin.tColorNamePh ) + '" class="wcpp-text-color-name" />' +
-				'<button type="button" class="button wcpp-delete-text-color"><span class="dashicons dashicons-trash"></span></button>' +
 			'</div>';
 	}
 

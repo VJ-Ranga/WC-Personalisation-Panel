@@ -394,56 +394,14 @@ class WCPP_Settings_Store {
 						return null; // Text steps are required.
 					}
 
-					// Optional font sub-choice — required if the step defines font options.
-					$font_id     = sanitize_text_field( $payload['font_id'] ?? '' );
-					$font_name   = '';
-					$font_family = '';
-					if ( ! empty( $step['font_choices'] ) && is_array( $step['font_choices'] ) ) {
-						if ( '' === $font_id ) { return null; }
-						$found = false;
-						foreach ( $step['font_choices'] as $fc ) {
-							if ( $fc['id'] === $font_id ) {
-								$font_name   = $fc['name'];
-								$font_family = $fc['family'] ?? '';
-								$found       = true;
-								break;
-							}
-						}
-						if ( ! $found ) { return null; }
-					}
-
-					// Optional colour sub-choice — required if the step defines colour options.
-					$color_id   = sanitize_text_field( $payload['color_id'] ?? '' );
-					$color_name = '';
-					$color_hex  = '';
-					if ( ! empty( $step['color_choices'] ) && is_array( $step['color_choices'] ) ) {
-						if ( '' === $color_id ) { return null; }
-						$found = false;
-						foreach ( $step['color_choices'] as $cc ) {
-							if ( $cc['id'] === $color_id ) {
-								$color_name = $cc['name'];
-								$color_hex  = $cc['color'] ?? '';
-								$found      = true;
-								break;
-							}
-						}
-						if ( ! $found ) { return null; }
-					}
-
 					return array(
-						'step_id'     => $step['id'],
-						'step_name'   => $step['name'],
-						'type'        => 'text',
-						'value'       => $text,
-						'price'       => isset( $step['price'] ) ? (float) $step['price'] : 0.0,
-						'image_url'   => '',
-						'choice_id'   => '',
-						'font_id'     => $font_id,
-						'font_name'   => $font_name,
-						'font_family' => $font_family,
-						'color_id'    => $color_id,
-						'color_name'  => $color_name,
-						'color_hex'   => $color_hex,
+						'step_id'   => $step['id'],
+						'step_name' => $step['name'],
+						'type'      => 'text',
+						'value'     => $text,
+						'price'     => isset( $step['price'] ) ? (float) $step['price'] : 0.0,
+						'image_url' => '',
+						'choice_id' => '',
 					);
 				}
 

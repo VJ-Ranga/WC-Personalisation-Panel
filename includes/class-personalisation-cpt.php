@@ -182,15 +182,6 @@ class WCPP_Personalisation_CPT {
 				'tPlaceholder'         => __( 'Placeholder', 'wcpp' ),
 				'tMax'                 => __( 'Max characters', 'wcpp' ),
 				'tPrice'               => __( 'Price', 'wcpp' ),
-				'tFontLabel'           => __( 'Font Options', 'wcpp' ),
-				'tFontOptional'        => __( 'optional — swatches shown before the text input', 'wcpp' ),
-				'tFontNamePh'          => __( 'Font name, e.g. Script', 'wcpp' ),
-				'tFontFamilyPh'        => __( "CSS family, e.g. 'Great Vibes', cursive", 'wcpp' ),
-				'addFont'              => __( '+ Add Font', 'wcpp' ),
-				'tColorLabel'          => __( 'Colour Options', 'wcpp' ),
-				'tColorOptional'       => __( 'optional — colour swatches shown before the text input', 'wcpp' ),
-				'tColorNamePh'         => __( 'Colour name, e.g. Gold', 'wcpp' ),
-				'addTextColor'         => __( '+ Add Colour', 'wcpp' ),
 			)
 		);
 	}
@@ -289,6 +280,9 @@ class WCPP_Personalisation_CPT {
 				<button type="button" class="button wcpp-delete-placement" title="<?php esc_attr_e( 'Delete placement', 'wcpp' ); ?>">
 					<span class="dashicons dashicons-trash"></span>
 				</button>
+				<button type="button" class="button wcpp-toggle-placement" title="<?php esc_attr_e( 'Collapse / Expand', 'wcpp' ); ?>">
+					<span class="dashicons dashicons-arrow-up-alt2"></span>
+				</button>
 			</div>
 
 			<div class="wcpp-steps-container">
@@ -320,8 +314,6 @@ class WCPP_Personalisation_CPT {
 		$ph           = isset( $step['placeholder'] ) ? $step['placeholder'] : '';
 		$maxc         = isset( $step['max_chars'] ) ? (int) $step['max_chars'] : 20;
 		$price        = isset( $step['price'] ) ? $step['price'] : '0.00';
-		$font_choices = isset( $step['font_choices'] ) && is_array( $step['font_choices'] ) ? $step['font_choices'] : array();
-		$color_choices = isset( $step['color_choices'] ) && is_array( $step['color_choices'] ) ? $step['color_choices'] : array();
 		$base         = 'wcpp_placements[' . $plid . '][steps][' . $stid . ']';
 		$is_text      = ( 'text' === $type );
 		?>
@@ -384,100 +376,8 @@ class WCPP_Personalisation_CPT {
 					</label>
 				</div>
 
-				<!-- Font sub-options -->
-				<div class="wcpp-text-sub-section">
-					<div class="wcpp-text-sub-header">
-						<strong><?php esc_html_e( 'Font Options', 'wcpp' ); ?></strong>
-						<small><?php esc_html_e( 'optional — font swatches shown before the text input', 'wcpp' ); ?></small>
-					</div>
-					<div class="wcpp-font-choices-list">
-						<?php foreach ( $font_choices as $fc ) : ?>
-							<?php self::render_font_choice_row( $base, $fc ); ?>
-						<?php endforeach; ?>
-					</div>
-					<button type="button" class="button wcpp-add-font-btn">
-						&#43; <?php esc_html_e( 'Add Font', 'wcpp' ); ?>
-					</button>
-				</div>
-
-				<!-- Colour sub-options -->
-				<div class="wcpp-text-sub-section">
-					<div class="wcpp-text-sub-header">
-						<strong><?php esc_html_e( 'Colour Options', 'wcpp' ); ?></strong>
-						<small><?php esc_html_e( 'optional — colour swatches shown before the text input', 'wcpp' ); ?></small>
-					</div>
-					<div class="wcpp-text-color-list">
-						<?php foreach ( $color_choices as $cc ) : ?>
-							<?php self::render_text_color_row( $base, $cc ); ?>
-						<?php endforeach; ?>
-					</div>
-					<button type="button" class="button wcpp-add-text-color-btn">
-						&#43; <?php esc_html_e( 'Add Colour', 'wcpp' ); ?>
-					</button>
-				</div>
-
 				<p class="description"><?php esc_html_e( 'The customer types their own text (monogram, name, initials). Charged once if a price is set.', 'wcpp' ); ?></p>
 			</div>
-		</div>
-		<?php
-	}
-
-	/**
-	 * Render a font choice row (inside a text step).
-	 *
-	 * @param string $step_base Field-name base.
-	 * @param array  $fc        Font choice data.
-	 * @return void
-	 */
-	public static function render_font_choice_row( $step_base, $fc ) {
-		$fc_id     = isset( $fc['id'] ) ? $fc['id'] : 'fc_' . uniqid();
-		$fc_name   = isset( $fc['name'] ) ? $fc['name'] : '';
-		$fc_family = isset( $fc['family'] ) ? $fc['family'] : '';
-		$prefix    = $step_base . '[font_choices][' . $fc_id . ']';
-		?>
-		<div class="wcpp-font-choice-row">
-			<input type="hidden" name="<?php echo esc_attr( $prefix ); ?>[id]" value="<?php echo esc_attr( $fc_id ); ?>" />
-			<input type="text" name="<?php echo esc_attr( $prefix ); ?>[name]"
-				value="<?php echo esc_attr( $fc_name ); ?>"
-				placeholder="<?php esc_attr_e( 'Font name, e.g. Script', 'wcpp' ); ?>"
-				class="wcpp-font-name-input" />
-			<input type="text" name="<?php echo esc_attr( $prefix ); ?>[family]"
-				value="<?php echo esc_attr( $fc_family ); ?>"
-				placeholder="<?php esc_attr_e( "CSS, e.g. 'Great Vibes', cursive", 'wcpp' ); ?>"
-				class="wcpp-font-family-input" />
-			<span class="wcpp-font-preview" style="font-family:<?php echo esc_attr( $fc_family ?: 'inherit' ); ?>">Abc</span>
-			<button type="button" class="button wcpp-delete-font-choice" title="<?php esc_attr_e( 'Delete', 'wcpp' ); ?>">
-				<span class="dashicons dashicons-trash"></span>
-			</button>
-		</div>
-		<?php
-	}
-
-	/**
-	 * Render a colour choice row for a text step.
-	 *
-	 * @param string $step_base Field-name base.
-	 * @param array  $cc        Colour choice data.
-	 * @return void
-	 */
-	public static function render_text_color_row( $step_base, $cc ) {
-		$cc_id    = isset( $cc['id'] ) ? $cc['id'] : 'cc_' . uniqid();
-		$cc_name  = isset( $cc['name'] ) ? $cc['name'] : '';
-		$cc_color = isset( $cc['color'] ) && $cc['color'] ? $cc['color'] : '#000000';
-		$prefix   = $step_base . '[color_choices][' . $cc_id . ']';
-		?>
-		<div class="wcpp-text-color-row">
-			<input type="hidden" name="<?php echo esc_attr( $prefix ); ?>[id]" value="<?php echo esc_attr( $cc_id ); ?>" />
-			<input type="color" name="<?php echo esc_attr( $prefix ); ?>[color]"
-				value="<?php echo esc_attr( $cc_color ); ?>"
-				class="wcpp-text-color-picker" />
-			<input type="text" name="<?php echo esc_attr( $prefix ); ?>[name]"
-				value="<?php echo esc_attr( $cc_name ); ?>"
-				placeholder="<?php esc_attr_e( 'Colour name, e.g. Gold', 'wcpp' ); ?>"
-				class="wcpp-text-color-name" />
-			<button type="button" class="button wcpp-delete-text-color" title="<?php esc_attr_e( 'Delete', 'wcpp' ); ?>">
-				<span class="dashicons dashicons-trash"></span>
-			</button>
 		</div>
 		<?php
 	}
@@ -787,34 +687,6 @@ class WCPP_Personalisation_CPT {
 						$clean_step['placeholder'] = sanitize_text_field( wp_unslash( $step['placeholder'] ?? '' ) );
 						$clean_step['max_chars']   = max( 1, min( 200, (int) ( $step['max_chars'] ?? 20 ) ) );
 						$clean_step['price']       = number_format( (float) ( $step['price'] ?? 0 ), 2, '.', '' );
-
-						// Font sub-choices (optional).
-						$clean_step['font_choices'] = array();
-						if ( ! empty( $step['font_choices'] ) && is_array( $step['font_choices'] ) ) {
-							foreach ( $step['font_choices'] as $fc ) {
-								$fc_name = sanitize_text_field( wp_unslash( $fc['name'] ?? '' ) );
-								if ( '' === $fc_name ) { continue; }
-								$clean_step['font_choices'][] = array(
-									'id'     => sanitize_text_field( wp_unslash( $fc['id'] ?? 'fc_' . uniqid() ) ),
-									'name'   => $fc_name,
-									'family' => sanitize_text_field( wp_unslash( $fc['family'] ?? '' ) ),
-								);
-							}
-						}
-
-						// Colour sub-choices (optional).
-						$clean_step['color_choices'] = array();
-						if ( ! empty( $step['color_choices'] ) && is_array( $step['color_choices'] ) ) {
-							foreach ( $step['color_choices'] as $cc ) {
-								$cc_name = sanitize_text_field( wp_unslash( $cc['name'] ?? '' ) );
-								if ( '' === $cc_name ) { continue; }
-								$clean_step['color_choices'][] = array(
-									'id'    => sanitize_text_field( wp_unslash( $cc['id'] ?? 'cc_' . uniqid() ) ),
-									'name'  => $cc_name,
-									'color' => sanitize_hex_color( $cc['color'] ?? '' ) ?: '#000000',
-								);
-							}
-						}
 					}
 
 					if ( in_array( $st_type, array( 'choice', 'color' ), true ) && ! empty( $step['choices'] ) && is_array( $step['choices'] ) ) {

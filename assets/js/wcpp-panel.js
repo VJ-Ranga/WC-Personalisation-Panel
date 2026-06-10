@@ -1,8 +1,9 @@
 /**
  * WC Personalisation Panel — Front-end wizard (placement model)
  *
- * Flow:  choose placement → run its steps → review → (add another placement) → Add to Bag
- * Each placement can be chosen only once per order.
+ * Flow:  choose placement → run its steps → review → (add another) → Add to Bag
+ * Stacked mode: all steps visible; steps 2+ are locked until the previous is answered.
+ * Sequential mode: one step at a time.
  *
  * ES5. IIFE. Events namespaced .wcppPanel. Scoped to #wcpp-panel.
  */
@@ -17,16 +18,16 @@
 	var design = cfg.design || {};
 	var i18n   = wcpp.i18n || {};
 
-	// Sequential mode: one step at a time instead of all stacked.
 	var isSequential = ( design.step_flow === 'sequential' );
 
 	// phase: 'select' | 'step' | 'review'
 	var state = {
-		phase:     'select',
-		productId: 0,
+		phase:       'select',
+		productId:   0,
 		variationId: 0,
-		current:   null,    // { placement, stepIndex, selections:{stepId: choiceObj} }
-		completed: []       // [{ placement_id, placement_name, selections:[...] }]
+		variation:   {},
+		current:     null,   // { placement, stepIndex, selections:{stepId: choiceObj} }
+		completed:   []      // [{ placement_id, placement_name, selections:[...] }]
 	};
 
 	var $panel, $overlay, $content, $title, $back, $close, $next, $addToBag;
@@ -54,7 +55,7 @@
 			if ( $vform.length ) {
 				var vid = parseInt( $vform.find( 'input[name="variation_id"]' ).val(), 10 );
 				if ( !vid ) {
-					notify( wcpp.i18n.selectVariation || 'Please choose the product options (e.g. size) before personalising.' );
+					notify( wcpp.i18n.selectVariation || 'Please choose the product options before personalising.' );
 					return;
 				}
 				state.variationId = vid;
@@ -139,26 +140,9 @@
 		var selections = {};
 		$.each( c.selections, function ( i, sel ) {
 			if ( sel.type === 'text' ) {
-				selections[ sel.step_id ] = {
-					type:        'text',
-					text:        sel.text || sel.value || '',
-					name:        sel.text || sel.value || '',
-					price:       parseFloat( sel.price ) || 0,
-					font_id:     sel.font_id     || '',
-					font_name:   sel.font_name   || '',
-					font_family: sel.font_family || '',
-					color_id:    sel.color_id    || '',
-					color_name:  sel.color_name  || '',
-					color_hex:   sel.color_hex   || '',
-				};
+				selections[ sel.step_id ] = { type: 'text', text: sel.text || sel.value || '', price: parseFloat( sel.price ) || 0 };
 			} else {
-				selections[ sel.step_id ] = {
-					id:        sel.choice_id,
-					name:      sel.value,
-					price:     parseFloat( sel.price ) || 0,
-					image_url: sel.image_url || '',
-					color:     sel.color     || '',
-				};
+				selections[ sel.step_id ] = { id: sel.choice_id, name: sel.value, price: parseFloat( sel.price ) || 0, image_url: sel.image_url || '', color: sel.color || '' };
 			}
 		} );
 
@@ -167,16 +151,28 @@
 		render();
 	}
 
-	// Returns true if the step has no valid answer yet.
+	// Returns true when a step has no valid answer yet.
 	function isStepMissing( step ) {
 		var sel = state.current ? state.current.selections[ step.id ] : undefined;
 		if ( sel === undefined ) { return true; }
-		if ( step.type === 'text' ) {
-			if ( ! sel.text ) { return true; }
-			if ( step.font_choices && step.font_choices.length && ! sel.font_id ) { return true; }
-			if ( step.color_choices && step.color_choices.length && ! sel.color_id ) { return true; }
-		}
+		if ( step.type === 'text' && ! sel.text ) { return true; }
 		return false;
+	}
+
+	// ─── Step locking (stacked mode) ──────────────────────────────────────
+	function refreshStepLocks() {
+		if ( isSequential || ! state.current ) { return; }
+		var steps = state.current.placement.steps || [];
+		var $sections = $content.find( '.wcpp-step-section' );
+		$.each( steps, function ( i, step ) {
+			var $sec = $sections.filter( '[data-step-id="' + step.id + '"]' );
+			if ( i === 0 ) {
+				$sec.removeClass( 'wcpp-step-section--locked' );
+			} else {
+				var prevDone = ! isStepMissing( steps[ i - 1 ] );
+				$sec.toggleClass( 'wcpp-step-section--locked', ! prevDone );
+			}
+		} );
 	}
 
 	// ─── Navigation ────────────────────────────────────────────────────────
@@ -203,9 +199,7 @@
 			// Stacked: validate all steps.
 			var missing = null;
 			$.each( steps, function ( i, step ) {
-				if ( missing === null && isStepMissing( step ) ) {
-					missing = step.id;
-				}
+				if ( missing === null && isStepMissing( step ) ) { missing = step.id; }
 			} );
 
 			if ( missing !== null ) {
@@ -247,39 +241,12 @@
 			var sel = state.current.selections[ step.id ];
 			if ( ! sel ) { return; }
 			if ( sel.type === 'text' ) {
-				sels.push( {
-					step_id:     step.id,
-					step_name:   step.name,
-					type:        'text',
-					text:        sel.text,
-					value:       sel.text,
-					price:       parseFloat( sel.price ) || 0,
-					image_url:   '',
-					font_id:     sel.font_id     || '',
-					font_name:   sel.font_name   || '',
-					font_family: sel.font_family || '',
-					color_id:    sel.color_id    || '',
-					color_name:  sel.color_name  || '',
-					color_hex:   sel.color_hex   || '',
-				} );
+				sels.push( { step_id: step.id, step_name: step.name, type: 'text', text: sel.text, value: sel.text, price: parseFloat( sel.price ) || 0, image_url: '' } );
 			} else {
-				sels.push( {
-					step_id:   step.id,
-					step_name: step.name,
-					type:      sel.color ? 'color' : 'choice',
-					choice_id: sel.id,
-					value:     sel.name,
-					price:     parseFloat( sel.price ) || 0,
-					image_url: sel.image_url || '',
-					color:     sel.color     || '',
-				} );
+				sels.push( { step_id: step.id, step_name: step.name, type: sel.color ? 'color' : 'choice', choice_id: sel.id, value: sel.name, price: parseFloat( sel.price ) || 0, image_url: sel.image_url || '', color: sel.color || '' } );
 			}
 		} );
-		var entry = {
-			placement_id:   pl.id,
-			placement_name: pl.name,
-			selections:     sels,
-		};
+		var entry = { placement_id: pl.id, placement_name: pl.name, selections: sels };
 
 		if ( state.current.editIndex !== undefined && state.current.editIndex !== null && state.completed[ state.current.editIndex ] ) {
 			state.completed[ state.current.editIndex ] = entry;
@@ -303,22 +270,18 @@
 	}
 
 	function updateChrome() {
-		// Title.
 		if ( state.phase === 'select' )      { $title.text( i18n.choosePlacement || 'Choose placement' ); }
 		else if ( state.phase === 'review' ) { $title.text( i18n.review || 'Review' ); }
 		else if ( state.current )            { $title.text( state.current.placement.name ); }
 
-		// Back button.
-		var showBack = ( state.phase === 'step' )
-			|| ( state.phase === 'select' && state.completed.length );
+		var showBack = ( state.phase === 'step' ) || ( state.phase === 'select' && state.completed.length );
 		showBack ? $back.show() : $back.hide();
 
-		// Footer buttons.
 		if ( state.phase === 'step' ) {
 			$next.show();
 			if ( isSequential && state.current ) {
-				var steps   = state.current.placement.steps || [];
-				var isLast  = ( ( state.current.stepIndex || 0 ) >= steps.length - 1 );
+				var steps  = state.current.placement.steps || [];
+				var isLast = ( ( state.current.stepIndex || 0 ) >= steps.length - 1 );
 				$next.text( isLast ? ( i18n.review || 'Review' ) : ( i18n.next || 'Next' ) );
 			} else {
 				$next.text( i18n.continue || i18n.next || 'Continue' );
@@ -341,9 +304,7 @@
 		if ( state.phase === 'step' && state.current ) {
 			var steps = state.current.placement.steps || [];
 			tot = steps.length;
-			$.each( steps, function ( i, s ) {
-				if ( ! isStepMissing( s ) ) { filled++; }
-			} );
+			$.each( steps, function ( i, s ) { if ( ! isStepMissing( s ) ) { filled++; } } );
 			pct = tot ? Math.round( ( filled / tot ) * 100 ) : 0;
 		} else if ( state.phase === 'review' ) {
 			pct = 100;
@@ -377,18 +338,15 @@
 
 		$.each( avail, function ( i, pl ) {
 			var $card = $( '<div class="wcpp-select-card" role="button" tabindex="0"></div>' );
-
 			if ( pl.image_url ) {
 				$card.append( $( '<div class="wcpp-select-card__img"></div>' ).append(
 					$( '<img />' ).attr( 'src', pl.image_url ).attr( 'alt', pl.name )
 				) );
 			}
-
 			var $foot = $( '<div class="wcpp-select-card__foot"></div>' );
 			$foot.append( $( '<span class="wcpp-select-card__name"></span>' ).text( pl.name ) );
 			$foot.append( $( '<span class="wcpp-select-card__arrow">&#8250;</span>' ) );
 			$card.append( $foot );
-
 			$card.on( 'click.wcppPanel', function () { startPlacement( pl ); } );
 			$card.on( 'keydown.wcppPanel', function ( e ) {
 				if ( e.key === 'Enter' || e.key === ' ' ) { e.preventDefault(); startPlacement( pl ); }
@@ -403,7 +361,6 @@
 		var steps = state.current.placement.steps || [];
 
 		if ( isSequential ) {
-			// Show only the current step.
 			var idx  = state.current.stepIndex || 0;
 			var step = steps[ idx ];
 			if ( step ) {
@@ -412,7 +369,6 @@
 				$content.append( $section );
 			}
 		} else {
-			// Stacked: all steps visible.
 			$.each( steps, function ( i, step ) {
 				$content.append(
 					$( '<div class="wcpp-step-divider"></div>' ).append(
@@ -420,6 +376,10 @@
 					)
 				);
 				var $section = $( '<div class="wcpp-step-section"></div>' ).attr( 'data-step-id', step.id );
+				// Lock steps 2+ until the previous step is answered.
+				if ( i > 0 && isStepMissing( steps[ i - 1 ] ) ) {
+					$section.addClass( 'wcpp-step-section--locked' );
+				}
 				renderStepBody( step, $section );
 				$content.append( $section );
 			} );
@@ -444,77 +404,9 @@
 				$into.append( $( '<p class="wcpp-step__desc"></p>' ).text( step.description ) );
 			}
 
-			// Font sub-swatches (optional).
-			if ( step.font_choices && step.font_choices.length ) {
-				var curFontId = ( currentSel && currentSel.font_id ) ? currentSel.font_id : null;
-				$into.append( $( '<h4 class="wcpp-step__subheading"></h4>' ).text( i18n.fontLabel || 'Font' ) );
-				var $fs = $( '<div class="wcpp-font-swatches"></div>' );
-				$.each( step.font_choices, function ( i, fc ) {
-					var $item = $( '<div class="wcpp-font-swatch" role="button" tabindex="0"></div>' );
-					$item.append(
-						$( '<span class="wcpp-font-swatch__preview"></span>' )
-							.text( 'Abc' )
-							.css( 'font-family', fc.family || 'inherit' )
-					);
-					$item.append( $( '<span class="wcpp-font-swatch__name"></span>' ).text( fc.name ) );
-					if ( curFontId === fc.id ) { $item.addClass( 'wcpp-selected' ); }
-					var pickFont = function () {
-						var existing = state.current.selections[ step.id ] || { type: 'text', text: '', price: parseFloat( step.price ) || 0 };
-						existing.font_id     = fc.id;
-						existing.font_name   = fc.name;
-						existing.font_family = fc.family || '';
-						state.current.selections[ step.id ] = existing;
-						$into.removeClass( 'wcpp-step-section--error' );
-						$into.find( '.wcpp-text-input' ).css( 'font-family', fc.family || 'inherit' );
-						$fs.find( '.wcpp-font-swatch' ).removeClass( 'wcpp-selected' );
-						$item.addClass( 'wcpp-selected' );
-						updateProgress();
-					};
-					$item.on( 'click.wcppPanel', pickFont );
-					$item.on( 'keydown.wcppPanel', function ( e ) {
-						if ( e.key === 'Enter' || e.key === ' ' ) { e.preventDefault(); pickFont(); }
-					} );
-					$fs.append( $item );
-				} );
-				$into.append( $fs );
-			}
-
-			// Colour sub-swatches (optional).
-			if ( step.color_choices && step.color_choices.length ) {
-				var curColorId = ( currentSel && currentSel.color_id ) ? currentSel.color_id : null;
-				$into.append( $( '<h4 class="wcpp-step__subheading"></h4>' ).text( i18n.colorLabel || 'Thread Colour' ) );
-				var $cs = $( '<div class="wcpp-swatches wcpp-text-color-swatches"></div>' );
-				$.each( step.color_choices, function ( i, cc ) {
-					var $item2 = $( '<div class="wcpp-swatch" role="button" tabindex="0"></div>' );
-					$item2.append( $( '<span class="wcpp-swatch__dot"></span>' ).css( 'background-color', cc.color || '#000' ) );
-					$item2.append( $( '<span class="wcpp-swatch__name"></span>' ).text( cc.name ) );
-					if ( curColorId === cc.id ) { $item2.addClass( 'wcpp-selected' ); }
-					var pickColor = function () {
-						var existing2 = state.current.selections[ step.id ] || { type: 'text', text: '', price: parseFloat( step.price ) || 0 };
-						existing2.color_id   = cc.id;
-						existing2.color_name = cc.name;
-						existing2.color_hex  = cc.color || '';
-						state.current.selections[ step.id ] = existing2;
-						$into.removeClass( 'wcpp-step-section--error' );
-						$cs.find( '.wcpp-swatch' ).removeClass( 'wcpp-selected' );
-						$item2.addClass( 'wcpp-selected' );
-						updateProgress();
-					};
-					$item2.on( 'click.wcppPanel', pickColor );
-					$item2.on( 'keydown.wcppPanel', function ( e ) {
-						if ( e.key === 'Enter' || e.key === ' ' ) { e.preventDefault(); pickColor(); }
-					} );
-					$cs.append( $item2 );
-				} );
-				$into.append( $cs );
-			}
-
-			// Text input.
-			var initFamily = ( currentSel && currentSel.font_family ) ? currentSel.font_family : 'inherit';
 			var $field = $( '<input type="text" class="wcpp-text-input" />' )
 				.attr( 'placeholder', step.placeholder || '' )
-				.val( curText )
-				.css( 'font-family', initFamily );
+				.val( curText );
 			if ( maxChars > 0 ) { $field.attr( 'maxlength', maxChars ); }
 
 			var updateCounter = function () {
@@ -522,25 +414,15 @@
 			};
 			$field.on( 'input.wcppPanel', function () {
 				var v = $field.val();
-				var existing3 = state.current.selections[ step.id ] || { type: 'text', price: parseFloat( step.price ) || 0 };
-				existing3.type = 'text';
 				if ( v !== '' ) {
-					existing3.text = v;
-					existing3.name = v;
-					state.current.selections[ step.id ] = existing3;
+					state.current.selections[ step.id ] = { type: 'text', text: v, price: parseFloat( step.price ) || 0 };
 				} else {
-					// Keep font/color selections but clear text.
-					existing3.text = '';
-					existing3.name = '';
-					if ( existing3.font_id || existing3.color_id ) {
-						state.current.selections[ step.id ] = existing3;
-					} else {
-						delete state.current.selections[ step.id ];
-					}
+					delete state.current.selections[ step.id ];
 				}
 				$into.removeClass( 'wcpp-step-section--error' );
 				updateCounter();
 				updateProgress();
+				refreshStepLocks();
 			} );
 
 			$into.append( $( '<div class="wcpp-text-wrap"></div>' ).append( $field ) );
@@ -561,25 +443,26 @@
 			var $sw        = $( '<div class="wcpp-swatches"></div>' );
 			var showPriceC = parseInt( design.show_choice_price, 10 ) !== 0;
 			$.each( step.choices || [], function ( i, choice ) {
-				var $item3 = $( '<div class="wcpp-swatch" role="button" tabindex="0"></div>' );
-				$item3.append( $( '<span class="wcpp-swatch__dot"></span>' ).css( 'background-color', choice.color || '#000' ) );
-				$item3.append( $( '<span class="wcpp-swatch__name"></span>' ).text( choice.name ) );
+				var $item = $( '<div class="wcpp-swatch" role="button" tabindex="0"></div>' );
+				$item.append( $( '<span class="wcpp-swatch__dot"></span>' ).css( 'background-color', choice.color || '#000' ) );
+				$item.append( $( '<span class="wcpp-swatch__name"></span>' ).text( choice.name ) );
 				if ( showPriceC && parseFloat( choice.price ) > 0 ) {
-					$item3.append( $( '<span class="wcpp-swatch__price"></span>' ).text( '+' + money( choice.price ) ) );
+					$item.append( $( '<span class="wcpp-swatch__price"></span>' ).text( '+' + money( choice.price ) ) );
 				}
-				if ( currentSel && currentSel.id === choice.id ) { $item3.addClass( 'wcpp-selected' ); }
+				if ( currentSel && currentSel.id === choice.id ) { $item.addClass( 'wcpp-selected' ); }
 				var pickC = function () {
 					state.current.selections[ step.id ] = choice;
 					$into.removeClass( 'wcpp-step-section--error' );
 					$sw.find( '.wcpp-swatch' ).removeClass( 'wcpp-selected' );
-					$item3.addClass( 'wcpp-selected' );
+					$item.addClass( 'wcpp-selected' );
 					updateProgress();
+					refreshStepLocks();
 				};
-				$item3.on( 'click.wcppPanel', pickC );
-				$item3.on( 'keydown.wcppPanel', function ( e ) {
+				$item.on( 'click.wcppPanel', pickC );
+				$item.on( 'keydown.wcppPanel', function ( e ) {
 					if ( e.key === 'Enter' || e.key === ' ' ) { e.preventDefault(); pickC(); }
 				} );
-				$sw.append( $item3 );
+				$sw.append( $item );
 			} );
 			$into.append( $sw );
 			return;
@@ -616,6 +499,7 @@
 				$wrap.find( '.wcpp-option-btn' ).removeClass( 'wcpp-selected' );
 				$btn.addClass( 'wcpp-selected' );
 				updateProgress();
+				refreshStepLocks();
 			};
 			$btn.on( 'click.wcppPanel', pick );
 			$btn.on( 'keydown.wcppPanel', function ( e ) {
@@ -639,8 +523,7 @@
 			$head.append( $( '<span class="wcpp-review-placement__name"></span>' ).text( c.placement_name ) );
 
 			var $actions = $( '<span class="wcpp-review-actions"></span>' );
-
-			var $edit = $( '<button type="button" class="wcpp-review-edit"></button>' ).text( i18n.edit || 'Edit' );
+			var $edit    = $( '<button type="button" class="wcpp-review-edit"></button>' ).text( i18n.edit || 'Edit' );
 			$edit.on( 'click.wcppPanel', function () { editPlacement( idx ); } );
 			$actions.append( $edit );
 
@@ -662,18 +545,9 @@
 				if ( sel.image_url ) {
 					$left.append( $( '<img class="wcpp-summary-img" />' ).attr( 'src', sel.image_url ).attr( 'alt', sel.value ) );
 				}
-				var $summaryText = $( '<div class="wcpp-summary-text"></div>' )
+				$left.append( $( '<div class="wcpp-summary-text"></div>' )
 					.append( $( '<span class="wcpp-summary-label"></span>' ).text( sel.step_name ) )
-					.append( $( '<span class="wcpp-summary-value"></span>' ).text( sel.value || sel.text || '' ) );
-
-				// Show font / colour sub-choice names for text steps.
-				if ( sel.font_name || sel.color_name ) {
-					var subParts = [];
-					if ( sel.font_name )  { subParts.push( sel.font_name ); }
-					if ( sel.color_name ) { subParts.push( sel.color_name ); }
-					$summaryText.append( $( '<span class="wcpp-summary-sub"></span>' ).text( subParts.join( ' · ' ) ) );
-				}
-				$left.append( $summaryText );
+					.append( $( '<span class="wcpp-summary-value"></span>' ).text( sel.value || sel.text || '' ) ) );
 				$li.append( $left );
 
 				if ( parseFloat( sel.price ) > 0 ) {
@@ -718,7 +592,7 @@
 		$addToBag.prop( 'disabled', true ).text( i18n.adding || 'Adding…' );
 
 		$.ajax( {
-			url: wcpp.ajaxUrl,
+			url:    wcpp.ajaxUrl,
 			method: 'POST',
 			data: {
 				action:       'wcpp_add_to_cart',
@@ -753,10 +627,7 @@
 			var steps = [];
 			$.each( c.selections, function ( j, sel ) {
 				if ( sel.type === 'text' ) {
-					var sp = { step_id: sel.step_id, text: sel.text || sel.value || '' };
-					if ( sel.font_id )  { sp.font_id  = sel.font_id; }
-					if ( sel.color_id ) { sp.color_id = sel.color_id; }
-					steps.push( sp );
+					steps.push( { step_id: sel.step_id, text: sel.text || sel.value || '' } );
 				} else {
 					steps.push( { step_id: sel.step_id, choice_id: sel.choice_id } );
 				}
@@ -781,7 +652,7 @@
 	}
 
 	function money( amount ) {
-		var c = wcpp.currency || {};
+		var c   = wcpp.currency || {};
 		var dec = ( typeof c.decimals === 'number' ) ? c.decimals : 2;
 		var num = parseFloat( amount || 0 ).toFixed( dec );
 		var parts = num.split( '.' );
