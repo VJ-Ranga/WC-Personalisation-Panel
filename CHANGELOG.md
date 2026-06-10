@@ -5,6 +5,18 @@
 
 ---
 
+## [0.7.19] — 2026-06
+### Fixed
+- **Add-to-cart redirect filter receives the product object** — the
+  `woocommerce_add_to_cart_redirect` filter was passed `null` as its second
+  argument instead of the `WC_Product` object. Third-party plugins that check
+  the product type inside this filter (e.g. direct-checkout skippers, bundle
+  handlers) now receive the correct value. No behaviour change for sites that
+  don't use those plugins.
+- **Translations now load** — added `load_plugin_textdomain()` inside
+  `wcpp_init()`. All `__( '…', 'wcpp' )` strings were silently untranslatable
+  in previous releases.
+
 ## [0.7.18] — 2026-06
 ### Fixed
 - **Panel review total is now quantity-aware** — the drawer's "Personalisation total"

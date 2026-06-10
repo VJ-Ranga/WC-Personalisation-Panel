@@ -261,7 +261,7 @@ class WCPP_Ajax_Handler {
 				// Honour the woocommerce_add_to_cart_redirect filter so sites
 				// configured to skip the cart and go straight to checkout behave
 				// the same for personalised products as for normal WC add-to-cart.
-				'cart_url' => apply_filters( 'woocommerce_add_to_cart_redirect', wc_get_cart_url(), null ),
+				'cart_url' => apply_filters( 'woocommerce_add_to_cart_redirect', wc_get_cart_url(), $product ),
 			)
 		);
 	}

@@ -177,6 +177,7 @@ class WCPP_Cart_Handler {
 			'placements'  => $config['placements'],
 			'button_text' => $config['button_text'],
 			'set_price'   => isset( $config['set_price'] ) ? (float) $config['set_price'] : 0.0,
+			'set_price_type' => isset( $config['set_price_type'] ) ? $config['set_price_type'] : 'line',
 			'design'      => $config['design'],
 		);
 
