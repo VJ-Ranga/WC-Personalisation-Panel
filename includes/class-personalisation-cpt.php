@@ -601,7 +601,11 @@ class WCPP_Personalisation_CPT {
 		if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
 			return;
 		}
-		if ( ! current_user_can( 'edit_post', $post_id ) ) {
+		// CPT uses capability_type => 'product', so edit_post maps to edit_product.
+		// Also require manage_woocommerce explicitly: a user with edit_products but
+		// NOT manage_woocommerce should not be able to edit global personalisation
+		// sets (even if they can reach the URL directly without the menu).
+		if ( ! current_user_can( 'manage_woocommerce' ) || ! current_user_can( 'edit_post', $post_id ) ) {
 			return;
 		}
 		if (
@@ -636,7 +640,7 @@ class WCPP_Personalisation_CPT {
 			delete_post_meta( $post_id, '_wcpp_set_price' );
 			return;
 		}
-		update_post_meta( $post_id, '_wcpp_set_price', number_format( (float) $raw, 2, '.', '' ) );
+		update_post_meta( $post_id, '_wcpp_set_price', number_format( max( 0.0, (float) $raw ), 2, '.', '' ) );
 	}
 
 	/**
@@ -686,7 +690,7 @@ class WCPP_Personalisation_CPT {
 					if ( 'text' === $st_type ) {
 						$clean_step['placeholder'] = sanitize_text_field( wp_unslash( $step['placeholder'] ?? '' ) );
 						$clean_step['max_chars']   = max( 1, min( 200, (int) ( $step['max_chars'] ?? 20 ) ) );
-						$clean_step['price']       = number_format( (float) ( $step['price'] ?? 0 ), 2, '.', '' );
+						$clean_step['price']       = number_format( max( 0.0, (float) ( $step['price'] ?? 0 ) ), 2, '.', '' );
 					}
 
 					if ( in_array( $st_type, array( 'choice', 'color' ), true ) && ! empty( $step['choices'] ) && is_array( $step['choices'] ) ) {
@@ -701,7 +705,7 @@ class WCPP_Personalisation_CPT {
 								'image_id'  => absint( $ch['image_id'] ?? 0 ),
 								'image_url' => esc_url_raw( wp_unslash( $ch['image_url'] ?? '' ) ),
 								'color'     => sanitize_hex_color( $ch['color'] ?? '' ) ?: '',
-								'price'     => number_format( (float) ( $ch['price'] ?? 0 ), 2, '.', '' ),
+								'price'     => number_format( max( 0.0, (float) ( $ch['price'] ?? 0 ) ), 2, '.', '' ),
 							);
 						}
 					}

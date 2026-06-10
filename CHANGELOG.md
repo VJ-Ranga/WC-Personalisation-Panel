@@ -5,6 +5,23 @@
 
 ---
 
+## [0.7.12] — 2026-06
+### Security / Fixed
+- **[Medium] WooCommerce add-to-cart validation filter now applied** — the AJAX
+  handler now runs `apply_filters('woocommerce_add_to_cart_validation', ...)` before
+  calling `WC()->cart->add_to_cart()`, matching the behaviour of WooCommerce's own
+  AJAX/form handlers. Third-party plugins that enforce purchase limits, subscription
+  rules, or password-protected-product gates via this filter will now be respected.
+- **[Medium] CPT save gate requires `manage_woocommerce`** — `save_all_meta()` now
+  checks `current_user_can('manage_woocommerce')` in addition to `edit_post`. The
+  CPT uses `capability_type => 'product'`, which means a custom role with
+  `edit_products` but not `manage_woocommerce` could previously bypass the menu
+  gate and save sets directly. Both capabilities are now required.
+- **[Low] Negative prices rejected on save** — set fee, text-step price, and
+  choice price are now clamped with `max(0, ...)` at save time. The HTML UI
+  already has `min="0"` but a crafted POST could bypass it; server-side now
+  enforces the floor.
+
 ## [0.7.11] — 2026-06
 ### Security
 - **[High] Set-ID bypass closed** — `handle_add_to_cart()` previously accepted

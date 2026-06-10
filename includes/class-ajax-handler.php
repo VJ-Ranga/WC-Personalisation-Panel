@@ -185,10 +185,44 @@ class WCPP_Ajax_Handler {
 			'non_returnable' => $non_returnable,
 		);
 
-		// 10. Add to cart (pass variation attributes for reliable variation add).
+		// 10. Run WooCommerce's add-to-cart validation filter before touching the
+		// cart. Third-party plugins (purchase limits, min/max qty, subscriptions,
+		// password-protected products, etc.) register here. Skipping this filter
+		// would let the plugin bypass rules that WooCommerce's own AJAX handler
+		// enforces (see wc-ajax.php and wc-form-handler.php).
+		$quantity          = 1;
+		$passed_validation = apply_filters(
+			'woocommerce_add_to_cart_validation',
+			true,
+			$product_id,
+			$quantity,
+			$variation_id,
+			$variation_attrs,
+			array( 'wcpp_data' => $personalisation )
+		);
+
+		if ( ! $passed_validation ) {
+			$wc_notices = wc_get_notices( 'error' );
+			$message    = __( 'Could not add to cart. Please try again.', 'wcpp' );
+
+			if ( ! empty( $wc_notices ) ) {
+				$first       = reset( $wc_notices );
+				$notice_text = is_array( $first ) && isset( $first['notice'] )
+					? wp_strip_all_tags( $first['notice'] )
+					: ( is_string( $first ) ? wp_strip_all_tags( $first ) : $message );
+				if ( $notice_text ) {
+					$message = $notice_text;
+				}
+			}
+
+			wc_clear_notices();
+			wp_send_json_error( array( 'message' => $message ) );
+		}
+
+		// 11. Add to cart (pass variation attributes for reliable variation add).
 		$cart_item_key = WC()->cart->add_to_cart(
 			$product_id,
-			1,
+			$quantity,
 			$variation_id,
 			$variation_attrs,
 			array( 'wcpp_data' => $personalisation )

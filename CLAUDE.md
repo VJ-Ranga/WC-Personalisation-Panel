@@ -181,6 +181,14 @@ State: `state.completed[]` + `state.current`.
 - **Step deduplication** — `$seen_steps` guard prevents duplicate `step_id`
   submissions that would satisfy the count check while skipping required steps.
   Mirrors the existing `$seen_placements` guard.
+- **WooCommerce add-to-cart validation filter** — `apply_filters('woocommerce_add_to_cart_validation', ...)`
+  runs before `add_to_cart()`, matching WC's own AJAX/form handlers so third-party
+  plugin rules (purchase limits, subscription gates, etc.) are enforced.
+- **CPT save requires `manage_woocommerce`** — `save_all_meta()` checks both
+  `manage_woocommerce` and `edit_post`. Guards against custom roles that have
+  `edit_products` but not `manage_woocommerce` reaching the save path directly.
+- **Negative prices rejected** — `max(0, ...)` applied to set fee, text-step
+  price, and choice price at save time (defence-in-depth alongside HTML `min="0"`).
 - Text: `sanitize_text_field` + `max_chars` capped server-side.
 - Colour: `sanitize_hex_color` on save.
 - Prices recomputed server-side, applied in `before_calculate_totals`.
@@ -194,7 +202,7 @@ State: `state.completed[]` + `state.current`.
 Assets are enqueued with `?ver=WCPP_VERSION`. **If you change any CSS or JS,
 you MUST bump `WCPP_VERSION`** (in `wc-personalisation-panel.php`, both the
 header and the constant) — otherwise browsers/optimizers keep serving the old
-cached file and your change appears to "do nothing". Current: 0.7.11.
+cached file and your change appears to "do nothing". Current: 0.7.12.
 
 ---
 
@@ -225,4 +233,4 @@ cached file and your change appears to "do nothing". Current: 0.7.11.
 - Don't add `Co-Authored-By` trailers to commits.
 
 ---
-*v0.7.11 · placements model · choice/colour/text steps · sequential/stacked wizard · grid2 placement picker · step descriptions · card image fit/aspect · inline validation badge · variable-product aware · step locking (stacked) · placement collapse · GitHub update checker · cart null-guard · WC notice surfacing · idempotent price calculator · per-request set ID cache · security: set-ID bypass fix · variation-ID ownership check · step dedup guard · WC Blocks compat corrected.*
+*v0.7.12 · placements model · choice/colour/text steps · sequential/stacked wizard · grid2 placement picker · step descriptions · card image fit/aspect · inline validation badge · variable-product aware · step locking (stacked) · placement collapse · GitHub update checker · cart null-guard · WC notice surfacing · idempotent price calculator · per-request set ID cache · security: set-ID bypass · variation-ID ownership · step dedup · WC Blocks compat · WC add-to-cart validation filter · CPT manage_woocommerce gate · negative price clamp.*
