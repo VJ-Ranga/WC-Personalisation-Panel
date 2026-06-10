@@ -1,5 +1,5 @@
 # CLAUDE.md — WC Personalisation Panel
-> Master reference. Read this FIRST. Reflects the real built plugin (v0.7.16).
+> Master reference. Read this FIRST. Reflects the real built plugin (v0.7.17).
 > If you are a fresh/local AI continuing this work: this file + FOLDER-STRUCTURE.md
 > tell you everything. Detail: BUILD-PLAN.md · Decisions: DECISIONS.md.
 
@@ -39,6 +39,7 @@ parent→child structure.
 | `_wcpp_assigned_categories` (array) + `_wcpp_apply_all` ('1'/'0') | where the set applies |
 | `_wcpp_set_price` | flat fee for the set (amount) |
 | `_wcpp_set_price_type` | `'line'` = one-time per cart line (default); `'unit'` = per item ordered |
+| `_wcpp_priority` | integer 1–99 (default 10); lower = higher priority when sets overlap |
 | `_wcpp_button_text` | optional per-set trigger button label |
 | `_wcpp_options` | LEGACY flat options — auto-wrapped as one placement on read |
 
@@ -207,7 +208,7 @@ State: `state.completed[]` + `state.current`.
 Assets are enqueued with `?ver=WCPP_VERSION`. **If you change any CSS or JS,
 you MUST bump `WCPP_VERSION`** (in `wc-personalisation-panel.php`, both the
 header and the constant) — otherwise browsers/optimizers keep serving the old
-cached file and your change appears to "do nothing". Current: 0.7.16.
+cached file and your change appears to "do nothing". Current: 0.7.17.
 
 ---
 
@@ -238,4 +239,4 @@ cached file and your change appears to "do nothing". Current: 0.7.16.
 - Don't add `Co-Authored-By` trailers to commits.
 
 ---
-*v0.7.16 · placements model · choice/colour/text steps · sequential/stacked wizard · grid2 placement picker · step descriptions · card image fit/aspect · inline validation badge · variable-product aware · step locking (stacked) · placement collapse · GitHub update checker · cart null-guard · WC notice surfacing · idempotent price calculator · per-request set ID cache · security: set-ID bypass · variation-ID ownership · step dedup · WC Blocks compat · WC add-to-cart validation filter · CPT manage_woocommerce gate · negative price clamp.*
+*v0.7.17 · placements model · choice/colour/text steps · sequential/stacked wizard · grid2 placement picker · step descriptions · card image fit/aspect · inline validation badge · variable-product aware · step locking (stacked) · placement collapse · GitHub update checker · cart null-guard · WC notice surfacing · idempotent price calculator · per-request set ID cache · security: set-ID bypass · variation-ID ownership · step dedup · WC Blocks compat · WC add-to-cart validation filter · CPT manage_woocommerce gate · negative price clamp.*

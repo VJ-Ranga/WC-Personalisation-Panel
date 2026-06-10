@@ -5,6 +5,20 @@
 
 ---
 
+## [0.7.17] — 2026-06
+### Added
+- **Set priority / conflict resolution** — each set now has a **Priority** field
+  (1–99, default 10) in its "Apply to Product Categories" sidebar box. When two
+  or more sets match the same product (e.g. both assigned to the same category),
+  the one with the **lowest priority number** is shown. Previously the winner was
+  whichever set had the lowest post ID (oldest), with no admin control.
+  - Priority is saved as `_wcpp_priority` post meta.
+  - The set resolver (`get_set_id()`) now sorts all published sets by priority
+    before the matching loop, so the winner is always deterministic and editable.
+  - A **Priority** column is shown in the Personalisation Sets admin list so
+    conflicts are visible at a glance.
+  - Existing sets without the meta default to priority 10.
+
 ## [0.7.16] — 2026-06
 ### Added
 - **Fee type option per set** — the Pricing meta box now has a "Fee type" selector:

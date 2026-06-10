@@ -298,7 +298,7 @@ class WCPP_Settings_Store {
 			return $set_id;
 		}
 
-		// 2 & 3. Scan published sets.
+		// 2 & 3. Scan published sets, ordered by priority (lower number = higher priority).
 		$product_cat_ids = self::get_product_category_ids( $product_id );
 
 		$sets = get_posts(
@@ -308,6 +308,18 @@ class WCPP_Settings_Store {
 				'posts_per_page' => -1,
 				'fields'         => 'ids',
 			)
+		);
+
+		// Sort by _wcpp_priority ascending. Sets without the meta default to 10.
+		usort(
+			$sets,
+			function ( $a, $b ) {
+				$pa = (int) get_post_meta( (int) $a, '_wcpp_priority', true );
+				$pb = (int) get_post_meta( (int) $b, '_wcpp_priority', true );
+				$pa = $pa > 0 ? $pa : 10;
+				$pb = $pb > 0 ? $pb : 10;
+				return $pa - $pb; // ascending: lowest priority number wins.
+			}
 		);
 
 		foreach ( $sets as $sid ) {

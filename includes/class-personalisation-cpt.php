@@ -473,6 +473,10 @@ class WCPP_Personalisation_CPT {
 		}
 
 		$apply_all = (bool) get_post_meta( $post->ID, '_wcpp_apply_all', true );
+		$priority  = (int) get_post_meta( $post->ID, '_wcpp_priority', true );
+		if ( $priority <= 0 ) {
+			$priority = 10;
+		}
 
 		$categories = get_terms(
 			array(
@@ -511,6 +515,21 @@ class WCPP_Personalisation_CPT {
 				<?php esc_html_e( 'Individual product settings override these.', 'wcpp' ); ?>
 			</p>
 		</div>
+
+		<hr style="margin:14px 0 10px;" />
+
+		<p style="margin-bottom:4px;">
+			<label for="wcpp_priority"><strong><?php esc_html_e( 'Priority', 'wcpp' ); ?></strong></label>
+		</p>
+		<p style="margin-bottom:4px;">
+			<input type="number" id="wcpp_priority" name="wcpp_priority"
+				value="<?php echo esc_attr( $priority ); ?>"
+				min="1" max="99" step="1" style="width:70px;" />
+		</p>
+		<p class="description">
+			<?php esc_html_e( 'When two sets match the same product, the one with the lower number is used. Default: 10. (1 = highest priority, 99 = lowest.)', 'wcpp' ); ?>
+		</p>
+
 		<script>
 		jQuery(function($){
 			$('#wcpp_apply_all').on('change', function(){
@@ -773,7 +792,7 @@ class WCPP_Personalisation_CPT {
 	}
 
 	/**
-	 * Save category assignment data.
+	 * Save category assignment data and priority.
 	 *
 	 * @param int $post_id Post ID.
 	 * @return void
@@ -789,6 +808,10 @@ class WCPP_Personalisation_CPT {
 			}
 		}
 		update_post_meta( $post_id, '_wcpp_assigned_categories', $cats );
+
+		// Priority: lower number = higher priority when sets overlap.
+		$priority = isset( $_POST['wcpp_priority'] ) ? (int) $_POST['wcpp_priority'] : 10;
+		update_post_meta( $post_id, '_wcpp_priority', max( 1, min( 99, $priority ) ) );
 	}
 
 	/**
@@ -818,6 +841,7 @@ class WCPP_Personalisation_CPT {
 		return array(
 			'cb'         => $columns['cb'],
 			'title'      => __( 'Set Name', 'wcpp' ),
+			'priority'   => __( 'Priority', 'wcpp' ),
 			'categories' => __( 'Applies To', 'wcpp' ),
 			'options'    => __( 'Placements', 'wcpp' ),
 			'choices'    => __( 'Total Steps', 'wcpp' ),
@@ -834,6 +858,14 @@ class WCPP_Personalisation_CPT {
 	 */
 	public static function render_admin_column( $column, $post_id ) {
 		$placements = self::get_placements_for_edit( $post_id );
+
+		if ( 'priority' === $column ) {
+			$p = (int) get_post_meta( $post_id, '_wcpp_priority', true );
+			if ( $p <= 0 ) {
+				$p = 10;
+			}
+			echo '<strong>' . esc_html( $p ) . '</strong>';
+		}
 
 		if ( 'options' === $column ) {
 			echo esc_html( count( $placements ) );
