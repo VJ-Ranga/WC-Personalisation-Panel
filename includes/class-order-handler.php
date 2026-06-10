@@ -30,6 +30,9 @@ class WCPP_Order_Handler {
 		// Admin order editor: hide the raw _wcpp_* meta and render a clean block.
 		add_filter( 'woocommerce_hidden_order_itemmeta', array( __CLASS__, 'hide_admin_meta' ) );
 		add_action( 'woocommerce_after_order_itemmeta',  array( __CLASS__, 'display_admin' ), 10, 3 );
+
+		// Restore personalisation when a customer uses "Order Again" (reorder).
+		add_filter( 'woocommerce_order_again_cart_item_data', array( __CLASS__, 'restore_for_reorder' ), 10, 3 );
 	}
 
 	/**
@@ -115,6 +118,60 @@ class WCPP_Order_Handler {
 		if ( ! empty( $data['non_returnable'] ) ) {
 			$item->add_meta_data( '_wcpp_non_returnable', '1', true );
 		}
+	}
+
+	/**
+	 * Restore personalisation data when a customer uses "Order Again".
+	 *
+	 * WooCommerce fires this filter for each line item in the reorder flow.
+	 * We re-attach wcpp_data so the new cart item carries the original
+	 * personalisation. base_price is re-derived from the current product so
+	 * the unit price reflects today's pricing; the add-on (set_fee + choices)
+	 * is preserved from the original order so the customer reorders at the
+	 * same personalisation terms they chose.
+	 *
+	 * @param array                 $cart_item_data Cart item data being built.
+	 * @param WC_Order_Item_Product $item           Original order line item.
+	 * @param WC_Order              $order          Original order.
+	 * @return array
+	 */
+	public static function restore_for_reorder( $cart_item_data, $item, $order ) {
+		$json = $item->get_meta( '_wcpp_placements' );
+		if ( empty( $json ) ) {
+			return $cart_item_data;
+		}
+
+		$placements = json_decode( $json, true );
+		if ( ! is_array( $placements ) || empty( $placements ) ) {
+			return $cart_item_data;
+		}
+
+		// Re-derive current unit base price (product prices may change over time).
+		$product_id   = $item->get_product_id();
+		$variation_id = $item->get_variation_id();
+		$priced       = $variation_id ? wc_get_product( $variation_id ) : wc_get_product( $product_id );
+		$base_price   = $priced ? (float) $priced->get_price() : 0.0;
+
+		// Add-on prices come from the original order — the customer chose at
+		// those prices and we honour them on reorder.
+		$set_fee     = (float) $item->get_meta( '_wcpp_set_fee' );
+		$total_price = (float) $item->get_meta( '_wcpp_total_price' );
+		$set_name    = (string) $item->get_meta( '_wcpp_set_name' );
+
+		$cart_item_data['wcpp_data'] = array(
+			'set_id'         => 0,  // Not stored in order meta; 0 is safe (display only).
+			'set_name'       => sanitize_text_field( $set_name ),
+			'placements'     => $placements,
+			'set_fee'        => number_format( $set_fee, 2, '.', '' ),
+			'base_price'     => $base_price,
+			'total_price'    => number_format( $total_price, 2, '.', '' ),
+			'non_returnable' => (bool) $item->get_meta( '_wcpp_non_returnable' ),
+		);
+
+		// Fresh unique key so this reordered item gets its own cart slot.
+		$cart_item_data['wcpp_unique_key'] = md5( wp_json_encode( $cart_item_data['wcpp_data'] ) . microtime() );
+
+		return $cart_item_data;
 	}
 
 	/**

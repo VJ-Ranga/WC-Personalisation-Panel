@@ -256,7 +256,10 @@ class WCPP_Ajax_Handler {
 		wp_send_json_success(
 			array(
 				'message'  => __( 'Added to cart!', 'wcpp' ),
-				'cart_url' => wc_get_cart_url(),
+				// Honour the woocommerce_add_to_cart_redirect filter so sites
+				// configured to skip the cart and go straight to checkout behave
+				// the same for personalised products as for normal WC add-to-cart.
+				'cart_url' => apply_filters( 'woocommerce_add_to_cart_redirect', wc_get_cart_url(), null ),
 			)
 		);
 	}

@@ -5,6 +5,25 @@
 
 ---
 
+## [0.7.15] — 2026-06
+### Fixed
+- **Set fee no longer multiplies by quantity** — the flat personalisation fee
+  (`set_fee`) is now a true one-time charge per cart line regardless of how many
+  units the customer orders. The price calculator amortises the fee across the
+  cart item quantity so WooCommerce's `unit_price × qty` arithmetic always yields
+  `base × qty + choice_addon × qty + set_fee`. Previously ordering qty = 3 charged
+  the setup fee three times.
+- **Add-to-cart redirect filter now respected** — the AJAX handler now runs
+  `apply_filters('woocommerce_add_to_cart_redirect', ...)` before returning the
+  redirect URL to the browser. Sites configured to skip the cart page and go
+  straight to checkout will now behave consistently for personalised products.
+- **"Order Again" restores personalisation** — the `woocommerce_order_again_cart_item_data`
+  filter is now implemented. When a customer clicks "Order Again" from My Account,
+  the personalisation selections from the original order (placements, steps, choices,
+  fees) are re-attached to the new cart item. The product base price is re-derived
+  from the current product so pricing is up to date; personalisation add-on prices
+  are preserved from the original order.
+
 ## [0.7.14] — 2026-06
 ### Fixed
 - **Quantity from product page now respected** — JS reads the qty input

@@ -32,6 +32,12 @@ class WCPP_Price_Calculator {
 	 * firing multiple times in one request (cart page, checkout page, payment
 	 * processing, WC Blocks Store API) never compounds the price.
 	 *
+	 * set_fee handling: the flat set fee is a one-time charge per personalised
+	 * line item — it does NOT multiply with quantity. To achieve this inside
+	 * WooCommerce's (unit_price × qty) model, the fee is amortised across the
+	 * cart item quantity so the line total is always base×qty + choice×qty + fee.
+	 * Choice prices ARE per-unit and multiply normally.
+	 *
 	 * Guard: skip when viewing admin pages that are not AJAX or REST.
 	 * — is_admin() + no AJAX + no REST = genuine WP admin screen (order editor,
 	 *   settings page, etc.) where we must not touch prices.
@@ -53,9 +59,9 @@ class WCPP_Price_Calculator {
 				continue;
 			}
 
-			$data  = $cart_item['wcpp_data'];
-			$extra = isset( $data['total_price'] ) ? (float) $data['total_price'] : 0.0;
-			if ( $extra <= 0 ) {
+			$data        = $cart_item['wcpp_data'];
+			$total_price = isset( $data['total_price'] ) ? (float) $data['total_price'] : 0.0;
+			if ( $total_price <= 0 ) {
 				continue;
 			}
 
@@ -64,7 +70,15 @@ class WCPP_Price_Calculator {
 				? (float) $data['base_price']
 				: (float) $cart_item['data']->get_price();
 
-			$cart_item['data']->set_price( $base + $extra );
+			// set_fee is a one-time charge per cart line, not per unit.
+			// Amortise it over the quantity so WC's (unit_price × qty) arithmetic
+			// yields: base×qty + choice_addon×qty + set_fee (collected once).
+			$set_fee      = isset( $data['set_fee'] ) ? (float) $data['set_fee'] : 0.0;
+			$choice_addon = max( 0.0, $total_price - $set_fee );
+			$qty          = isset( $cart_item['quantity'] ) ? max( 1, (int) $cart_item['quantity'] ) : 1;
+			$unit_extra   = $choice_addon + ( $set_fee / $qty );
+
+			$cart_item['data']->set_price( $base + $unit_extra );
 		}
 	}
 

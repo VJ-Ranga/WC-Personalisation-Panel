@@ -1,5 +1,5 @@
 # CLAUDE.md — WC Personalisation Panel
-> Master reference. Read this FIRST. Reflects the real built plugin (v0.7.14).
+> Master reference. Read this FIRST. Reflects the real built plugin (v0.7.15).
 > If you are a fresh/local AI continuing this work: this file + FOLDER-STRUCTURE.md
 > tell you everything. Detail: BUILD-PLAN.md · Decisions: DECISIONS.md.
 
@@ -131,8 +131,9 @@ wp_ajax_(nopriv_)wcpp_add_to_cart:
    • server RE-DERIVES every name/price (never trusts the browser)
    • total = flat set fee (once) + Σ choice/text prices
    • base_price captured (variation price if variable)
-   • WC()->cart->add_to_cart(product, 1, variation_id, variation_attrs, wcpp_data) + unique key
-woocommerce_before_calculate_totals → price = base_price + total (idempotent)
+   • WC()->cart->add_to_cart(product, qty, variation_id, variation_attrs, wcpp_data) + unique key
+woocommerce_before_calculate_totals → price = base_price + choice_addon + (set_fee / qty) [idempotent, set_fee amortised]
+woocommerce_order_again_cart_item_data → reorder restores wcpp_data from order meta
 woocommerce_get_item_data           → cart / mini-cart
 woocommerce_checkout_create_order_line_item → hidden _wcpp_* order meta
 woocommerce_order_item_meta_end      → admin order + customer order + EMAIL
@@ -184,6 +185,9 @@ State: `state.completed[]` + `state.current`.
 - **WooCommerce add-to-cart validation filter** — `apply_filters('woocommerce_add_to_cart_validation', ...)`
   runs before `add_to_cart()`, matching WC's own AJAX/form handlers so third-party
   plugin rules (purchase limits, subscription gates, etc.) are enforced.
+- **Add-to-cart redirect filter** — the AJAX response URL uses
+  `apply_filters('woocommerce_add_to_cart_redirect', wc_get_cart_url(), null)` so
+  sites configured to skip the cart and go to checkout behave consistently.
 - **CPT save requires `manage_woocommerce`** — `save_all_meta()` checks both
   `manage_woocommerce` and `edit_post`. Guards against custom roles that have
   `edit_products` but not `manage_woocommerce` reaching the save path directly.
@@ -202,7 +206,7 @@ State: `state.completed[]` + `state.current`.
 Assets are enqueued with `?ver=WCPP_VERSION`. **If you change any CSS or JS,
 you MUST bump `WCPP_VERSION`** (in `wc-personalisation-panel.php`, both the
 header and the constant) — otherwise browsers/optimizers keep serving the old
-cached file and your change appears to "do nothing". Current: 0.7.14.
+cached file and your change appears to "do nothing". Current: 0.7.15.
 
 ---
 
@@ -233,4 +237,4 @@ cached file and your change appears to "do nothing". Current: 0.7.14.
 - Don't add `Co-Authored-By` trailers to commits.
 
 ---
-*v0.7.14 · placements model · choice/colour/text steps · sequential/stacked wizard · grid2 placement picker · step descriptions · card image fit/aspect · inline validation badge · variable-product aware · step locking (stacked) · placement collapse · GitHub update checker · cart null-guard · WC notice surfacing · idempotent price calculator · per-request set ID cache · security: set-ID bypass · variation-ID ownership · step dedup · WC Blocks compat · WC add-to-cart validation filter · CPT manage_woocommerce gate · negative price clamp.*
+*v0.7.15 · placements model · choice/colour/text steps · sequential/stacked wizard · grid2 placement picker · step descriptions · card image fit/aspect · inline validation badge · variable-product aware · step locking (stacked) · placement collapse · GitHub update checker · cart null-guard · WC notice surfacing · idempotent price calculator · per-request set ID cache · security: set-ID bypass · variation-ID ownership · step dedup · WC Blocks compat · WC add-to-cart validation filter · CPT manage_woocommerce gate · negative price clamp.*
