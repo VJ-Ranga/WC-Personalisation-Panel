@@ -185,12 +185,15 @@ class WCPP_Ajax_Handler {
 			'non_returnable' => $non_returnable,
 		);
 
-		// 10. Run WooCommerce's add-to-cart validation filter before touching the
+		// 10. Read quantity from the product page (customer may have selected > 1).
+		// Clamped to 1–99 server-side so a crafted POST cannot send a silly number.
+		$quantity = isset( $_POST['quantity'] ) ? max( 1, min( 99, absint( $_POST['quantity'] ) ) ) : 1;
+
+		// Run WooCommerce's add-to-cart validation filter before touching the
 		// cart. Third-party plugins (purchase limits, min/max qty, subscriptions,
 		// password-protected products, etc.) register here. Skipping this filter
 		// would let the plugin bypass rules that WooCommerce's own AJAX handler
 		// enforces (see wc-ajax.php and wc-form-handler.php).
-		$quantity          = 1;
 		$passed_validation = apply_filters(
 			'woocommerce_add_to_cart_validation',
 			true,

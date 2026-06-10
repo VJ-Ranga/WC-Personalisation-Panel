@@ -50,6 +50,7 @@
 			state.productId   = parseInt( $( this ).data( 'product-id' ), 10 ) || 0;
 			state.variationId = 0;
 			state.variation   = {};
+			state.quantity    = parseInt( $( 'form.cart input.qty' ).val(), 10 ) || 1;
 
 			var $vform = $( 'form.variations_form' );
 			if ( $vform.length ) {
@@ -601,6 +602,7 @@
 				variation_id: state.variationId,
 				variation:    JSON.stringify( state.variation || {} ),
 				set_id:       cfg.id,
+				quantity:     state.quantity || 1,
 				placements:   JSON.stringify( buildPayload() ),
 			},
 			success: function ( res ) {

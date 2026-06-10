@@ -5,6 +5,14 @@
 
 ---
 
+## [0.7.14] — 2026-06
+### Fixed
+- **Quantity from product page now respected** — JS reads the qty input
+  (`form.cart input.qty`) when the panel opens and sends it with the AJAX
+  request. PHP clamps it to 1–99 server-side and passes it to `add_to_cart()`.
+  Previously quantity was hardcoded to 1 regardless of what the customer
+  selected on the product page.
+
 ## [0.7.13] — 2026-06
 ### Security / Fixed
 - **[Medium] CPT capability mismatch fully resolved** — the CPT now uses
