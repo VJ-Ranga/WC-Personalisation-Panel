@@ -111,6 +111,15 @@ class WCPP_Cart_Handler {
 			'--wcpp-footer-btn-radius' => intval( $design['footer_btn_radius'] ?? 6 ) . 'px',
 			'--wcpp-footer-btn-font'   => intval( $design['footer_btn_font_size'] ?? 12 ) . 'px',
 			'--wcpp-footer-btn-pad-v'  => intval( $design['footer_btn_padding_v'] ?? 16 ) . 'px',
+
+			// Choice card image display.
+			'--wcpp-img-fit'    => in_array( $design['card_img_fit'] ?? 'cover', array( 'cover', 'contain' ), true ) ? ( $design['card_img_fit'] ?? 'cover' ) : 'cover',
+			'--wcpp-img-aspect' => ( array(
+				'square'    => '1 / 1',
+				'landscape' => '4 / 3',
+				'portrait'  => '3 / 4',
+				'auto'      => 'auto',
+			)[ $design['card_img_aspect'] ?? 'square' ] ?? '1 / 1' ),
 		);
 
 		$css = ':root{';
@@ -306,7 +315,20 @@ class WCPP_Cart_Handler {
 			foreach ( $data['placements'] as $placement ) {
 				$lines = array();
 				foreach ( ( $placement['selections'] ?? array() ) as $sel ) {
-					$val  = isset( $sel['value'] ) ? $sel['value'] : ( $sel['choice_name'] ?? '' );
+					$val = isset( $sel['value'] ) ? $sel['value'] : ( $sel['choice_name'] ?? '' );
+					// Append font/colour info for text steps that have sub-choices.
+					if ( isset( $sel['type'] ) && 'text' === $sel['type'] ) {
+						$extras = array();
+						if ( ! empty( $sel['font_name'] ) ) {
+							$extras[] = esc_html__( 'Font', 'wcpp' ) . ': ' . esc_html( $sel['font_name'] );
+						}
+						if ( ! empty( $sel['color_name'] ) ) {
+							$extras[] = esc_html__( 'Colour', 'wcpp' ) . ': ' . esc_html( $sel['color_name'] );
+						}
+						if ( $extras ) {
+							$val .= ' (' . implode( ', ', $extras ) . ')';
+						}
+					}
 					$line = esc_html( $sel['step_name'] ) . ': ' . esc_html( $val );
 					$price = isset( $sel['price'] ) ? (float) $sel['price'] : (float) ( $sel['choice_price'] ?? 0 );
 					if ( $price > 0 ) {

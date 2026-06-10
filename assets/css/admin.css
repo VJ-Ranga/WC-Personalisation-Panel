@@ -463,3 +463,70 @@
 /* Chrome/Safari: hide spinner arrows for a cleaner look */
 .wcpp-sides input[type="number"]::-webkit-inner-spin-button,
 .wcpp-sides input[type="number"]::-webkit-outer-spin-button { opacity: .4; }
+
+/* ===================================================================
+   STEP DESCRIPTION ROW
+=================================================================== */
+.wcpp-step-desc-row {
+	padding: 4px 14px 8px;
+	border-top: 1px solid #f0f0f0;
+}
+.wcpp-step-desc-input {
+	width: 100% !important;
+	font-size: 12px !important;
+	color: #555 !important;
+	border-color: #e0e0e0 !important;
+	background: #fafafa !important;
+	border-radius: 5px !important;
+	padding: 5px 10px !important;
+	height: auto !important;
+	min-height: 0 !important;
+	box-shadow: none !important;
+}
+.wcpp-step-desc-input::placeholder { color: #aaa !important; }
+
+/* ===================================================================
+   TEXT STEP SUB-SECTIONS  (Font Options / Colour Options)
+=================================================================== */
+.wcpp-text-sub-section {
+	border-top:  1px solid #ececec;
+	margin-top:  10px;
+	padding-top: 10px;
+}
+.wcpp-text-sub-header {
+	display: flex; align-items: baseline; gap: 8px; margin-bottom: 8px;
+}
+.wcpp-text-sub-header strong { font-size: 12px; color: #374151; }
+.wcpp-text-sub-header small  { font-size: 11px; color: #9ca3af; }
+
+/* Font choice row */
+.wcpp-font-choice-row {
+	display:      flex;
+	align-items:  center;
+	gap:          8px;
+	margin-bottom: 6px;
+	background:   #fafafa;
+	border:       1px solid #e5e7eb;
+	border-radius: 6px;
+	padding:      6px 8px;
+}
+.wcpp-font-name-input   { width: 120px !important; flex-shrink: 0; }
+.wcpp-font-family-input { flex: 1; min-width: 160px; font-size: 12px !important; }
+.wcpp-font-preview {
+	font-size: 18px; color: #374151; min-width: 40px; text-align: center;
+	flex-shrink: 0; line-height: 1; padding: 0 4px;
+}
+
+/* Text-step colour choice row */
+.wcpp-text-color-row {
+	display:       flex;
+	align-items:   center;
+	gap:           8px;
+	margin-bottom: 6px;
+	background:    #fafafa;
+	border:        1px solid #e5e7eb;
+	border-radius: 6px;
+	padding:       6px 8px;
+}
+.wcpp-text-color-picker { width: 42px !important; height: 32px !important; padding: 2px !important; border-radius: 5px !important; cursor: pointer; flex-shrink: 0; }
+.wcpp-text-color-name   { flex: 1; }

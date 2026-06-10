@@ -13,9 +13,12 @@
 		return;
 	}
 
-	var cfg     = wcpp.config;
-	var design  = cfg.design || {};
-	var i18n    = wcpp.i18n || {};
+	var cfg    = wcpp.config;
+	var design = cfg.design || {};
+	var i18n   = wcpp.i18n || {};
+
+	// Sequential mode: one step at a time instead of all stacked.
+	var isSequential = ( design.step_flow === 'sequential' );
 
 	// phase: 'select' | 'step' | 'review'
 	var state = {
@@ -47,22 +50,19 @@
 			state.variationId = 0;
 			state.variation   = {};
 
-			// Variable product: require a variation to be chosen first.
 			var $vform = $( 'form.variations_form' );
 			if ( $vform.length ) {
 				var vid = parseInt( $vform.find( 'input[name="variation_id"]' ).val(), 10 );
 				if ( !vid ) {
 					notify( wcpp.i18n.selectVariation || 'Please choose the product options (e.g. size) before personalising.' );
-					return; // Don't open the panel.
+					return;
 				}
 				state.variationId = vid;
-				// Collect the chosen attributes (attribute_pa_size=…, attribute_color=…).
 				$vform.find( '[name^="attribute_"]' ).each( function () {
 					var n = $( this ).attr( 'name' );
 					if ( n ) { state.variation[ n ] = $( this ).val(); }
 				} );
 			} else {
-				// Simple product — read variation_id if a plugin set one.
 				var $form = $( 'form.cart' );
 				if ( $form.length ) {
 					var v = parseInt( $form.find( 'input[name="variation_id"]' ).val(), 10 );
@@ -94,7 +94,6 @@
 		$( 'body' ).css( 'overflow', 'hidden' );
 		$close.focus();
 
-		// If only one placement, jump straight into it.
 		if ( cfg.placements.length === 1 ) {
 			startPlacement( cfg.placements[0] );
 		} else {
@@ -131,90 +130,137 @@
 		render();
 	}
 
-	// Re-open a completed placement to change its config. Pulls it out of the
-	// completed list and restores its selections so the customer can edit.
 	function editPlacement( idx ) {
 		var c  = state.completed[ idx ];
 		var pl = null;
 		$.each( cfg.placements, function ( i, p ) { if ( p.id === c.placement_id ) { pl = p; } } );
 		if ( ! pl ) { return; }
 
-		// Rebuild the keyed selections map from the saved (normalised) selections.
 		var selections = {};
 		$.each( c.selections, function ( i, sel ) {
 			if ( sel.type === 'text' ) {
-				selections[ sel.step_id ] = { type: 'text', text: sel.text, name: sel.text, price: parseFloat( sel.price ) || 0 };
+				selections[ sel.step_id ] = {
+					type:        'text',
+					text:        sel.text || sel.value || '',
+					name:        sel.text || sel.value || '',
+					price:       parseFloat( sel.price ) || 0,
+					font_id:     sel.font_id     || '',
+					font_name:   sel.font_name   || '',
+					font_family: sel.font_family || '',
+					color_id:    sel.color_id    || '',
+					color_name:  sel.color_name  || '',
+					color_hex:   sel.color_hex   || '',
+				};
 			} else {
-				selections[ sel.step_id ] = { id: sel.choice_id, name: sel.value, price: parseFloat( sel.price ) || 0, image_url: sel.image_url || '', color: sel.color || '' };
+				selections[ sel.step_id ] = {
+					id:        sel.choice_id,
+					name:      sel.value,
+					price:     parseFloat( sel.price ) || 0,
+					image_url: sel.image_url || '',
+					color:     sel.color     || '',
+				};
 			}
 		} );
 
-		// Keep it in the list; finishPlacement replaces it in place. If the
-		// customer cancels (Back), the original stays untouched.
 		state.current = { placement: pl, stepIndex: 0, selections: selections, editIndex: idx };
 		state.phase   = 'step';
 		render();
 	}
 
+	// Returns true if the step has no valid answer yet.
+	function isStepMissing( step ) {
+		var sel = state.current ? state.current.selections[ step.id ] : undefined;
+		if ( sel === undefined ) { return true; }
+		if ( step.type === 'text' ) {
+			if ( ! sel.text ) { return true; }
+			if ( step.font_choices && step.font_choices.length && ! sel.font_id ) { return true; }
+			if ( step.color_choices && step.color_choices.length && ! sel.color_id ) { return true; }
+		}
+		return false;
+	}
+
 	// ─── Navigation ────────────────────────────────────────────────────────
-	// Footer "Continue": all steps are on screen, so validate them all here.
 	function goNext() {
 		if ( state.phase !== 'step' ) { return; }
-		var steps   = state.current.placement.steps || [];
-		var missing = null;
-		$.each( steps, function ( i, step ) {
-			if ( missing === null && state.current.selections[ step.id ] === undefined ) {
-				missing = step.id;
-			}
-		} );
+		var steps = state.current.placement.steps || [];
 
-		if ( missing !== null ) {
-			// Scroll to the first unanswered step + nudge it.
-			var $sec = $content.find( '.wcpp-step-section[data-step-id="' + missing + '"]' );
-			if ( $sec.length ) {
-				$content.animate( { scrollTop: $content.scrollTop() + $sec.position().top - 20 }, 250 );
-				$sec.addClass( 'wcpp-shake' );
+		if ( isSequential ) {
+			var currentStep = steps[ state.current.stepIndex || 0 ];
+			if ( currentStep && isStepMissing( currentStep ) ) {
+				var $sec = $content.find( '.wcpp-step-section' );
+				$sec.addClass( 'wcpp-shake wcpp-step-section--error' );
 				setTimeout( function () { $sec.removeClass( 'wcpp-shake' ); }, 500 );
+				return;
 			}
-			return;
+			var nextIdx = ( state.current.stepIndex || 0 ) + 1;
+			if ( nextIdx < steps.length ) {
+				state.current.stepIndex = nextIdx;
+				render();
+			} else {
+				finishPlacement();
+			}
+		} else {
+			// Stacked: validate all steps.
+			var missing = null;
+			$.each( steps, function ( i, step ) {
+				if ( missing === null && isStepMissing( step ) ) {
+					missing = step.id;
+				}
+			} );
+
+			if ( missing !== null ) {
+				var $sec2 = $content.find( '.wcpp-step-section[data-step-id="' + missing + '"]' );
+				if ( $sec2.length ) {
+					$content.animate( { scrollTop: $content.scrollTop() + $sec2.position().top - 20 }, 250 );
+					$sec2.addClass( 'wcpp-shake wcpp-step-section--error' );
+					setTimeout( function () { $sec2.removeClass( 'wcpp-shake' ); }, 500 );
+				}
+				return;
+			}
+			finishPlacement();
 		}
-		finishPlacement();
 	}
 
 	function goBack() {
 		if ( state.phase === 'step' ) {
-			if ( state.current.editIndex !== undefined && state.current.editIndex !== null ) {
-				// Cancelling an edit → return to Review (original kept).
+			if ( isSequential && state.current.stepIndex > 0 ) {
+				state.current.stepIndex--;
+				render();
+			} else if ( state.current.editIndex !== undefined && state.current.editIndex !== null ) {
 				state.current = null;
 				state.phase   = 'review';
 				render();
 			} else {
-				// Back from a placement's steps → the placement picker.
 				state.current = null;
 				state.phase   = 'select';
 				render();
 			}
 		} else if ( state.phase === 'select' ) {
-			// From the placement picker, back returns to Review if any exist.
 			if ( state.completed.length ) { state.phase = 'review'; render(); }
 		}
 	}
 
 	function finishPlacement() {
-		var pl  = state.current.placement;
+		var pl   = state.current.placement;
 		var sels = [];
 		$.each( pl.steps || [], function ( i, step ) {
 			var sel = state.current.selections[ step.id ];
 			if ( ! sel ) { return; }
 			if ( sel.type === 'text' ) {
 				sels.push( {
-					step_id:   step.id,
-					step_name: step.name,
-					type:      'text',
-					text:      sel.text,
-					value:     sel.text,
-					price:     parseFloat( sel.price ) || 0,
-					image_url: ''
+					step_id:     step.id,
+					step_name:   step.name,
+					type:        'text',
+					text:        sel.text,
+					value:       sel.text,
+					price:       parseFloat( sel.price ) || 0,
+					image_url:   '',
+					font_id:     sel.font_id     || '',
+					font_name:   sel.font_name   || '',
+					font_family: sel.font_family || '',
+					color_id:    sel.color_id    || '',
+					color_name:  sel.color_name  || '',
+					color_hex:   sel.color_hex   || '',
 				} );
 			} else {
 				sels.push( {
@@ -225,17 +271,16 @@
 					value:     sel.name,
 					price:     parseFloat( sel.price ) || 0,
 					image_url: sel.image_url || '',
-					color:     sel.color || ''
+					color:     sel.color     || '',
 				} );
 			}
 		} );
 		var entry = {
 			placement_id:   pl.id,
 			placement_name: pl.name,
-			selections:     sels
+			selections:     sels,
 		};
 
-		// Editing an existing placement → replace in place; otherwise append.
 		if ( state.current.editIndex !== undefined && state.current.editIndex !== null && state.completed[ state.current.editIndex ] ) {
 			state.completed[ state.current.editIndex ] = entry;
 		} else {
@@ -263,29 +308,33 @@
 		else if ( state.phase === 'review' ) { $title.text( i18n.review || 'Review' ); }
 		else if ( state.current )            { $title.text( state.current.placement.name ); }
 
-		// Back button visibility — shown on steps and the picker (with items).
-		// Review has no back: each placement has its own Edit button instead.
+		// Back button.
 		var showBack = ( state.phase === 'step' )
 			|| ( state.phase === 'select' && state.completed.length );
 		showBack ? $back.show() : $back.hide();
 
 		// Footer buttons.
 		if ( state.phase === 'step' ) {
-			$next.show().text( i18n.continue || i18n.next || 'Continue' );
+			$next.show();
+			if ( isSequential && state.current ) {
+				var steps   = state.current.placement.steps || [];
+				var isLast  = ( ( state.current.stepIndex || 0 ) >= steps.length - 1 );
+				$next.text( isLast ? ( i18n.review || 'Review' ) : ( i18n.next || 'Next' ) );
+			} else {
+				$next.text( i18n.continue || i18n.next || 'Continue' );
+			}
 			$addToBag.hide();
 		} else if ( state.phase === 'review' ) {
 			$next.hide();
 			$addToBag.show().prop( 'disabled', state.completed.length === 0 ).text( i18n.addToBag );
-		} else { // select
+		} else {
 			$next.hide();
 			$addToBag.hide();
 		}
 
-		// Progress (only meaningful inside a placement's steps).
 		updateProgress();
 	}
 
-	// Progress reflects how many of the placement's steps are answered.
 	function updateProgress() {
 		var styleAttr = $panel.attr( 'data-progress-style' );
 		var pct = 0, filled = 0, tot = 0;
@@ -293,7 +342,7 @@
 			var steps = state.current.placement.steps || [];
 			tot = steps.length;
 			$.each( steps, function ( i, s ) {
-				if ( state.current.selections[ s.id ] !== undefined ) { filled++; }
+				if ( ! isStepMissing( s ) ) { filled++; }
 			} );
 			pct = tot ? Math.round( ( filled / tot ) * 100 ) : 0;
 		} else if ( state.phase === 'review' ) {
@@ -322,7 +371,10 @@
 		var avail = availablePlacements();
 		$content.append( $( '<h3 class="wcpp-step__heading"></h3>' ).text( i18n.choosePlacementHeading || 'Where would you like it?' ) );
 
-		var $wrap = $( '<div class="wcpp-select-list"></div>' );
+		var listClass = 'wcpp-select-list';
+		if ( design.placement_layout === 'grid2' ) { listClass += ' wcpp-select-list--grid2'; }
+		var $wrap = $( '<div class="' + listClass + '"></div>' );
+
 		$.each( avail, function ( i, pl ) {
 			var $card = $( '<div class="wcpp-select-card" role="button" tabindex="0"></div>' );
 
@@ -346,22 +398,34 @@
 		$content.append( $wrap );
 	}
 
-	// ─── Phase: step — ALL steps of the placement stacked in one panel ──────
+	// ─── Phase: step ──────────────────────────────────────────────────────
 	function renderAllSteps() {
 		var steps = state.current.placement.steps || [];
-		$.each( steps, function ( i, step ) {
-			$content.append(
-				$( '<div class="wcpp-step-divider"></div>' ).append(
-					$( '<span></span>' ).text( ( i18n.stepN || 'Step %d' ).replace( '%d', i + 1 ) )
-				)
-			);
-			var $section = $( '<div class="wcpp-step-section"></div>' ).attr( 'data-step-id', step.id );
-			renderStepBody( step, $section );
-			$content.append( $section );
-		} );
+
+		if ( isSequential ) {
+			// Show only the current step.
+			var idx  = state.current.stepIndex || 0;
+			var step = steps[ idx ];
+			if ( step ) {
+				var $section = $( '<div class="wcpp-step-section"></div>' ).attr( 'data-step-id', step.id );
+				renderStepBody( step, $section );
+				$content.append( $section );
+			}
+		} else {
+			// Stacked: all steps visible.
+			$.each( steps, function ( i, step ) {
+				$content.append(
+					$( '<div class="wcpp-step-divider"></div>' ).append(
+						$( '<span></span>' ).text( ( i18n.stepN || 'Step %d' ).replace( '%d', i + 1 ) )
+					)
+				);
+				var $section = $( '<div class="wcpp-step-section"></div>' ).attr( 'data-step-id', step.id );
+				renderStepBody( step, $section );
+				$content.append( $section );
+			} );
+		}
 	}
 
-	// Render one step's heading + input into a given container.
 	function renderStepBody( step, $into ) {
 		var currentSel = state.current.selections[ step.id ];
 
@@ -376,9 +440,81 @@
 			if ( maxChars > 0 ) { $head.append( $counter ); }
 			$into.append( $head );
 
+			if ( step.description ) {
+				$into.append( $( '<p class="wcpp-step__desc"></p>' ).text( step.description ) );
+			}
+
+			// Font sub-swatches (optional).
+			if ( step.font_choices && step.font_choices.length ) {
+				var curFontId = ( currentSel && currentSel.font_id ) ? currentSel.font_id : null;
+				$into.append( $( '<h4 class="wcpp-step__subheading"></h4>' ).text( i18n.fontLabel || 'Font' ) );
+				var $fs = $( '<div class="wcpp-font-swatches"></div>' );
+				$.each( step.font_choices, function ( i, fc ) {
+					var $item = $( '<div class="wcpp-font-swatch" role="button" tabindex="0"></div>' );
+					$item.append(
+						$( '<span class="wcpp-font-swatch__preview"></span>' )
+							.text( 'Abc' )
+							.css( 'font-family', fc.family || 'inherit' )
+					);
+					$item.append( $( '<span class="wcpp-font-swatch__name"></span>' ).text( fc.name ) );
+					if ( curFontId === fc.id ) { $item.addClass( 'wcpp-selected' ); }
+					var pickFont = function () {
+						var existing = state.current.selections[ step.id ] || { type: 'text', text: '', price: parseFloat( step.price ) || 0 };
+						existing.font_id     = fc.id;
+						existing.font_name   = fc.name;
+						existing.font_family = fc.family || '';
+						state.current.selections[ step.id ] = existing;
+						$into.removeClass( 'wcpp-step-section--error' );
+						$into.find( '.wcpp-text-input' ).css( 'font-family', fc.family || 'inherit' );
+						$fs.find( '.wcpp-font-swatch' ).removeClass( 'wcpp-selected' );
+						$item.addClass( 'wcpp-selected' );
+						updateProgress();
+					};
+					$item.on( 'click.wcppPanel', pickFont );
+					$item.on( 'keydown.wcppPanel', function ( e ) {
+						if ( e.key === 'Enter' || e.key === ' ' ) { e.preventDefault(); pickFont(); }
+					} );
+					$fs.append( $item );
+				} );
+				$into.append( $fs );
+			}
+
+			// Colour sub-swatches (optional).
+			if ( step.color_choices && step.color_choices.length ) {
+				var curColorId = ( currentSel && currentSel.color_id ) ? currentSel.color_id : null;
+				$into.append( $( '<h4 class="wcpp-step__subheading"></h4>' ).text( i18n.colorLabel || 'Thread Colour' ) );
+				var $cs = $( '<div class="wcpp-swatches wcpp-text-color-swatches"></div>' );
+				$.each( step.color_choices, function ( i, cc ) {
+					var $item2 = $( '<div class="wcpp-swatch" role="button" tabindex="0"></div>' );
+					$item2.append( $( '<span class="wcpp-swatch__dot"></span>' ).css( 'background-color', cc.color || '#000' ) );
+					$item2.append( $( '<span class="wcpp-swatch__name"></span>' ).text( cc.name ) );
+					if ( curColorId === cc.id ) { $item2.addClass( 'wcpp-selected' ); }
+					var pickColor = function () {
+						var existing2 = state.current.selections[ step.id ] || { type: 'text', text: '', price: parseFloat( step.price ) || 0 };
+						existing2.color_id   = cc.id;
+						existing2.color_name = cc.name;
+						existing2.color_hex  = cc.color || '';
+						state.current.selections[ step.id ] = existing2;
+						$into.removeClass( 'wcpp-step-section--error' );
+						$cs.find( '.wcpp-swatch' ).removeClass( 'wcpp-selected' );
+						$item2.addClass( 'wcpp-selected' );
+						updateProgress();
+					};
+					$item2.on( 'click.wcppPanel', pickColor );
+					$item2.on( 'keydown.wcppPanel', function ( e ) {
+						if ( e.key === 'Enter' || e.key === ' ' ) { e.preventDefault(); pickColor(); }
+					} );
+					$cs.append( $item2 );
+				} );
+				$into.append( $cs );
+			}
+
+			// Text input.
+			var initFamily = ( currentSel && currentSel.font_family ) ? currentSel.font_family : 'inherit';
 			var $field = $( '<input type="text" class="wcpp-text-input" />' )
 				.attr( 'placeholder', step.placeholder || '' )
-				.val( curText );
+				.val( curText )
+				.css( 'font-family', initFamily );
 			if ( maxChars > 0 ) { $field.attr( 'maxlength', maxChars ); }
 
 			var updateCounter = function () {
@@ -386,11 +522,23 @@
 			};
 			$field.on( 'input.wcppPanel', function () {
 				var v = $field.val();
+				var existing3 = state.current.selections[ step.id ] || { type: 'text', price: parseFloat( step.price ) || 0 };
+				existing3.type = 'text';
 				if ( v !== '' ) {
-					state.current.selections[ step.id ] = { type: 'text', text: v, name: v, price: parseFloat( step.price ) || 0 };
+					existing3.text = v;
+					existing3.name = v;
+					state.current.selections[ step.id ] = existing3;
 				} else {
-					delete state.current.selections[ step.id ];
+					// Keep font/color selections but clear text.
+					existing3.text = '';
+					existing3.name = '';
+					if ( existing3.font_id || existing3.color_id ) {
+						state.current.selections[ step.id ] = existing3;
+					} else {
+						delete state.current.selections[ step.id ];
+					}
 				}
+				$into.removeClass( 'wcpp-step-section--error' );
 				updateCounter();
 				updateProgress();
 			} );
@@ -404,30 +552,34 @@
 		}
 
 		$into.append( $( '<h3 class="wcpp-step__heading"></h3>' ).text( step.name ) );
+		if ( step.description ) {
+			$into.append( $( '<p class="wcpp-step__desc"></p>' ).text( step.description ) );
+		}
 
 		// ── Colour step (swatches) ──────────────────────────────────────────
 		if ( step.type === 'color' ) {
 			var $sw        = $( '<div class="wcpp-swatches"></div>' );
 			var showPriceC = parseInt( design.show_choice_price, 10 ) !== 0;
 			$.each( step.choices || [], function ( i, choice ) {
-				var $item = $( '<div class="wcpp-swatch" role="button" tabindex="0"></div>' );
-				$item.append( $( '<span class="wcpp-swatch__dot"></span>' ).css( 'background-color', choice.color || '#000' ) );
-				$item.append( $( '<span class="wcpp-swatch__name"></span>' ).text( choice.name ) );
+				var $item3 = $( '<div class="wcpp-swatch" role="button" tabindex="0"></div>' );
+				$item3.append( $( '<span class="wcpp-swatch__dot"></span>' ).css( 'background-color', choice.color || '#000' ) );
+				$item3.append( $( '<span class="wcpp-swatch__name"></span>' ).text( choice.name ) );
 				if ( showPriceC && parseFloat( choice.price ) > 0 ) {
-					$item.append( $( '<span class="wcpp-swatch__price"></span>' ).text( '+' + money( choice.price ) ) );
+					$item3.append( $( '<span class="wcpp-swatch__price"></span>' ).text( '+' + money( choice.price ) ) );
 				}
-				if ( currentSel && currentSel.id === choice.id ) { $item.addClass( 'wcpp-selected' ); }
+				if ( currentSel && currentSel.id === choice.id ) { $item3.addClass( 'wcpp-selected' ); }
 				var pickC = function () {
 					state.current.selections[ step.id ] = choice;
+					$into.removeClass( 'wcpp-step-section--error' );
 					$sw.find( '.wcpp-swatch' ).removeClass( 'wcpp-selected' );
-					$item.addClass( 'wcpp-selected' );
+					$item3.addClass( 'wcpp-selected' );
 					updateProgress();
 				};
-				$item.on( 'click.wcppPanel', pickC );
-				$item.on( 'keydown.wcppPanel', function ( e ) {
+				$item3.on( 'click.wcppPanel', pickC );
+				$item3.on( 'keydown.wcppPanel', function ( e ) {
 					if ( e.key === 'Enter' || e.key === ' ' ) { e.preventDefault(); pickC(); }
 				} );
-				$sw.append( $item );
+				$sw.append( $item3 );
 			} );
 			$into.append( $sw );
 			return;
@@ -455,11 +607,12 @@
 				$lw.append( $( '<span class="wcpp-option-price"></span>' ).text( '+' + money( choice.price ) ) );
 			}
 			$btn.append( $lw );
-			$btn.append( $( '<span class="wcpp-option-tick">✓</span>' ) );
+			$btn.append( $( '<span class="wcpp-option-tick">&#10003;</span>' ) );
 
 			if ( currentSel && currentSel.id === choice.id ) { $btn.addClass( 'wcpp-selected' ); }
 			var pick = function () {
 				state.current.selections[ step.id ] = choice;
+				$into.removeClass( 'wcpp-step-section--error' );
 				$wrap.find( '.wcpp-option-btn' ).removeClass( 'wcpp-selected' );
 				$btn.addClass( 'wcpp-selected' );
 				updateProgress();
@@ -487,12 +640,10 @@
 
 			var $actions = $( '<span class="wcpp-review-actions"></span>' );
 
-			// Edit — re-open this placement's wizard with its current selections.
 			var $edit = $( '<button type="button" class="wcpp-review-edit"></button>' ).text( i18n.edit || 'Edit' );
 			$edit.on( 'click.wcppPanel', function () { editPlacement( idx ); } );
 			$actions.append( $edit );
 
-			// Remove.
 			var $del = $( '<button type="button" class="wcpp-review-remove" title="' + ( i18n.remove || 'Remove' ) + '">&#10005;</button>' );
 			$del.on( 'click.wcppPanel', function () {
 				state.completed.splice( idx, 1 );
@@ -511,10 +662,20 @@
 				if ( sel.image_url ) {
 					$left.append( $( '<img class="wcpp-summary-img" />' ).attr( 'src', sel.image_url ).attr( 'alt', sel.value ) );
 				}
-				$left.append( $( '<div class="wcpp-summary-text"></div>' )
+				var $summaryText = $( '<div class="wcpp-summary-text"></div>' )
 					.append( $( '<span class="wcpp-summary-label"></span>' ).text( sel.step_name ) )
-					.append( $( '<span class="wcpp-summary-value"></span>' ).text( sel.value ) ) );
+					.append( $( '<span class="wcpp-summary-value"></span>' ).text( sel.value || sel.text || '' ) );
+
+				// Show font / colour sub-choice names for text steps.
+				if ( sel.font_name || sel.color_name ) {
+					var subParts = [];
+					if ( sel.font_name )  { subParts.push( sel.font_name ); }
+					if ( sel.color_name ) { subParts.push( sel.color_name ); }
+					$summaryText.append( $( '<span class="wcpp-summary-sub"></span>' ).text( subParts.join( ' · ' ) ) );
+				}
+				$left.append( $summaryText );
 				$li.append( $left );
+
 				if ( parseFloat( sel.price ) > 0 ) {
 					total += parseFloat( sel.price );
 					if ( showPrice ) {
@@ -527,7 +688,6 @@
 			$content.append( $card );
 		} );
 
-		// Flat set fee (once, if anything personalised).
 		var setFee = parseFloat( cfg.set_price || 0 );
 		if ( setFee > 0 && state.completed.length ) {
 			total += setFee;
@@ -538,7 +698,6 @@
 			}
 		}
 
-		// Add-another placement.
 		if ( availablePlacements().length ) {
 			var $add = $( '<button type="button" class="wcpp-add-another"></button>' )
 				.text( '＋ ' + ( i18n.addAnother || 'Add another placement' ) );
@@ -568,7 +727,7 @@
 				variation_id: state.variationId,
 				variation:    JSON.stringify( state.variation || {} ),
 				set_id:       cfg.id,
-				placements:   JSON.stringify( buildPayload() )
+				placements:   JSON.stringify( buildPayload() ),
 			},
 			success: function ( res ) {
 				if ( res.success ) {
@@ -583,18 +742,21 @@
 			error: function () {
 				notify( i18n.errorGeneric || 'Error' );
 				$addToBag.prop( 'disabled', false ).text( i18n.addToBag );
-			}
+			},
 		} );
 	}
 
-	// Only IDs (and typed text) are sent; the server re-derives names + prices.
+	// Only IDs (and typed text) are sent; server re-derives names + prices.
 	function buildPayload() {
 		var out = [];
 		$.each( state.completed, function ( i, c ) {
 			var steps = [];
 			$.each( c.selections, function ( j, sel ) {
 				if ( sel.type === 'text' ) {
-					steps.push( { step_id: sel.step_id, text: sel.text } );
+					var sp = { step_id: sel.step_id, text: sel.text || sel.value || '' };
+					if ( sel.font_id )  { sp.font_id  = sel.font_id; }
+					if ( sel.color_id ) { sp.color_id = sel.color_id; }
+					steps.push( sp );
 				} else {
 					steps.push( { step_id: sel.step_id, choice_id: sel.choice_id } );
 				}
@@ -605,8 +767,6 @@
 	}
 
 	// ─── Utils ────────────────────────────────────────────────────────────────
-	// Branded toast notification (replaces window.alert). Works whether the
-	// panel is open or not (appended to body, slides up from the bottom).
 	function notify( msg ) {
 		$( '.wcpp-toast' ).remove();
 		var $t = $( '<div class="wcpp-toast" role="alert"></div>' );
@@ -618,12 +778,6 @@
 			$t.removeClass( 'wcpp-toast--show' );
 			setTimeout( function () { $t.remove(); }, 350 );
 		}, 4000 );
-	}
-
-	function shake() {
-		var $o = $content.find( '.wcpp-options, .wcpp-text-wrap' );
-		$o.addClass( 'wcpp-shake' );
-		setTimeout( function () { $o.removeClass( 'wcpp-shake' ); }, 500 );
 	}
 
 	function money( amount ) {

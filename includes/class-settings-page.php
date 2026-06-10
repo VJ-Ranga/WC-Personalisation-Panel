@@ -125,12 +125,16 @@ class WCPP_Settings_Page {
 		$font_keys          = array_keys( WCPP_Settings_Store::fonts() );
 		$out['font_family'] = in_array( $d['font_family'] ?? '', $font_keys, true ) ? $d['font_family'] : $dft['font_family'];
 
-		$out['btn_style']      = in_array( $d['btn_style'] ?? '', array( 'outline', 'filled', 'text' ), true ) ? $d['btn_style'] : $dft['btn_style'];
-		$out['btn_animation']  = in_array( $d['btn_animation'] ?? '', array( 'none', 'lift', 'pulse', 'shine', 'scale', 'bounce' ), true ) ? $d['btn_animation'] : $dft['btn_animation'];
-		$out['btn_placement']  = in_array( $d['btn_placement'] ?? '', array( 'before_cart', 'after_cart', 'after_form', 'after_summary', 'shortcode' ), true ) ? $d['btn_placement'] : $dft['btn_placement'];
-		$out['slide_from']     = in_array( $d['slide_from'] ?? '', array( 'right', 'left' ), true ) ? $d['slide_from'] : $dft['slide_from'];
-		$out['progress_style'] = in_array( $d['progress_style'] ?? '', array( 'bar', 'dots', 'text' ), true ) ? $d['progress_style'] : $dft['progress_style'];
-		$out['card_layout']    = in_array( $d['card_layout'] ?? '', array( 'list', 'grid2', 'grid3' ), true ) ? $d['card_layout'] : $dft['card_layout'];
+		$out['btn_style']         = in_array( $d['btn_style'] ?? '', array( 'outline', 'filled', 'text' ), true ) ? $d['btn_style'] : $dft['btn_style'];
+		$out['btn_animation']     = in_array( $d['btn_animation'] ?? '', array( 'none', 'lift', 'pulse', 'shine', 'scale', 'bounce' ), true ) ? $d['btn_animation'] : $dft['btn_animation'];
+		$out['btn_placement']     = in_array( $d['btn_placement'] ?? '', array( 'before_cart', 'after_cart', 'after_form', 'after_summary', 'shortcode' ), true ) ? $d['btn_placement'] : $dft['btn_placement'];
+		$out['slide_from']        = in_array( $d['slide_from'] ?? '', array( 'right', 'left' ), true ) ? $d['slide_from'] : $dft['slide_from'];
+		$out['progress_style']    = in_array( $d['progress_style'] ?? '', array( 'bar', 'dots', 'text' ), true ) ? $d['progress_style'] : $dft['progress_style'];
+		$out['card_layout']       = in_array( $d['card_layout'] ?? '', array( 'list', 'grid2', 'grid3' ), true ) ? $d['card_layout'] : $dft['card_layout'];
+		$out['placement_layout']  = in_array( $d['placement_layout'] ?? '', array( 'list', 'grid2' ), true ) ? $d['placement_layout'] : $dft['placement_layout'];
+		$out['step_flow']         = in_array( $d['step_flow'] ?? '', array( 'stacked', 'sequential' ), true ) ? $d['step_flow'] : $dft['step_flow'];
+		$out['card_img_fit']      = in_array( $d['card_img_fit'] ?? '', array( 'cover', 'contain' ), true ) ? $d['card_img_fit'] : $dft['card_img_fit'];
+		$out['card_img_aspect']   = in_array( $d['card_img_aspect'] ?? '', array( 'square', 'landscape', 'portrait', 'auto' ), true ) ? $d['card_img_aspect'] : $dft['card_img_aspect'];
 
 		$out['btn_radius']      = max( 0, min( 50, intval( $d['btn_radius'] ?? $dft['btn_radius'] ) ) );
 
@@ -493,6 +497,29 @@ class WCPP_Settings_Page {
 			</tr>
 		</table>
 
+		<h2 class="title"><?php esc_html_e( 'Placement Picker &amp; Flow', 'wcpp' ); ?></h2>
+		<p class="description"><?php esc_html_e( 'How placements are shown and how the customer moves through steps.', 'wcpp' ); ?></p>
+		<table class="form-table" role="presentation">
+			<tr>
+				<th><?php esc_html_e( 'Placement picker layout', 'wcpp' ); ?></th>
+				<td>
+					<select name="<?php echo esc_attr( self::name( 'design', 'placement_layout' ) ); ?>">
+						<option value="list" <?php selected( $d['placement_layout'], 'list' ); ?>><?php esc_html_e( 'List — full-width cards stacked', 'wcpp' ); ?></option>
+						<option value="grid2" <?php selected( $d['placement_layout'], 'grid2' ); ?>><?php esc_html_e( 'Grid — 2 cards side by side (Front / Back)', 'wcpp' ); ?></option>
+					</select>
+				</td>
+			</tr>
+			<tr>
+				<th><?php esc_html_e( 'Step display', 'wcpp' ); ?></th>
+				<td>
+					<select name="<?php echo esc_attr( self::name( 'design', 'step_flow' ) ); ?>">
+						<option value="stacked" <?php selected( $d['step_flow'], 'stacked' ); ?>><?php esc_html_e( 'Stacked — all steps visible, scroll through', 'wcpp' ); ?></option>
+						<option value="sequential" <?php selected( $d['step_flow'], 'sequential' ); ?>><?php esc_html_e( 'Sequential — one step at a time, Next advances', 'wcpp' ); ?></option>
+					</select>
+				</td>
+			</tr>
+		</table>
+
 		<h2 class="title"><?php esc_html_e( 'Choice Cards', 'wcpp' ); ?></h2>
 		<table class="form-table" role="presentation">
 			<tr>
@@ -506,6 +533,28 @@ class WCPP_Settings_Page {
 				</td>
 			</tr>
 			<tr>
+				<th><?php esc_html_e( 'Image fit', 'wcpp' ); ?></th>
+				<td>
+					<select name="<?php echo esc_attr( self::name( 'design', 'card_img_fit' ) ); ?>">
+						<option value="cover" <?php selected( $d['card_img_fit'], 'cover' ); ?>><?php esc_html_e( 'Cover — fills the frame (may crop)', 'wcpp' ); ?></option>
+						<option value="contain" <?php selected( $d['card_img_fit'], 'contain' ); ?>><?php esc_html_e( 'Contain — whole image visible, no crop', 'wcpp' ); ?></option>
+					</select>
+					<p class="description"><?php esc_html_e( 'Use Contain for logos or transparent-background images.', 'wcpp' ); ?></p>
+				</td>
+			</tr>
+			<tr>
+				<th><?php esc_html_e( 'Image aspect ratio', 'wcpp' ); ?></th>
+				<td>
+					<select name="<?php echo esc_attr( self::name( 'design', 'card_img_aspect' ) ); ?>">
+						<option value="square" <?php selected( $d['card_img_aspect'], 'square' ); ?>><?php esc_html_e( 'Square (1:1)', 'wcpp' ); ?></option>
+						<option value="landscape" <?php selected( $d['card_img_aspect'], 'landscape' ); ?>><?php esc_html_e( 'Landscape (4:3)', 'wcpp' ); ?></option>
+						<option value="portrait" <?php selected( $d['card_img_aspect'], 'portrait' ); ?>><?php esc_html_e( 'Portrait (3:4)', 'wcpp' ); ?></option>
+						<option value="auto" <?php selected( $d['card_img_aspect'], 'auto' ); ?>><?php esc_html_e( 'Natural — follows the image\'s own ratio', 'wcpp' ); ?></option>
+					</select>
+					<p class="description"><?php esc_html_e( 'Applies to grid layouts. List mode always uses the Image size px setting.', 'wcpp' ); ?></p>
+				</td>
+			</tr>
+			<tr>
 				<th><?php esc_html_e( 'Card border colour', 'wcpp' ); ?></th>
 				<td><?php self::color_field( $d, 'card_border' ); ?></td>
 			</tr>
@@ -515,7 +564,7 @@ class WCPP_Settings_Page {
 			</tr>
 			<tr>
 				<th><?php esc_html_e( 'Image size', 'wcpp' ); ?></th>
-				<td><input type="number" name="<?php echo esc_attr( self::name( 'design', 'card_img_size' ) ); ?>" value="<?php echo esc_attr( $d['card_img_size'] ); ?>" min="0" max="120" class="small-text" /> px <span class="description"><?php esc_html_e( '0 hides images.', 'wcpp' ); ?></span></td>
+				<td><input type="number" name="<?php echo esc_attr( self::name( 'design', 'card_img_size' ) ); ?>" value="<?php echo esc_attr( $d['card_img_size'] ); ?>" min="0" max="120" class="small-text" /> px <span class="description"><?php esc_html_e( '0 hides images. List mode only.', 'wcpp' ); ?></span></td>
 			</tr>
 		</table>
 

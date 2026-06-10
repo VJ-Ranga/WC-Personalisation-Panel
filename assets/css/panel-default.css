@@ -50,6 +50,10 @@
 	--wcpp-footer-btn-radius: 6px;
 	--wcpp-footer-btn-font:   12px;
 	--wcpp-footer-btn-pad-v:  16px;
+
+	/* Choice card image display */
+	--wcpp-img-fit:    cover;
+	--wcpp-img-aspect: 1 / 1;
 }
 
 /* ─── Trigger button ─────────────────────────────────────────────── */
@@ -345,6 +349,18 @@
 
 /* ─── Placement picker (large image cards) ───────────────────────── */
 .wcpp-select-list { display: flex; flex-direction: column; gap: 14px; }
+
+/* Grid2: side-by-side placement picker (e.g. Front / Back) */
+.wcpp-select-list--grid2 {
+	display:               grid;
+	grid-template-columns: 1fr 1fr;
+	gap:                   12px;
+}
+.wcpp-select-list--grid2 .wcpp-select-card__img img {
+	aspect-ratio: 4 / 3;
+	object-fit:   cover;
+}
+.wcpp-select-list--grid2 .wcpp-select-card__name { font-size: 10px; }
 .wcpp-select-card {
 	display:        block;
 	width:          100%;
@@ -461,20 +477,26 @@
 	overflow:      hidden;
 	background:    #f5f3f0;
 }
-/* List mode: small thumbnail, contained (no crop). */
-#wcpp-panel .wcpp-option-img { width: 100% !important; height: 100% !important; object-fit: contain !important; display: block !important; }
+/* List mode: small thumbnail. Fit respects --wcpp-img-fit setting. */
+#wcpp-panel .wcpp-option-img {
+	width:      100% !important;
+	height:     100% !important;
+	object-fit: var(--wcpp-img-fit, cover) !important;
+	display:    block !important;
+}
 
-/* Grid mode: image fills the cell as a FULL square (512×512), never cropped. */
+/* Grid mode: configurable aspect ratio + fit. */
 .wcpp-options--grid2 .wcpp-option-img-wrap,
 .wcpp-options--grid3 .wcpp-option-img-wrap {
-	width:  100%;
-	height: auto;
+	width:        100%;
+	height:       auto;
+	aspect-ratio: var(--wcpp-img-aspect, 1 / 1);
 }
 #wcpp-panel .wcpp-options--grid2 .wcpp-option-img,
 #wcpp-panel .wcpp-options--grid3 .wcpp-option-img {
 	width:      100% !important;
-	height:     auto !important;
-	object-fit: fill !important;
+	height:     100% !important;
+	object-fit: var(--wcpp-img-fit, cover) !important;
 }
 
 /* ─── Toast notification (replaces window.alert) ─────────────────── */
@@ -699,6 +721,96 @@
 	border-radius: 4px;
 	margin-top:    4px;
 	border-left:   2px solid #b3261e;
+}
+
+/* ─── Step description subtitle ─────────────────────────────────── */
+.wcpp-step__desc {
+	margin:         -8px 0 14px;
+	font-size:      13px;
+	color:          var(--wcpp-muted);
+	line-height:    1.5;
+}
+
+/* ─── Step-section inline error badge ───────────────────────────── */
+.wcpp-step-section--error .wcpp-step__heading::after,
+.wcpp-step-section--error .wcpp-step__head .wcpp-step__heading::after {
+	content:        'Required';
+	display:        inline-block;
+	margin-left:    10px;
+	font-size:      10px;
+	font-weight:    700;
+	letter-spacing: .06em;
+	text-transform: uppercase;
+	color:          #b3261e;
+	background:     rgba(179,38,30,.08);
+	padding:        3px 8px;
+	border-radius:  4px;
+	vertical-align: middle;
+}
+
+/* ─── Step sub-section heading (Font / Colour inside text step) ── */
+.wcpp-step__subheading {
+	font-size:      11px;
+	font-weight:    700;
+	letter-spacing: .1em;
+	text-transform: uppercase;
+	color:          var(--wcpp-muted);
+	margin:         18px 0 10px;
+}
+
+/* ─── Font swatches (inside text step) ──────────────────────────── */
+.wcpp-font-swatches {
+	display:   flex;
+	flex-wrap: wrap;
+	gap:       10px;
+	margin-bottom: 14px;
+}
+.wcpp-font-swatch {
+	display:        flex;
+	flex-direction: column;
+	align-items:    center;
+	gap:            6px;
+	cursor:         pointer;
+	padding:        10px 14px;
+	border:         1.5px solid var(--wcpp-card-border);
+	border-radius:  var(--wcpp-panel-radius);
+	background:     #fff;
+	transition:     border-color .2s var(--wcpp-ease), box-shadow .2s var(--wcpp-ease);
+	min-width:      72px;
+	text-align:     center;
+}
+.wcpp-font-swatch:hover {
+	border-color: var(--wcpp-card-selected);
+	box-shadow:   0 4px 14px -8px rgba(0,0,0,.25);
+}
+.wcpp-font-swatch.wcpp-selected {
+	border-color: var(--wcpp-card-selected);
+	box-shadow:   inset 0 0 0 1.5px var(--wcpp-card-selected);
+	background:   color-mix(in srgb, var(--wcpp-card-selected) 7%, #fff);
+}
+.wcpp-font-swatch__preview {
+	font-size:   24px;
+	line-height: 1.2;
+	color:       var(--wcpp-ink);
+}
+.wcpp-font-swatch__name {
+	font-size:      10px;
+	font-weight:    700;
+	letter-spacing: .06em;
+	text-transform: uppercase;
+	color:          var(--wcpp-muted);
+	line-height:    1;
+}
+
+/* ─── Text-input live font preview ──────────────────────────────── */
+.wcpp-text-input { transition: font-family .2s ease, border-color .25s var(--wcpp-ease), box-shadow .25s var(--wcpp-ease); }
+
+/* ─── Review summary sub-line (font / colour names) ─────────────── */
+.wcpp-summary-sub {
+	font-size:   11px;
+	color:       var(--wcpp-muted);
+	font-weight: 500;
+	margin-top:  2px;
 }
 
 /* ─── Mobile ─────────────────────────────────────────────────────── */

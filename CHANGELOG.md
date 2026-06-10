@@ -5,6 +5,30 @@
 
 ---
 
+## [0.7.6] — 2026-06
+### Added
+- **Text-step font & colour sub-pickers** — each Text step in the admin builder
+  can now have an optional list of font options (name + CSS font-family) and
+  colour swatches. The front-end renders clickable font cards (live preview) and
+  colour swatches before the text input. Server validates the chosen font/colour
+  ID against the configured set; font_name, font_family, color_name, color_hex
+  are stored in cart meta and shown in orders/emails.
+- **Inline validation error badge** — when Continue is clicked with an unanswered
+  step, a "Required" badge appears on that step's heading (CSS pseudo-element)
+  instead of a plain scroll-and-shake. Badge clears on interaction.
+- **Placement picker grid2 layout** — new Design setting `placement_layout`
+  (list / grid2). Grid2 renders placements side-by-side (2-column).
+- **Step description field** — each step (any type) now has an optional
+  Description/subtitle that appears below the step heading in the panel.
+- **Card image fit & aspect ratio** — two new Design settings:
+  `card_img_fit` (cover / contain) and `card_img_aspect` (square / landscape /
+  portrait / auto). Driven by CSS custom properties `--wcpp-img-fit` and
+  `--wcpp-img-aspect`; no JS needed.
+- **Sequential step flow** — new Design setting `step_flow` (stacked / sequential).
+  Sequential shows one step at a time with Next/Review navigation; stacked
+  keeps the existing all-steps-visible behaviour. Continue button label changes
+  to "Next" mid-flow and "Review" on the last step.
+
 ## [0.7.5] — 2026-06
 ### Added
 - **4-side padding & margin controls** — trigger button padding and margin now use
