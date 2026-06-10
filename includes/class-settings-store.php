@@ -263,16 +263,33 @@ class WCPP_Settings_Store {
 	}
 
 	/**
+	 * Per-request cache: product_id → set_id.
+	 * Prevents redundant get_posts() calls when the same product is looked up
+	 * multiple times in one request (e.g. button render + panel render + AJAX).
+	 *
+	 * @var array<int,int>
+	 */
+	private static $set_id_cache = array();
+
+	/**
 	 * Resolve which set ID applies to a product.
+	 * Result is cached per-request via a static property.
 	 *
 	 * @param int $product_id Product ID.
 	 * @return int Set post ID, or 0.
 	 */
 	public static function get_set_id( $product_id ) {
+		$product_id = (int) $product_id;
+
+		// Return cached result from earlier in this request.
+		if ( array_key_exists( $product_id, self::$set_id_cache ) ) {
+			return self::$set_id_cache[ $product_id ];
+		}
 
 		// 1. Product-level explicit assignment.
-		$set_id = (int) get_post_meta( (int) $product_id, '_wcpp_set_id', true );
+		$set_id = (int) get_post_meta( $product_id, '_wcpp_set_id', true );
 		if ( $set_id && 'publish' === get_post_status( $set_id ) ) {
+			self::$set_id_cache[ $product_id ] = $set_id;
 			return $set_id;
 		}
 
@@ -290,17 +307,20 @@ class WCPP_Settings_Store {
 
 		foreach ( $sets as $sid ) {
 			if ( get_post_meta( $sid, '_wcpp_apply_all', true ) ) {
+				self::$set_id_cache[ $product_id ] = (int) $sid;
 				return (int) $sid;
 			}
 			$assigned_cats = get_post_meta( $sid, '_wcpp_assigned_categories', true );
 			if ( is_array( $assigned_cats ) && ! empty( $assigned_cats ) ) {
 				$overlap = array_intersect( array_map( 'intval', $assigned_cats ), $product_cat_ids );
 				if ( ! empty( $overlap ) ) {
+					self::$set_id_cache[ $product_id ] = (int) $sid;
 					return (int) $sid;
 				}
 			}
 		}
 
+		self::$set_id_cache[ $product_id ] = 0;
 		return 0;
 	}
 

@@ -36,6 +36,13 @@ class WCPP_Ajax_Handler {
 		// 1. Nonce.
 		check_ajax_referer( 'wcpp_nonce', 'nonce' );
 
+		// Guard: WC cart must be initialised. On most hosts this is guaranteed
+		// by WooCommerce's plugins_loaded boot, but defensive check prevents a
+		// fatal on unusual configurations (object cache cleared mid-request, etc).
+		if ( null === WC()->cart ) {
+			wp_send_json_error( array( 'message' => __( 'Cart is not available. Please reload the page and try again.', 'wcpp' ) ) );
+		}
+
 		// 2. Product.
 		$product_id = isset( $_POST['product_id'] ) ? absint( $_POST['product_id'] ) : 0;
 		if ( ! $product_id || 'product' !== get_post_type( $product_id ) ) {
@@ -165,7 +172,25 @@ class WCPP_Ajax_Handler {
 		);
 
 		if ( ! $cart_item_key ) {
-			wp_send_json_error( array( 'message' => __( 'Could not add to cart. Please try again.', 'wcpp' ) ) );
+			// WooCommerce queues its own notice when add_to_cart fails (e.g. stock
+			// exhausted, purchasable check failed). Surface that message if present
+			// so the customer sees the real reason instead of a generic error.
+			$wc_notices = wc_get_notices( 'error' );
+			$message    = __( 'Could not add to cart. Please try again.', 'wcpp' );
+
+			if ( ! empty( $wc_notices ) ) {
+				$first = reset( $wc_notices );
+				// WC 3.9+ stores notices as arrays with 'notice' key; older as strings.
+				$notice_text = is_array( $first ) && isset( $first['notice'] )
+					? wp_strip_all_tags( $first['notice'] )
+					: ( is_string( $first ) ? wp_strip_all_tags( $first ) : $message );
+				if ( $notice_text ) {
+					$message = $notice_text;
+				}
+			}
+
+			wc_clear_notices();
+			wp_send_json_error( array( 'message' => $message ) );
 		}
 
 		wp_send_json_success(

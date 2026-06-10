@@ -5,6 +5,28 @@
 
 ---
 
+## [0.7.10] — 2026-06
+### Fixed
+- **WooCommerce Blocks compatibility declared** — added `cart_checkout_blocks`
+  feature declaration alongside the existing HPOS declaration. Removes the
+  "plugin not declared compatible" admin warning on WC 7.6+. Price modification
+  and order persistence already work with the WC Blocks Store API.
+- **AJAX cart null-guard** — `handle_add_to_cart()` now checks `WC()->cart`
+  is not null before calling `add_to_cart()`, preventing a fatal error on
+  unusual server configurations where the WC cart object is unavailable.
+- **Add-to-cart error messages** — when `add_to_cart()` returns false (e.g.
+  product out of stock, not purchasable), the real WooCommerce error notice is
+  now surfaced to the customer instead of a generic "try again" message.
+- **Price calculator guard** — `apply_prices()` now uses `wp_doing_ajax()` and
+  `REST_REQUEST` instead of `defined('DOING_AJAX')` so the idempotent price
+  logic is correctly applied during WC Blocks REST API checkout calls.
+- **Per-request set lookup cache** — `get_set_id()` now caches its result in a
+  static property for the lifetime of the request, eliminating repeated
+  `get_posts()` calls when the same product is resolved multiple times in one
+  page load (product page + panel + mini-cart).
+- **Uninstall transient cleanup** — `uninstall.php` now deletes the
+  `wcpp_gh_release_cache` transient when the plugin is removed.
+
 ## [0.7.9] — 2026-06
 ### Added
 - **GitHub releases update checker** — the plugin now polls the GitHub Releases

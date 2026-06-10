@@ -40,5 +40,9 @@ delete_option( 'wcpp_global_settings' ); // legacy.
 // 3. Delete per-product assignment meta.
 delete_post_meta_by_key( '_wcpp_set_id' );
 
+// 4. Always delete transients (plugin cache) — regardless of the remove_on_uninstall setting.
+delete_transient( 'wcpp_gh_release_cache' );
+delete_site_transient( 'update_plugins' ); // force a fresh WP update check.
+
 // Note: order item meta (_wcpp_*) is intentionally KEPT — it is part of the
 // permanent order record and must never be destroyed.

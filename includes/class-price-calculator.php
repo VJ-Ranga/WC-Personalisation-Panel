@@ -29,13 +29,19 @@ class WCPP_Price_Calculator {
 	 *
 	 * Idempotent: the price is always set to (base_price + add-on), where
 	 * base_price was captured once at add-to-cart time. This means the hook
-	 * firing multiple times in one request never compounds the price.
+	 * firing multiple times in one request (cart page, checkout page, payment
+	 * processing, WC Blocks Store API) never compounds the price.
+	 *
+	 * Guard: skip when viewing admin pages that are not AJAX or REST.
+	 * — is_admin() + no AJAX + no REST = genuine WP admin screen (order editor,
+	 *   settings page, etc.) where we must not touch prices.
+	 * — AJAX / REST / front-end = price must be applied.
 	 *
 	 * @param WC_Cart $cart Cart object.
 	 * @return void
 	 */
 	public static function apply_prices( $cart ) {
-		if ( is_admin() && ! defined( 'DOING_AJAX' ) ) {
+		if ( is_admin() && ! wp_doing_ajax() && ! ( defined( 'REST_REQUEST' ) && REST_REQUEST ) ) {
 			return;
 		}
 		if ( ! $cart || ! is_a( $cart, 'WC_Cart' ) ) {

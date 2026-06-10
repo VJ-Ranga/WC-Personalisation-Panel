@@ -184,7 +184,7 @@ State: `state.completed[]` + `state.current`.
 Assets are enqueued with `?ver=WCPP_VERSION`. **If you change any CSS or JS,
 you MUST bump `WCPP_VERSION`** (in `wc-personalisation-panel.php`, both the
 header and the constant) — otherwise browsers/optimizers keep serving the old
-cached file and your change appears to "do nothing". Current: 0.7.9.
+cached file and your change appears to "do nothing". Current: 0.7.10.
 
 ---
 
@@ -215,4 +215,4 @@ cached file and your change appears to "do nothing". Current: 0.7.9.
 - Don't add `Co-Authored-By` trailers to commits.
 
 ---
-*v0.7.9 · placements model · choice/colour/text steps · sequential/stacked wizard · grid2 placement picker · step descriptions · card image fit/aspect · inline validation badge · variable-product aware · step locking (stacked) · placement collapse · GitHub update checker.*
+*v0.7.10 · placements model · choice/colour/text steps · sequential/stacked wizard · grid2 placement picker · step descriptions · card image fit/aspect · inline validation badge · variable-product aware · step locking (stacked) · placement collapse · GitHub update checker · WC Blocks declared · cart null-guard · WC notice surfacing · idempotent price calculator · per-request set ID cache.*
