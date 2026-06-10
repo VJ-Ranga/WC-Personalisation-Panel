@@ -1,5 +1,5 @@
 # CLAUDE.md — WC Personalisation Panel
-> Master reference. Read this FIRST. Reflects the real built plugin (v0.7.11).
+> Master reference. Read this FIRST. Reflects the real built plugin (v0.7.13).
 > If you are a fresh/local AI continuing this work: this file + FOLDER-STRUCTURE.md
 > tell you everything. Detail: BUILD-PLAN.md · Decisions: DECISIONS.md.
 
@@ -202,7 +202,7 @@ State: `state.completed[]` + `state.current`.
 Assets are enqueued with `?ver=WCPP_VERSION`. **If you change any CSS or JS,
 you MUST bump `WCPP_VERSION`** (in `wc-personalisation-panel.php`, both the
 header and the constant) — otherwise browsers/optimizers keep serving the old
-cached file and your change appears to "do nothing". Current: 0.7.12.
+cached file and your change appears to "do nothing". Current: 0.7.13.
 
 ---
 
@@ -233,4 +233,4 @@ cached file and your change appears to "do nothing". Current: 0.7.12.
 - Don't add `Co-Authored-By` trailers to commits.
 
 ---
-*v0.7.12 · placements model · choice/colour/text steps · sequential/stacked wizard · grid2 placement picker · step descriptions · card image fit/aspect · inline validation badge · variable-product aware · step locking (stacked) · placement collapse · GitHub update checker · cart null-guard · WC notice surfacing · idempotent price calculator · per-request set ID cache · security: set-ID bypass · variation-ID ownership · step dedup · WC Blocks compat · WC add-to-cart validation filter · CPT manage_woocommerce gate · negative price clamp.*
+*v0.7.13 · placements model · choice/colour/text steps · sequential/stacked wizard · grid2 placement picker · step descriptions · card image fit/aspect · inline validation badge · variable-product aware · step locking (stacked) · placement collapse · GitHub update checker · cart null-guard · WC notice surfacing · idempotent price calculator · per-request set ID cache · security: set-ID bypass · variation-ID ownership · step dedup · WC Blocks compat · WC add-to-cart validation filter · CPT manage_woocommerce gate · negative price clamp.*

@@ -64,10 +64,29 @@ class WCPP_Personalisation_CPT {
 				'has_archive'       => false,
 				'rewrite'           => false,
 				'query_var'         => false,
-				// Restrict to shop managers + admins using WooCommerce's own
-				// product capability scheme (safe — WC relies on these itself).
-				'capability_type'   => 'product',
-				'map_meta_cap'      => true,
+				// Map every CPT access point directly to manage_woocommerce so the
+				// capability boundary matches the menu gate exactly. Using
+				// capability_type => 'product' left a gap: custom roles with
+				// edit_products but not manage_woocommerce could reach the edit
+				// screen via direct URL even though the menu wasn't shown to them.
+				'capability_type'   => 'wcpp_personalisation',
+				'capabilities'      => array(
+					'edit_post'              => 'manage_woocommerce',
+					'read_post'              => 'manage_woocommerce',
+					'delete_post'            => 'manage_woocommerce',
+					'edit_posts'             => 'manage_woocommerce',
+					'edit_others_posts'      => 'manage_woocommerce',
+					'publish_posts'          => 'manage_woocommerce',
+					'read_private_posts'     => 'manage_woocommerce',
+					'delete_posts'           => 'manage_woocommerce',
+					'delete_private_posts'   => 'manage_woocommerce',
+					'delete_published_posts' => 'manage_woocommerce',
+					'delete_others_posts'    => 'manage_woocommerce',
+					'edit_private_posts'     => 'manage_woocommerce',
+					'edit_published_posts'   => 'manage_woocommerce',
+					'create_posts'           => 'manage_woocommerce',
+				),
+				'map_meta_cap'      => false,
 			)
 		);
 	}

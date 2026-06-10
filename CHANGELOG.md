@@ -5,6 +5,21 @@
 
 ---
 
+## [0.7.13] — 2026-06
+### Security / Fixed
+- **[Medium] CPT capability mismatch fully resolved** — the CPT now uses
+  `capability_type => 'wcpp_personalisation'` with an explicit `capabilities`
+  array mapping every access point (`edit_post`, `read_post`, `delete_post`,
+  `publish_posts`, `create_posts`, etc.) directly to `manage_woocommerce`, and
+  `map_meta_cap => false`. Previously `capability_type => 'product'` allowed
+  custom roles with `edit_products` but not `manage_woocommerce` to reach the
+  set editor via a direct URL even though the menu was not visible to them.
+- **[Low] Plain-text email output fixed** — `woocommerce_order_item_meta_end`
+  now registered with 4 accepted args (was 3). The 4th arg `$plain_text` passed
+  by WooCommerce is checked at the top of `display_meta_end()`; if true the
+  method returns early, preventing HTML markup from appearing as raw text in
+  plain-text order emails.
+
 ## [0.7.12] — 2026-06
 ### Security / Fixed
 - **[Medium] WooCommerce add-to-cart validation filter now applied** — the AJAX

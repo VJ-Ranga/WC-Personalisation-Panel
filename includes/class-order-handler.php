@@ -22,8 +22,10 @@ class WCPP_Order_Handler {
 	public static function init() {
 		add_action( 'woocommerce_checkout_create_order_line_item', array( __CLASS__, 'persist_to_order' ), 10, 4 );
 
-		// Customer-facing order page + emails. Hook passes ( $item_id, $item, $order ).
-		add_action( 'woocommerce_order_item_meta_end', array( __CLASS__, 'display_meta_end' ), 10, 3 );
+		// Customer-facing order page + emails.
+		// WooCommerce passes 4 args: ( $item_id, $item, $order, $plain_text ).
+		// We register 4 so display_meta_end() can skip HTML in plain-text emails.
+		add_action( 'woocommerce_order_item_meta_end', array( __CLASS__, 'display_meta_end' ), 10, 4 );
 
 		// Admin order editor: hide the raw _wcpp_* meta and render a clean block.
 		add_filter( 'woocommerce_hidden_order_itemmeta', array( __CLASS__, 'hide_admin_meta' ) );
@@ -46,12 +48,16 @@ class WCPP_Order_Handler {
 	/**
 	 * Customer order page + emails. Hook: woocommerce_order_item_meta_end.
 	 *
-	 * @param int           $item_id Item ID.
-	 * @param WC_Order_Item $item    Order item.
-	 * @param WC_Order      $order   Order.
+	 * @param int           $item_id    Item ID.
+	 * @param WC_Order_Item $item       Order item.
+	 * @param WC_Order      $order      Order.
+	 * @param bool          $plain_text True when rendering a plain-text email.
 	 * @return void
 	 */
-	public static function display_meta_end( $item_id, $item, $order ) {
+	public static function display_meta_end( $item_id, $item, $order, $plain_text = false ) {
+		if ( $plain_text ) {
+			return;
+		}
 		if ( is_object( $item ) && method_exists( $item, 'get_meta' ) ) {
 			self::render_personalisation( $item );
 		}
