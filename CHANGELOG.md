@@ -5,6 +5,30 @@
 
 ---
 
+## [0.7.11] — 2026-06
+### Security
+- **[High] Set-ID bypass closed** — `handle_add_to_cart()` previously accepted
+  any posted `set_id` and loaded it directly via `get_set()`, bypassing the
+  product-eligibility check entirely. The set is now always resolved from the
+  product via `get($product_id)` (the authoritative path). A posted `set_id` is
+  only accepted as a cross-check; a mismatch is rejected. This also restores the
+  global `is_enabled()` master-switch gate which the old path skipped.
+- **[High] `variation_id` not validated against the product** — a tampered
+  `variation_id` from another product could capture a lower base price. The
+  variation is now verified to exist, be a `variation` type, and have
+  `get_parent_id() === $product_id`. Mismatches are rejected before the price
+  is captured.
+- **[Medium] Duplicate step submission bypass closed** — the step-count check
+  (`count($selections) >= count($placement['steps'])`) could be satisfied by
+  posting the same `step_id` twice, skipping other required steps. A
+  `$seen_steps` guard now rejects any duplicate step ID — mirrors the existing
+  `$seen_placements` guard already in place.
+- **[Low] WC Blocks compatibility declaration corrected** — `cart_checkout_blocks`
+  changed from `true` → `false`. Pricing and order persistence work correctly
+  with Blocks, but cart-item personalisation display requires a Store API
+  extension that is not yet implemented. Declaring `false` prevents a misleading
+  green tick in WP Admin while the display gap exists.
+
 ## [0.7.10] — 2026-06
 ### Fixed
 - **WooCommerce Blocks compatibility declared** — added `cart_checkout_blocks`

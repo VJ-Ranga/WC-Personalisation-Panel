@@ -3,7 +3,7 @@
  * Plugin Name:       WC Personalisation Panel
  * Plugin URI:        https://github.com/VJ-Ranga/WC-Personalisation-Panel
  * Description:       Adds a slide-in personalisation drawer to WooCommerce product pages. Customers choose location, type, text, font and colour before adding to cart.
- * Version:           0.7.10
+ * Version:           0.7.11
  * Author:            Cloudycode
  * Author URI:        https://github.com/VJ-Ranga
  * License:           GPL-2.0-or-later
@@ -24,7 +24,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Plugin constants.
-define( 'WCPP_VERSION',  '0.7.10' );
+define( 'WCPP_VERSION',  '0.7.11' );
 define( 'WCPP_PATH',     plugin_dir_path( __FILE__ ) );
 define( 'WCPP_URL',      plugin_dir_url( __FILE__ ) );
 define( 'WCPP_BASENAME', plugin_basename( __FILE__ ) );
@@ -126,20 +126,18 @@ function wcpp_notice_missing_woocommerce() {
  * and the Cart/Checkout Blocks feature (WC 7.6+).
  *
  * HPOS: orders stored in custom tables, not post meta.
- * cart_checkout_blocks: the plugin works with the block-based cart/checkout.
- *   Price modification via woocommerce_before_calculate_totals and order
- *   persistence via woocommerce_checkout_create_order_line_item are both
- *   compatible with the Store API used by WC Blocks.
- *   Note: cart item display (woocommerce_get_item_data) shows in the classic
- *   cart — WC Blocks uses the Store API for item display which requires a
- *   separate Store API extension if that context ever needs it.
+ * cart_checkout_blocks: declared false — pricing and order persistence work
+ *   correctly with WC Blocks, but cart-item personalisation display requires
+ *   a Store API extension (woocommerce_get_item_data is classic-cart only).
+ *   Declaring false prevents WooCommerce from showing a false-positive green
+ *   tick while the display gap exists.
  *
  * @return void
  */
 function wcpp_declare_hpos_compatibility() {
 	if ( class_exists( '\Automattic\WooCommerce\Utilities\FeaturesUtil' ) ) {
 		\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables',  __FILE__, true );
-		\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'cart_checkout_blocks', __FILE__, true );
+		\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'cart_checkout_blocks', __FILE__, false );
 	}
 }
 

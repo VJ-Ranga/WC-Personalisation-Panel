@@ -1,5 +1,5 @@
 # CLAUDE.md — WC Personalisation Panel
-> Master reference. Read this FIRST. Reflects the real built plugin (v0.7.8).
+> Master reference. Read this FIRST. Reflects the real built plugin (v0.7.11).
 > If you are a fresh/local AI continuing this work: this file + FOLDER-STRUCTURE.md
 > tell you everything. Detail: BUILD-PLAN.md · Decisions: DECISIONS.md.
 
@@ -171,6 +171,16 @@ State: `state.completed[]` + `state.current`.
 - AJAX: `check_ajax_referer('wcpp_nonce')` + both `wp_ajax_`/`wp_ajax_nopriv_`.
 - Every save: nonce + capability + autosave guard.
 - Server trusts ONLY IDs; names/prices re-derived from the set.
+- **Set resolved from product, never from posted set_id** — `handle_add_to_cart()`
+  always calls `WCPP_Settings_Store::get($product_id)` first (authoritative path).
+  A posted `set_id` is only accepted as a cross-check; a mismatch is rejected.
+  This also ensures `is_enabled()` is always checked.
+- **variation_id validated against the product** — the variation must exist, be
+  type `variation`, and `get_parent_id() === $product_id`. Guards the base-price
+  capture used by the price calculator.
+- **Step deduplication** — `$seen_steps` guard prevents duplicate `step_id`
+  submissions that would satisfy the count check while skipping required steps.
+  Mirrors the existing `$seen_placements` guard.
 - Text: `sanitize_text_field` + `max_chars` capped server-side.
 - Colour: `sanitize_hex_color` on save.
 - Prices recomputed server-side, applied in `before_calculate_totals`.
@@ -184,7 +194,7 @@ State: `state.completed[]` + `state.current`.
 Assets are enqueued with `?ver=WCPP_VERSION`. **If you change any CSS or JS,
 you MUST bump `WCPP_VERSION`** (in `wc-personalisation-panel.php`, both the
 header and the constant) — otherwise browsers/optimizers keep serving the old
-cached file and your change appears to "do nothing". Current: 0.7.10.
+cached file and your change appears to "do nothing". Current: 0.7.11.
 
 ---
 
@@ -215,4 +225,4 @@ cached file and your change appears to "do nothing". Current: 0.7.10.
 - Don't add `Co-Authored-By` trailers to commits.
 
 ---
-*v0.7.10 · placements model · choice/colour/text steps · sequential/stacked wizard · grid2 placement picker · step descriptions · card image fit/aspect · inline validation badge · variable-product aware · step locking (stacked) · placement collapse · GitHub update checker · WC Blocks declared · cart null-guard · WC notice surfacing · idempotent price calculator · per-request set ID cache.*
+*v0.7.11 · placements model · choice/colour/text steps · sequential/stacked wizard · grid2 placement picker · step descriptions · card image fit/aspect · inline validation badge · variable-product aware · step locking (stacked) · placement collapse · GitHub update checker · cart null-guard · WC notice surfacing · idempotent price calculator · per-request set ID cache · security: set-ID bypass fix · variation-ID ownership check · step dedup guard · WC Blocks compat corrected.*

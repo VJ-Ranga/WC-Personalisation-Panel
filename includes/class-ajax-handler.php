@@ -49,14 +49,18 @@ class WCPP_Ajax_Handler {
 			wp_send_json_error( array( 'message' => __( 'Invalid product.', 'wcpp' ) ) );
 		}
 
-		// 3. Resolve the set.
-		$set_id = isset( $_POST['set_id'] ) ? absint( $_POST['set_id'] ) : 0;
-		$set    = $set_id ? WCPP_Settings_Store::get_set( $set_id ) : null;
-		if ( ! $set ) {
-			$set = WCPP_Settings_Store::get( $product_id );
-		}
+		// 3. Resolve the authorised set for this product — always derived from the
+		// product server-side, never from the raw posted set_id alone. A posted
+		// set_id is accepted only as a confirmation that the client held the right
+		// set; if it doesn't match the authorised one the request is rejected.
+		$set = WCPP_Settings_Store::get( $product_id );
 		if ( ! $set ) {
 			wp_send_json_error( array( 'message' => __( 'Personalisation is not available for this product.', 'wcpp' ) ) );
+		}
+
+		$posted_set_id = isset( $_POST['set_id'] ) ? absint( $_POST['set_id'] ) : 0;
+		if ( $posted_set_id && $posted_set_id !== $set['id'] ) {
+			wp_send_json_error( array( 'message' => __( 'Invalid personalisation set for this product.', 'wcpp' ) ) );
 		}
 
 		// 4. Decode placements payload. Only IDs are trusted.
@@ -88,9 +92,17 @@ class WCPP_Ajax_Handler {
 
 			$posted_steps = isset( $pl_in['steps'] ) && is_array( $pl_in['steps'] ) ? $pl_in['steps'] : array();
 			$selections   = array();
+			$seen_steps   = array();
 
 			foreach ( $posted_steps as $st_in ) {
 				$step_id = isset( $st_in['step_id'] ) ? sanitize_text_field( $st_in['step_id'] ) : '';
+
+				// Each step only once — prevents padding the count by duplicating a step
+				// to satisfy the count($selections) >= count($placement['steps']) check below.
+				if ( isset( $seen_steps[ $step_id ] ) ) {
+					wp_send_json_error( array( 'message' => __( 'Each step can only be submitted once.', 'wcpp' ) ) );
+				}
+				$seen_steps[ $step_id ] = true;
 
 				// Pass through the raw choice_id / text; resolve_step validates + sanitises.
 				$payload = array(
@@ -128,6 +140,17 @@ class WCPP_Ajax_Handler {
 		$product      = wc_get_product( $product_id );
 		if ( $product && $product->is_type( 'variable' ) && ! $variation_id ) {
 			wp_send_json_error( array( 'message' => __( 'Please select a product option (e.g. size) before personalising.', 'wcpp' ) ) );
+		}
+
+		// Validate the posted variation actually belongs to THIS product. The
+		// base price is captured from the variation below and then force-applied
+		// by the price calculator, so a mismatched (cheaper) variation_id from
+		// another product would let a customer underpay. Reject any such mismatch.
+		if ( $variation_id ) {
+			$variation = wc_get_product( $variation_id );
+			if ( ! $variation || ! $variation->is_type( 'variation' ) || (int) $variation->get_parent_id() !== $product_id ) {
+				wp_send_json_error( array( 'message' => __( 'Invalid product option selected.', 'wcpp' ) ) );
+			}
 		}
 
 		// Variation attributes (attribute_pa_size => …). Sanitised per value.
