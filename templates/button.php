@@ -2,7 +2,8 @@
 /**
  * Template: trigger button. Override: yourtheme/wcpp/button.php
  *
- * Vars: $button_text, $btn_style ('outline'|'filled'|'text'), $full_width (bool), $config.
+ * Vars: $button_text, $btn_style ('outline'|'filled'|'text'), $full_width (bool),
+ *       $btn_animation ('lift'|'pulse'|'shine'|'scale'|'bounce'|'none'), $config.
  *
  * @package WC_Personalisation_Panel
  */
@@ -11,7 +12,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-$classes   = array( 'wcpp-button', 'wcpp-button--' . esc_attr( $btn_style ) );
+$anim_slug = isset( $btn_animation ) ? $btn_animation : 'lift';
+$classes   = array( 'wcpp-button', 'wcpp-button--' . esc_attr( $btn_style ), 'wcpp-button--anim-' . esc_attr( $anim_slug ) );
 if ( ! empty( $full_width ) ) {
 	$classes[] = 'wcpp-button--full';
 }

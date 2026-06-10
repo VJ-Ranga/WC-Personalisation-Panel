@@ -52,6 +52,7 @@ class WCPP_Settings_Store {
 			'btn_radius'        => 6,
 			'btn_placement'     => 'after_form', // before_cart | after_cart | after_form | after_summary | shortcode.
 			'btn_full_width'    => 1,
+			'btn_animation'     => 'lift',  // none | lift | pulse | shine | scale | bounce
 
 			// Drawer / panel.
 			'slide_from'        => 'right',     // right | left.

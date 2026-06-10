@@ -202,10 +202,11 @@ class WCPP_Cart_Handler {
 			return;
 		}
 
-		$design      = $config['design'];
-		$button_text = ! empty( $config['button_text'] ) ? $config['button_text'] : $design['btn_text'];
-		$btn_style   = $design['btn_style'];
-		$full_width  = ! empty( $design['btn_full_width'] );
+		$design        = $config['design'];
+		$button_text   = ! empty( $config['button_text'] ) ? $config['button_text'] : $design['btn_text'];
+		$btn_style     = $design['btn_style'];
+		$full_width    = ! empty( $design['btn_full_width'] );
+		$btn_animation = isset( $design['btn_animation'] ) ? $design['btn_animation'] : 'lift';
 
 		$template = wcpp_locate_template( 'button.php' );
 		if ( $template ) {

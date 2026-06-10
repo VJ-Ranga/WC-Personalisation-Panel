@@ -73,6 +73,57 @@
 	width:          auto;
 }
 
+/* ─── Trigger button — animation variants ────────────────────────── */
+/* Base: position + overflow needed for the shine pseudo-element. */
+.wcpp-button { position: relative; }
+
+/* none: strip all motion */
+.wcpp-button--anim-none { transition: none !important; }
+.wcpp-button--anim-none:hover,
+.wcpp-button--anim-none:active { transform: none !important; box-shadow: none !important; }
+
+/* lift (default): upward float handled by existing outline/filled hover rules.
+   This class is intentionally empty — the base hover styles do the work. */
+
+/* pulse: idle glowing ring that expands and fades */
+@keyframes wcppBtnPulse {
+	0%   { box-shadow: 0 0 0 0   var(--wcpp-btn-bg); }
+	70%  { box-shadow: 0 0 0 14px rgba(0,0,0,0); }
+	100% { box-shadow: 0 0 0 0   rgba(0,0,0,0); }
+}
+.wcpp-button--anim-pulse { animation: wcppBtnPulse 2.2s ease-out infinite; }
+.wcpp-button--anim-pulse:hover { animation: none; transform: translateY(-1px); box-shadow: 0 10px 24px -8px var(--wcpp-btn-bg); }
+
+/* shine: diagonal light sweep across the button face on hover */
+.wcpp-button--anim-shine { overflow: hidden; }
+.wcpp-button--anim-shine::after {
+	content:        '';
+	position:       absolute;
+	top:            0;
+	left:           -130%;
+	width:          65%;
+	height:         100%;
+	background:     linear-gradient(105deg, transparent, rgba(255,255,255,0.30), transparent);
+	transition:     left .55s ease;
+	pointer-events: none;
+}
+.wcpp-button--anim-shine:hover::after { left: 160%; }
+
+/* scale: smooth grow on hover */
+.wcpp-button--anim-scale:hover  { transform: scale(1.04); box-shadow: 0 8px 22px -8px var(--wcpp-btn-bg); }
+.wcpp-button--anim-scale:active { transform: scale(0.97); box-shadow: none; }
+
+/* bounce: springy upward bounce on hover */
+@keyframes wcppBtnBounce {
+	0%, 100% { transform: translateY(0); }
+	28%       { transform: translateY(-6px); }
+	50%       { transform: translateY(-2px); }
+	70%       { transform: translateY(-5px); }
+	88%       { transform: translateY(-1px); }
+}
+.wcpp-button--anim-bounce:hover  { animation: wcppBtnBounce .6s ease; box-shadow: 0 8px 22px -8px var(--wcpp-btn-bg); }
+.wcpp-button--anim-bounce:active { animation: none; transform: translateY(1px); }
+
 /* ─── Overlay ────────────────────────────────────────────────────── */
 .wcpp-overlay {
 	position:                fixed;

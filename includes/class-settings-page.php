@@ -126,6 +126,7 @@ class WCPP_Settings_Page {
 		$out['font_family'] = in_array( $d['font_family'] ?? '', $font_keys, true ) ? $d['font_family'] : $dft['font_family'];
 
 		$out['btn_style']      = in_array( $d['btn_style'] ?? '', array( 'outline', 'filled', 'text' ), true ) ? $d['btn_style'] : $dft['btn_style'];
+		$out['btn_animation']  = in_array( $d['btn_animation'] ?? '', array( 'none', 'lift', 'pulse', 'shine', 'scale', 'bounce' ), true ) ? $d['btn_animation'] : $dft['btn_animation'];
 		$out['btn_placement']  = in_array( $d['btn_placement'] ?? '', array( 'before_cart', 'after_cart', 'after_form', 'after_summary', 'shortcode' ), true ) ? $d['btn_placement'] : $dft['btn_placement'];
 		$out['slide_from']     = in_array( $d['slide_from'] ?? '', array( 'right', 'left' ), true ) ? $d['slide_from'] : $dft['slide_from'];
 		$out['progress_style'] = in_array( $d['progress_style'] ?? '', array( 'bar', 'dots', 'text' ), true ) ? $d['progress_style'] : $dft['progress_style'];
@@ -252,6 +253,19 @@ class WCPP_Settings_Page {
 						<option value="outline" <?php selected( $d['btn_style'], 'outline' ); ?>><?php esc_html_e( 'Outline', 'wcpp' ); ?></option>
 						<option value="filled" <?php selected( $d['btn_style'], 'filled' ); ?>><?php esc_html_e( 'Filled', 'wcpp' ); ?></option>
 						<option value="text" <?php selected( $d['btn_style'], 'text' ); ?>><?php esc_html_e( 'Text only', 'wcpp' ); ?></option>
+					</select>
+				</td>
+			</tr>
+			<tr>
+				<th><?php esc_html_e( 'Button animation', 'wcpp' ); ?></th>
+				<td>
+					<select name="<?php echo esc_attr( self::name( 'design', 'btn_animation' ) ); ?>">
+						<option value="lift"   <?php selected( $d['btn_animation'], 'lift' ); ?>><?php esc_html_e( 'Lift — subtle upward float on hover (default)', 'wcpp' ); ?></option>
+						<option value="pulse"  <?php selected( $d['btn_animation'], 'pulse' ); ?>><?php esc_html_e( 'Pulse — glowing ring, draws attention to the CTA', 'wcpp' ); ?></option>
+						<option value="shine"  <?php selected( $d['btn_animation'], 'shine' ); ?>><?php esc_html_e( 'Shine — light sweep across on hover', 'wcpp' ); ?></option>
+						<option value="scale"  <?php selected( $d['btn_animation'], 'scale' ); ?>><?php esc_html_e( 'Scale — smooth grow on hover', 'wcpp' ); ?></option>
+						<option value="bounce" <?php selected( $d['btn_animation'], 'bounce' ); ?>><?php esc_html_e( 'Bounce — playful springy hover', 'wcpp' ); ?></option>
+						<option value="none"   <?php selected( $d['btn_animation'], 'none' ); ?>><?php esc_html_e( 'None — no animation', 'wcpp' ); ?></option>
 					</select>
 				</td>
 			</tr>

@@ -5,6 +5,12 @@
 
 ---
 
+## [0.7.2] — 2026-06
+### Added
+- **Button animation setting** — choose from 6 styles in Panel Settings → Design:
+  Lift (default), Pulse (idle glow ring), Shine (hover sweep), Scale (hover grow),
+  Bounce (springy hover), None. Rendered as a `wcpp-button--anim-*` CSS class.
+
 ## [0.7.1] — 2026-06
 ### Changed
 - **Non-returnable default**: changed to OFF — the notice is opt-in (admin must
