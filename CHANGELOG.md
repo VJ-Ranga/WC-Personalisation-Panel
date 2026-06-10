@@ -5,6 +5,40 @@
 
 ---
 
+## [0.7.18] — 2026-06
+### Fixed
+- **Panel review total is now quantity-aware** — the drawer's "Personalisation total"
+  preview now multiplies per-choice and text-step prices by the selected product
+  quantity, and applies the flat set fee according to the configured fee type
+  (`one-time` vs `per-item`). This aligns the pre-add-to-cart preview with the
+  server/cart pricing logic for qty 2+ orders.
+- **Front-end fee-type awareness** — the panel now receives `set_price_type` in
+  its localised config so the review summary can preview one-time vs per-item
+  fees correctly before the item is added to cart.
+- **Quantity refreshed at submit time** — the panel now re-reads the WooCommerce
+  quantity field just before submitting, keeping the AJAX request aligned with
+  the current quantity if it changed after the panel was first opened.
+
+## [0.7.18] — 2026-06
+### Changed
+- **Simplified pricing model** — the "Pricing mode" toggle now applies to the
+  **total personalisation cost** (flat fee + all per-choice prices combined),
+  not just the flat fee. Previously choice prices always multiplied by quantity
+  regardless of the toggle, which was inconsistent.
+  - **One-time** — the entire personalisation add-on is charged once per
+    personalisation, regardless of how many units are ordered. Flat fee + every
+    choice price is amortised across the quantity so the line total is always
+    `base × qty + full personalisation cost`.
+  - **Per quantity** — the entire personalisation add-on multiplies by the
+    quantity ordered (flat fee + choice prices) × qty.
+  The price calculator no longer splits `set_fee` from `choice_addon` — it
+  works on `total_price` directly, making the logic significantly simpler.
+- **Drawer review total updated** — choice prices in the review screen now
+  correctly show × qty for "Per quantity" mode or × 1 for "One-time" mode,
+  matching the actual charge.
+- Admin label updated from "Fee type / Per-item fee" to "Pricing mode /
+  One-time / Per quantity" for clarity.
+
 ## [0.7.17] — 2026-06
 ### Added
 - **Set priority / conflict resolution** — each set now has a **Priority** field

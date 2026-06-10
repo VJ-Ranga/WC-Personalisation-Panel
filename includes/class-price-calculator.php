@@ -32,13 +32,13 @@ class WCPP_Price_Calculator {
 	 * firing multiple times in one request (cart page, checkout page, payment
 	 * processing, WC Blocks Store API) never compounds the price.
 	 *
-	 * set_fee handling depends on the fee_type stored in wcpp_data:
-	 *   'line' (one-time fee) — the fee is amortised across the cart item
-	 *     quantity so WC's (unit_price × qty) arithmetic yields:
-	 *     base×qty + choice_addon×qty + set_fee (collected once per line).
-	 *   'unit' (per-item fee) — the fee is part of the unit price and
-	 *     naturally multiplies: base×qty + (choice_addon + set_fee)×qty.
-	 * Choice prices are always per-unit and multiply with qty in both modes.
+	 * fee_type controls whether the ENTIRE personalisation add-on (flat fee +
+	 * all choice prices combined as total_price) is one-time or per-quantity:
+	 *   'line' (one-time) — total_price charged once regardless of qty.
+	 *     Amortised across units: unit_extra = total_price / qty, so the line
+	 *     total is always base×qty + total_price.
+	 *   'unit' (per-quantity) — total_price is a per-unit charge and
+	 *     multiplies naturally: line total = (base + total_price) × qty.
 	 *
 	 * Guard: skip when viewing admin pages that are not AJAX or REST.
 	 * — is_admin() + no AJAX + no REST = genuine WP admin screen (order editor,
@@ -72,17 +72,18 @@ class WCPP_Price_Calculator {
 				? (float) $data['base_price']
 				: (float) $cart_item['data']->get_price();
 
-			$set_fee      = isset( $data['set_fee'] )   ? (float) $data['set_fee']   : 0.0;
-			$fee_type     = isset( $data['fee_type'] )  ? $data['fee_type']          : 'line';
-			$choice_addon = max( 0.0, $total_price - $set_fee );
-			$qty          = isset( $cart_item['quantity'] ) ? max( 1, (int) $cart_item['quantity'] ) : 1;
+			$fee_type = isset( $data['fee_type'] ) ? $data['fee_type'] : 'line';
+			$qty      = isset( $cart_item['quantity'] ) ? max( 1, (int) $cart_item['quantity'] ) : 1;
 
 			if ( 'unit' === $fee_type ) {
-				// Per-item: set_fee multiplies with quantity (total_price is already correct).
+				// Per-quantity: entire personalisation cost (flat fee + all choice
+				// prices) is a per-unit charge — multiplies naturally with qty.
 				$unit_extra = $total_price;
 			} else {
-				// One-time: amortise set_fee across units; choice_addon still multiplies.
-				$unit_extra = $choice_addon + ( $set_fee / $qty );
+				// One-time: entire personalisation cost is charged once regardless
+				// of quantity. Amortise across units so WC's (unit × qty) gives the
+				// right line total.
+				$unit_extra = $total_price / $qty;
 			}
 
 			$cart_item['data']->set_price( $base + $unit_extra );

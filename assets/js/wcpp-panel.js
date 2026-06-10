@@ -126,6 +126,11 @@
 		return $.grep( cfg.placements, function ( pl ) { return ! usedIds[ pl.id ]; } );
 	}
 
+	function getCurrentQuantity() {
+		var qty = parseInt( $( 'form.cart input.qty' ).val(), 10 ) || state.quantity || 1;
+		return qty > 0 ? qty : 1;
+	}
+
 	function startPlacement( pl ) {
 		state.current = { placement: pl, stepIndex: 0, selections: {} };
 		state.phase   = 'step';
@@ -517,6 +522,9 @@
 
 		var total     = 0;
 		var showPrice = parseInt( design.show_choice_price, 10 ) !== 0;
+		var qty       = getCurrentQuantity();
+		var feeType   = ( cfg.set_price_type === 'unit' ) ? 'unit' : 'line';
+		state.quantity = qty;
 
 		$.each( state.completed, function ( idx, c ) {
 			var $card = $( '<div class="wcpp-review-placement"></div>' );
@@ -552,9 +560,11 @@
 				$li.append( $left );
 
 				if ( parseFloat( sel.price ) > 0 ) {
-					total += parseFloat( sel.price );
+					// Per-quantity: choice price × qty. One-time: choice price × 1.
+					var displayPrice = parseFloat( sel.price ) * ( feeType === 'unit' ? qty : 1 );
+					total += displayPrice;
 					if ( showPrice ) {
-						$li.append( $( '<span class="wcpp-summary-price"></span>' ).text( '+' + money( sel.price ) ) );
+						$li.append( $( '<span class="wcpp-summary-price"></span>' ).text( '+' + money( displayPrice ) ) );
 					}
 				}
 				$ul.append( $li );
@@ -565,11 +575,12 @@
 
 		var setFee = parseFloat( cfg.set_price || 0 );
 		if ( setFee > 0 && state.completed.length ) {
-			total += setFee;
+			var displaySetFee = ( feeType === 'unit' ) ? ( setFee * qty ) : setFee;
+			total += displaySetFee;
 			if ( showPrice ) {
 				$content.append( $( '<div class="wcpp-summary-fee-line"></div>' )
 					.append( $( '<span></span>' ).text( i18n.feeLabel || 'Personalisation fee' ) )
-					.append( $( '<strong></strong>' ).text( '+' + money( setFee ) ) ) );
+					.append( $( '<strong></strong>' ).text( '+' + money( displaySetFee ) ) ) );
 			}
 		}
 
@@ -590,6 +601,7 @@
 	// ─── Submit ──────────────────────────────────────────────────────────────
 	function submitToCart() {
 		if ( !state.completed.length ) { return; }
+		state.quantity = getCurrentQuantity();
 		$addToBag.prop( 'disabled', true ).text( i18n.adding || 'Adding…' );
 
 		$.ajax( {
