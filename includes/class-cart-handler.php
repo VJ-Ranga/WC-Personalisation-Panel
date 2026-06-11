@@ -201,6 +201,8 @@ class WCPP_Cart_Handler {
 					'addToBag'     => $design['addbag_text'],
 					'close'        => esc_html__( 'Close', 'wcpp' ),
 					'confirmClose' => esc_html__( 'You\'ll lose your personalisation choices. Are you sure?', 'wcpp' ),
+					'confirmYes'   => esc_html__( 'Yes, close', 'wcpp' ),
+					'confirmNo'    => esc_html__( 'Keep editing', 'wcpp' ),
 					'errorGeneric' => esc_html__( 'Something went wrong. Please try again.', 'wcpp' ),
 					'summary'      => esc_html__( 'Review & Add', 'wcpp' ),
 					'yourChoices'  => esc_html__( 'Your Choices', 'wcpp' ),

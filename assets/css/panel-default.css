@@ -922,3 +922,65 @@
 	letter-spacing: .02em;
 }
 .wcpp-success__btn--ghost:hover { color: var(--wcpp-heading); }
+
+/* ─── Confirm dialog (replaces browser confirm()) ──────────────── */
+.wcpp-confirm {
+	position:   absolute;
+	inset:      0;
+	background: rgba(0,0,0,.45);
+	display:    flex;
+	align-items: center;
+	justify-content: center;
+	z-index:    10;
+	border-radius: var(--wcpp-panel-radius);
+}
+
+.wcpp-confirm__box {
+	background:    var(--wcpp-bg);
+	border-radius: var(--wcpp-panel-radius);
+	padding:       28px 24px 22px;
+	margin:        0 20px;
+	width:         100%;
+	max-width:     320px;
+	box-shadow:    0 8px 32px rgba(0,0,0,.18);
+	text-align:    center;
+}
+
+.wcpp-confirm__msg {
+	font-size:   14px;
+	line-height: 1.5;
+	color:       var(--wcpp-heading);
+	margin:      0 0 22px;
+}
+
+.wcpp-confirm__btns {
+	display:        flex;
+	flex-direction: column;
+	gap:            10px;
+}
+
+.wcpp-confirm__btn {
+	width:         100%;
+	padding:       12px 16px;
+	border-radius: var(--wcpp-panel-radius);
+	font-size:     13px;
+	font-weight:   700;
+	letter-spacing: .04em;
+	cursor:        pointer;
+	font-family:   inherit;
+	transition:    opacity .2s var(--wcpp-ease);
+	border:        none;
+}
+
+.wcpp-confirm__btn--yes {
+	background: #e53e3e;
+	color:      #fff;
+}
+.wcpp-confirm__btn--yes:hover { opacity: .85; }
+
+.wcpp-confirm__btn--no {
+	background: transparent;
+	color:      var(--wcpp-meta);
+	border:     1.5px solid var(--wcpp-hair);
+}
+.wcpp-confirm__btn--no:hover { color: var(--wcpp-heading); }

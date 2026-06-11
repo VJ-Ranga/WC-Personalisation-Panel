@@ -109,10 +109,43 @@
 
 	function maybeClose() {
 		if ( state.completed.length || state.current ) {
-			if ( window.confirm( i18n.confirmClose ) ) { closePanel(); }
+			showConfirm( i18n.confirmClose || 'You\'ll lose your personalisation choices. Are you sure?', function () {
+				closePanel();
+				resetState();
+			} );
 		} else {
 			closePanel();
 		}
+	}
+
+	function showConfirm( message, onConfirm ) {
+		$( '.wcpp-confirm' ).remove();
+
+		var $overlay = $( '<div class="wcpp-confirm"></div>' );
+		var $box     = $( '<div class="wcpp-confirm__box"></div>' );
+
+		$box.append( $( '<p class="wcpp-confirm__msg"></p>' ).text( message ) );
+
+		var $btns = $( '<div class="wcpp-confirm__btns"></div>' );
+
+		var $yes = $( '<button type="button" class="wcpp-confirm__btn wcpp-confirm__btn--yes"></button>' )
+			.text( i18n.confirmYes || 'Yes, close' )
+			.on( 'click.wcppPanel', function () {
+				$overlay.remove();
+				onConfirm();
+			} );
+
+		var $no = $( '<button type="button" class="wcpp-confirm__btn wcpp-confirm__btn--no"></button>' )
+			.text( i18n.confirmNo || 'Keep editing' )
+			.on( 'click.wcppPanel', function () {
+				$overlay.remove();
+			} );
+
+		$btns.append( $yes ).append( $no );
+		$box.append( $btns );
+		$overlay.append( $box );
+		$panel.append( $overlay );
+		$no.focus();
 	}
 
 	// ─── Helpers ───────────────────────────────────────────────────────────
