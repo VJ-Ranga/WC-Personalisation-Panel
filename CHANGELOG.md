@@ -5,6 +5,19 @@
 
 ---
 
+## [0.7.21] — 2026-06
+### Fixed
+- **Success screen crash** — `$footer` variable was undefined, causing the
+  success screen to silently fail and leave the button stuck on "Adding...".
+  Fixed to use the correct `.wcpp-panel__footer` selector.
+
+## [0.7.20] — 2026-06
+### Changed
+- **No more auto-redirect after add to cart** — instead of redirecting to the
+  cart page, the panel now stays open and shows a success screen with three
+  action buttons: **Checkout** (primary), **View Cart**, and **Continue Shopping**.
+  Mini-cart still refreshes in the background so the cart count stays up to date.
+
 ## [0.7.19] — 2026-06
 ### Fixed
 - **Add-to-cart redirect filter receives the product object** — the
