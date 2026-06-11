@@ -936,7 +936,7 @@
 }
 
 .wcpp-confirm__box {
-	background:    var(--wcpp-bg);
+	background:    var(--wcpp-panel-bg, #fff);
 	border-radius: var(--wcpp-panel-radius);
 	padding:       28px 24px 22px;
 	margin:        0 20px;
