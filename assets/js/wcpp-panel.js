@@ -96,12 +96,8 @@
 		$( 'body' ).css( 'overflow', 'hidden' );
 		$close.focus();
 
-		if ( cfg.placements.length === 1 ) {
-			startPlacement( cfg.placements[0] );
-		} else {
-			state.phase = 'select';
-			render();
-		}
+		state.phase = 'select';
+		render();
 	}
 
 	function closePanel() {
