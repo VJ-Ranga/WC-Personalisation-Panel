@@ -119,4 +119,4 @@ GPL-2.0-or-later — see [LICENSE](https://www.gnu.org/licenses/gpl-2.0.html)
 
 ---
 
-*Built by [Cloudycode](https://github.com/VJ-Ranga)*
+*Built by [VJRanga](https://github.com/VJ-Ranga)*
