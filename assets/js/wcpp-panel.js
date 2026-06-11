@@ -699,6 +699,12 @@
 			$( '<p class="wcpp-success__msg"></p>' ).text( i18n.addedToBag || 'Added to your bag!' )
 		);
 
+		if ( i18n.successNote ) {
+			$wrap.append(
+				$( '<p class="wcpp-success__note"></p>' ).text( i18n.successNote )
+			);
+		}
+
 		var $btns = $( '<div class="wcpp-success__btns"></div>' );
 
 		if ( checkoutUrl ) {

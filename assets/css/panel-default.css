@@ -984,3 +984,14 @@
 	border:     1.5px solid var(--wcpp-hair);
 }
 .wcpp-confirm__btn--no:hover { color: var(--wcpp-heading); }
+
+.wcpp-success__note {
+	font-size:     12px;
+	color:         var(--wcpp-muted);
+	margin:        -14px 0 22px;
+	line-height:   1.5;
+	padding:       10px 14px;
+	background:    color-mix(in srgb, var(--wcpp-card-selected) 8%, transparent);
+	border-radius: var(--wcpp-panel-radius);
+	border-left:   3px solid var(--wcpp-card-selected);
+}

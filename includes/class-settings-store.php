@@ -132,6 +132,7 @@ class WCPP_Settings_Store {
 			'non_returnable'      => 0,
 			'elementor'           => 0,
 			'remove_on_uninstall' => 0,
+			'success_message'     => '',
 		);
 	}
 

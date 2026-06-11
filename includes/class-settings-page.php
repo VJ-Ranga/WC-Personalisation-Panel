@@ -95,6 +95,7 @@ class WCPP_Settings_Page {
 			foreach ( array( 'enabled', 'non_returnable', 'elementor', 'remove_on_uninstall' ) as $key ) {
 				$out['behaviour'][ $key ] = empty( $b[ $key ] ) ? 0 : 1;
 			}
+			$out['behaviour']['success_message'] = isset( $b['success_message'] ) ? sanitize_text_field( $b['success_message'] ) : '';
 			return $out;
 		}
 
@@ -644,6 +645,13 @@ class WCPP_Settings_Page {
 			<tr>
 				<th><?php esc_html_e( 'Remove data on uninstall', 'wcpp' ); ?></th>
 				<td><label><input type="checkbox" name="<?php echo esc_attr( self::name( 'behaviour', 'remove_on_uninstall' ) ); ?>" value="1" <?php checked( $b['remove_on_uninstall'] ); ?> /> <?php esc_html_e( 'Delete all sets and settings when the plugin is deleted', 'wcpp' ); ?></label></td>
+			</tr>
+			<tr>
+				<th><?php esc_html_e( 'Success message', 'wcpp' ); ?></th>
+				<td>
+					<input type="text" class="regular-text" name="<?php echo esc_attr( self::name( 'behaviour', 'success_message' ) ); ?>" value="<?php echo esc_attr( $b['success_message'] ?? '' ); ?>" placeholder="<?php esc_attr_e( 'e.g. Artwork preview sent via WhatsApp before production', 'wcpp' ); ?>" />
+					<p class="description"><?php esc_html_e( 'Optional note shown on the success screen after adding to cart. Leave blank to hide.', 'wcpp' ); ?></p>
+				</td>
 			</tr>
 		</table>
 		<?php

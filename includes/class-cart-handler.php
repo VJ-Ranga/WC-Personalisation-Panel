@@ -150,6 +150,8 @@ class WCPP_Cart_Handler {
 
 		$design = $config['design'];
 
+		$behaviour = WCPP_Settings_Store::get_behaviour();
+
 		wp_enqueue_style( 'wcpp-panel', WCPP_URL . 'assets/css/panel-default.css', array(), WCPP_VERSION );
 
 		// Google font import — only for whitelisted fonts, URL fully escaped.
@@ -224,6 +226,7 @@ class WCPP_Cart_Handler {
 					'viewCart'         => esc_html__( 'View Cart', 'wcpp' ),
 					'checkout'         => esc_html__( 'Checkout', 'wcpp' ),
 					'continueShopping' => esc_html__( 'Continue Shopping', 'wcpp' ),
+					'successNote'      => sanitize_text_field( $behaviour['success_message'] ?? '' ),
 				),
 			)
 		);
