@@ -25,5 +25,13 @@ desktop.ini
 # Logs
 *.log
 
-# Local WP-CLI override (keep wp-cli.yml but not local overrides)
+# Internal dev / AI files — not for public repo
+CLAUDE.md
+wp-cli.yml
 wp-cli.local.yml
+LOCAL-DEV.md
+BUILD-PLAN.md
+DECISIONS.md
+FOLDER-STRUCTURE.md
+PUBLISHING.md
+phpcs.xml
