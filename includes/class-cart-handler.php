@@ -217,7 +217,11 @@ class WCPP_Cart_Handler {
 					'remove'       => esc_html__( 'Remove', 'wcpp' ),
 					'continue'     => esc_html__( 'Continue', 'wcpp' ),
 					'stepN'        => esc_html__( 'Step %d', 'wcpp' ),
-					'selectVariation' => esc_html__( 'Please choose the product options (e.g. size) before personalising.', 'wcpp' ),
+					'selectVariation'  => esc_html__( 'Please choose the product options (e.g. size) before personalising.', 'wcpp' ),
+					'addedToBag'       => esc_html__( 'Added to your bag!', 'wcpp' ),
+					'viewCart'         => esc_html__( 'View Cart', 'wcpp' ),
+					'checkout'         => esc_html__( 'Checkout', 'wcpp' ),
+					'continueShopping' => esc_html__( 'Continue Shopping', 'wcpp' ),
 				),
 			)
 		);

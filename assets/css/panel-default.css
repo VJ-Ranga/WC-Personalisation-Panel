@@ -846,3 +846,79 @@
 	transition:     opacity .25s var(--wcpp-ease), background .25s var(--wcpp-ease);
 }
 .wcpp-add-another:hover { opacity: 1; background: color-mix(in srgb, var(--wcpp-card-selected) 6%, transparent); }
+
+/* ─── Success screen ────────────────────────────────────────────── */
+.wcpp-success {
+	display:         flex;
+	align-items:     center;
+	justify-content: center;
+	min-height:      300px;
+}
+
+.wcpp-success__wrap {
+	text-align: center;
+	padding:    32px 24px;
+	width:      100%;
+}
+
+.wcpp-success__icon {
+	width:           56px;
+	height:          56px;
+	border-radius:   50%;
+	background:      var(--wcpp-card-selected);
+	color:           #fff;
+	font-size:       26px;
+	line-height:     56px;
+	margin:          0 auto 18px;
+}
+
+.wcpp-success__msg {
+	font-size:     16px;
+	font-weight:   600;
+	color:         var(--wcpp-heading);
+	margin:        0 0 28px;
+	letter-spacing: .01em;
+}
+
+.wcpp-success__btns {
+	display:        flex;
+	flex-direction: column;
+	gap:            10px;
+}
+
+.wcpp-success__btn {
+	display:       block;
+	width:         100%;
+	padding:       13px 20px;
+	border-radius: var(--wcpp-panel-radius);
+	font-size:     13px;
+	font-weight:   700;
+	letter-spacing: .05em;
+	text-align:    center;
+	cursor:        pointer;
+	text-decoration: none;
+	transition:    opacity .2s var(--wcpp-ease), background .2s var(--wcpp-ease);
+	border:        none;
+	font-family:   inherit;
+}
+
+.wcpp-success__btn--primary {
+	background: var(--wcpp-card-selected);
+	color:      #fff;
+}
+.wcpp-success__btn--primary:hover { opacity: .88; color: #fff; }
+
+.wcpp-success__btn--secondary {
+	background: transparent;
+	color:      var(--wcpp-card-selected);
+	border:     1.5px solid var(--wcpp-card-selected);
+}
+.wcpp-success__btn--secondary:hover { background: color-mix(in srgb, var(--wcpp-card-selected) 8%, transparent); }
+
+.wcpp-success__btn--ghost {
+	background: transparent;
+	color:      var(--wcpp-meta);
+	font-weight: 500;
+	letter-spacing: .02em;
+}
+.wcpp-success__btn--ghost:hover { color: var(--wcpp-heading); }

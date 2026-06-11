@@ -619,9 +619,11 @@
 			},
 			success: function ( res ) {
 				if ( res.success ) {
-					closePanel();
 					$( document.body ).trigger( 'wc_fragment_refresh' );
-					if ( res.data && res.data.cart_url ) { window.location.href = res.data.cart_url; }
+					renderSuccess(
+						( res.data && res.data.cart_url )     ? res.data.cart_url     : '',
+						( res.data && res.data.checkout_url ) ? res.data.checkout_url : ''
+					);
 				} else {
 					notify( ( res.data && res.data.message ) ? res.data.message : ( i18n.errorGeneric || 'Error' ) );
 					$addToBag.prop( 'disabled', false ).text( i18n.addToBag );
@@ -649,6 +651,70 @@
 			out.push( { placement_id: c.placement_id, steps: steps } );
 		} );
 		return out;
+	}
+
+	// ─── Success screen ───────────────────────────────────────────────────────
+	function renderSuccess( cartUrl, checkoutUrl ) {
+		$panel.find( '.wcpp-header__back' ).hide();
+		$panel.find( '.wcpp-header__close' ).off( 'click.wcppPanel' ).on( 'click.wcppPanel', function () {
+			closePanel();
+			resetState();
+		});
+
+		$footer.empty().hide();
+
+		$content.empty().addClass( 'wcpp-success' );
+
+		var $wrap = $( '<div class="wcpp-success__wrap"></div>' );
+
+		$wrap.append(
+			$( '<div class="wcpp-success__icon">&#10003;</div>' )
+		);
+		$wrap.append(
+			$( '<p class="wcpp-success__msg"></p>' ).text( i18n.addedToBag || 'Added to your bag!' )
+		);
+
+		var $btns = $( '<div class="wcpp-success__btns"></div>' );
+
+		if ( checkoutUrl ) {
+			$btns.append(
+				$( '<a class="wcpp-success__btn wcpp-success__btn--primary"></a>' )
+					.attr( 'href', checkoutUrl )
+					.text( i18n.checkout || 'Checkout' )
+			);
+		}
+
+		if ( cartUrl ) {
+			$btns.append(
+				$( '<a class="wcpp-success__btn wcpp-success__btn--secondary"></a>' )
+					.attr( 'href', cartUrl )
+					.text( i18n.viewCart || 'View Cart' )
+			);
+		}
+
+		$btns.append(
+			$( '<button type="button" class="wcpp-success__btn wcpp-success__btn--ghost"></button>' )
+				.text( i18n.continueShopping || 'Continue Shopping' )
+				.on( 'click.wcppPanel', function () {
+					closePanel();
+					resetState();
+				})
+		);
+
+		$wrap.append( $btns );
+		$content.append( $wrap );
+	}
+
+	function resetState() {
+		state.completed  = [];
+		state.current    = null;
+		state.phase      = 'select';
+		state.editing    = null;
+		state.quantity   = 1;
+		state.variationId = 0;
+		state.variation  = {};
+		$content.removeClass( 'wcpp-success' );
+		$footer.show();
 	}
 
 	// ─── Utils ────────────────────────────────────────────────────────────────
