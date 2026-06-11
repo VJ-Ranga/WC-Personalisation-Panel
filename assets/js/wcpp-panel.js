@@ -655,13 +655,9 @@
 
 	// ─── Success screen ───────────────────────────────────────────────────────
 	function renderSuccess( cartUrl, checkoutUrl ) {
-		$panel.find( '.wcpp-header__back' ).hide();
-		$panel.find( '.wcpp-header__close' ).off( 'click.wcppPanel' ).on( 'click.wcppPanel', function () {
-			closePanel();
-			resetState();
-		});
-
-		$footer.empty().hide();
+		$back.hide();
+		$panel.find( '.wcpp-panel__footer' ).hide();
+		$addToBag.prop( 'disabled', false );
 
 		$content.empty().addClass( 'wcpp-success' );
 
@@ -706,15 +702,14 @@
 	}
 
 	function resetState() {
-		state.completed  = [];
-		state.current    = null;
-		state.phase      = 'select';
-		state.editing    = null;
-		state.quantity   = 1;
+		state.completed   = [];
+		state.current     = null;
+		state.phase       = 'select';
+		state.quantity    = 1;
 		state.variationId = 0;
-		state.variation  = {};
+		state.variation   = {};
 		$content.removeClass( 'wcpp-success' );
-		$footer.show();
+		$panel.find( '.wcpp-panel__footer' ).show();
 	}
 
 	// ─── Utils ────────────────────────────────────────────────────────────────
