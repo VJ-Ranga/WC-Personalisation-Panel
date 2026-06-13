@@ -607,9 +607,12 @@
 			var displaySetFee = ( feeType === 'unit' ) ? ( setFee * qty ) : setFee;
 			total += displaySetFee;
 			if ( showPrice ) {
+				var feeAmountText = ( feeType === 'unit' && qty > 1 )
+					? ( qty + ' × ' + money( setFee ) )
+					: ( '+' + money( displaySetFee ) );
 				$content.append( $( '<div class="wcpp-summary-fee-line"></div>' )
 					.append( $( '<span></span>' ).text( i18n.feeLabel || 'Personalisation fee' ) )
-					.append( $( '<strong></strong>' ).text( '+' + money( displaySetFee ) ) ) );
+					.append( $( '<strong></strong>' ).text( feeAmountText ) ) );
 			}
 		}
 

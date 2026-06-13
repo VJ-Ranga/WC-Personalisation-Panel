@@ -815,10 +815,11 @@
 }
 .wcpp-review-edit:hover { background: color-mix(in srgb, var(--wcpp-card-selected) 10%, transparent); }
 .wcpp-review-remove {
-	background: none; border: none; cursor: pointer;
+	background: none; border: none; cursor: pointer; padding: 0;
 	color: var(--wcpp-muted); font-size: 13px; line-height: 1;
-	width: 28px; height: 28px; border-radius: 50%;
+	width: 28px; height: 28px; min-width: 28px; border-radius: 50%;
 	display: flex; align-items: center; justify-content: center;
+	flex-shrink: 0;
 	transition: background .2s, color .2s;
 }
 .wcpp-review-remove:hover { background: rgba(179,38,30,.08); color: #b3261e; }
@@ -903,17 +904,17 @@
 }
 
 .wcpp-success__btn--primary {
-	background: var(--wcpp-card-selected);
+	background: var(--wcpp-footer-btn);
 	color:      #fff;
 }
 .wcpp-success__btn--primary:hover { opacity: .88; color: #fff; }
 
 .wcpp-success__btn--secondary {
 	background: transparent;
-	color:      var(--wcpp-card-selected);
-	border:     1.5px solid var(--wcpp-card-selected);
+	color:      var(--wcpp-footer-btn);
+	border:     1.5px solid var(--wcpp-footer-btn);
 }
-.wcpp-success__btn--secondary:hover { background: color-mix(in srgb, var(--wcpp-card-selected) 8%, transparent); }
+.wcpp-success__btn--secondary:hover { background: color-mix(in srgb, var(--wcpp-footer-btn) 8%, transparent); }
 
 .wcpp-success__btn--ghost {
 	background: transparent;

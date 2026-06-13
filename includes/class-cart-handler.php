@@ -329,7 +329,8 @@ class WCPP_Cart_Handler {
 					$line = esc_html( $sel['step_name'] ) . ': ' . esc_html( $val );
 					$price = isset( $sel['price'] ) ? (float) $sel['price'] : (float) ( $sel['choice_price'] ?? 0 );
 					if ( $price > 0 ) {
-						$line .= ' (+' . wp_strip_all_tags( wc_price( $price ) ) . ')';
+						// wc_price() returns HTML; value field is rendered in HTML context by WC.
+						$line .= ' (+' . wc_price( $price ) . ')';
 					}
 					$lines[] = $line;
 				}
@@ -370,6 +371,7 @@ class WCPP_Cart_Handler {
  * @return string|false
  */
 function wcpp_locate_template( $template_name ) {
+	$template_name = basename( $template_name ); // Prevent path traversal.
 	$theme_file  = get_stylesheet_directory() . '/wcpp/' . $template_name;
 	$plugin_file = WCPP_PATH . 'templates/' . $template_name;
 
