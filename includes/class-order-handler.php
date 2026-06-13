@@ -58,10 +58,12 @@ class WCPP_Order_Handler {
 	 * @return void
 	 */
 	public static function display_meta_end( $item_id, $item, $order, $plain_text = false ) {
-		if ( $plain_text ) {
+		if ( ! is_object( $item ) || ! method_exists( $item, 'get_meta' ) ) {
 			return;
 		}
-		if ( is_object( $item ) && method_exists( $item, 'get_meta' ) ) {
+		if ( $plain_text ) {
+			self::render_personalisation_plain( $item );
+		} else {
 			self::render_personalisation( $item );
 		}
 	}
@@ -243,5 +245,56 @@ class WCPP_Order_Handler {
 		}
 
 		echo '</div>';
+	}
+
+	/**
+	 * Plain-text version of the personalisation block (used in plain-text emails).
+	 *
+	 * @param WC_Order_Item $item Order item.
+	 * @return void
+	 */
+	private static function render_personalisation_plain( $item ) {
+		$json = $item->get_meta( '_wcpp_placements' );
+		if ( empty( $json ) ) {
+			return;
+		}
+
+		$placements = json_decode( $json, true );
+		if ( ! is_array( $placements ) || empty( $placements ) ) {
+			return;
+		}
+
+		echo "\n" . esc_html__( 'Personalisation', 'wcpp' ) . "\n";
+		echo str_repeat( '-', 30 ) . "\n"; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+
+		foreach ( $placements as $placement ) {
+			echo esc_html( $placement['placement_name'] ?? '' ) . ":\n"; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			foreach ( ( $placement['selections'] ?? array() ) as $sel ) {
+				$val   = $sel['value'] ?? ( $sel['choice_name'] ?? '' );
+				$price = (float) ( $sel['price'] ?? $sel['choice_price'] ?? 0 );
+				$line  = '  ' . ( $sel['step_name'] ?? '' ) . ': ' . $val;
+				if ( $price > 0 ) {
+					// Decode HTML entities (e.g. &pound; → £) so they appear as
+					// real characters, not entity strings, in plain-text email.
+					$price_text = html_entity_decode( wp_strip_all_tags( wc_price( $price ) ), ENT_QUOTES | ENT_HTML5, 'UTF-8' );
+					$line      .= ' (+' . $price_text . ')';
+				}
+				echo esc_html( $line ) . "\n"; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			}
+		}
+
+		$set_fee  = (float) $item->get_meta( '_wcpp_set_fee' );
+		$fee_type = (string) $item->get_meta( '_wcpp_fee_type' );
+		if ( $set_fee > 0 ) {
+			$fee_label  = ( 'unit' === $fee_type )
+				? esc_html__( 'Personalisation fee (per item)', 'wcpp' )
+				: esc_html__( 'Personalisation fee (one-time)', 'wcpp' );
+			$fee_amount = html_entity_decode( wp_strip_all_tags( wc_price( $set_fee ) ), ENT_QUOTES | ENT_HTML5, 'UTF-8' );
+			echo esc_html( $fee_label . ': ' . $fee_amount ) . "\n"; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		}
+
+		if ( $item->get_meta( '_wcpp_non_returnable' ) ) {
+			echo esc_html__( '* Non-returnable — personalised item', 'wcpp' ) . "\n";
+		}
 	}
 }

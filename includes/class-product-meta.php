@@ -23,7 +23,8 @@ class WCPP_Product_Meta {
 	 */
 	public static function init() {
 		add_action( 'add_meta_boxes',    array( __CLASS__, 'add_meta_box' ) );
-		add_action( 'save_post_product', array( __CLASS__, 'save_meta' ), 10, 2 );
+		// Priority 20: run after WooCommerce's own product meta saves (priority 10-15).
+		add_action( 'save_post_product', array( __CLASS__, 'save_meta' ), 20, 2 );
 	}
 
 	/**
@@ -32,6 +33,10 @@ class WCPP_Product_Meta {
 	 * @return void
 	 */
 	public static function add_meta_box() {
+		// Only expose the set-assignment box to users who can actually save it.
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			return;
+		}
 		add_meta_box(
 			'wcpp_product_assign',
 			__( 'Personalisation', 'wcpp' ),
@@ -115,7 +120,7 @@ class WCPP_Product_Meta {
 		if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
 			return;
 		}
-		if ( ! current_user_can( 'edit_product', $post_id ) ) {
+		if ( ! current_user_can( 'manage_woocommerce' ) || ! current_user_can( 'edit_product', $post_id ) ) {
 			return;
 		}
 		if (

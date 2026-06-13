@@ -49,6 +49,11 @@ class WCPP_Ajax_Handler {
 			wp_send_json_error( array( 'message' => __( 'Invalid product.', 'wcpp' ) ) );
 		}
 
+		$product = wc_get_product( $product_id );
+		if ( ! $product || ! $product->is_purchasable() || $product->is_type( array( 'external', 'grouped' ) ) ) {
+			wp_send_json_error( array( 'message' => __( 'This product cannot be personalised.', 'wcpp' ) ) );
+		}
+
 		// 3. Resolve the authorised set for this product — always derived from the
 		// product server-side, never from the raw posted set_id alone. A posted
 		// set_id is accepted only as a confirmation that the client held the right
@@ -137,8 +142,7 @@ class WCPP_Ajax_Handler {
 
 		// 6. Variable product needs a chosen variation.
 		$variation_id = isset( $_POST['variation_id'] ) ? absint( $_POST['variation_id'] ) : 0;
-		$product      = wc_get_product( $product_id );
-		if ( $product && $product->is_type( 'variable' ) && ! $variation_id ) {
+		if ( $product->is_type( 'variable' ) && ! $variation_id ) {
 			wp_send_json_error( array( 'message' => __( 'Please select a product option (e.g. size) before personalising.', 'wcpp' ) ) );
 		}
 
@@ -258,7 +262,7 @@ class WCPP_Ajax_Handler {
 		wp_send_json_success(
 			array(
 				'message'      => __( 'Added to cart!', 'wcpp' ),
-				'cart_url'     => wc_get_cart_url(),
+				'cart_url'     => apply_filters( 'woocommerce_add_to_cart_redirect', wc_get_cart_url(), $product ),
 				'checkout_url' => wc_get_checkout_url(),
 			)
 		);
