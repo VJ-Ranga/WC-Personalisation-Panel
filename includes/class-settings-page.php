@@ -160,7 +160,14 @@ class WCPP_Settings_Page {
 		// Footer buttons.
 		$out['footer_btn_radius']    = max( 0, min( 50, intval( $d['footer_btn_radius'] ?? $dft['footer_btn_radius'] ) ) );
 		$out['footer_btn_font_size'] = max( 10, min( 24, intval( $d['footer_btn_font_size'] ?? $dft['footer_btn_font_size'] ) ) );
-		$out['footer_btn_padding_v'] = max( 8, min( 40, intval( $d['footer_btn_padding_v'] ?? $dft['footer_btn_padding_v'] ) ) );
+		$out['footer_btn_pad_top']      = max( 0, min( 40,  intval( $d['footer_btn_pad_top']      ?? $dft['footer_btn_pad_top'] ) ) );
+		$out['footer_btn_pad_right']    = max( 0, min( 60,  intval( $d['footer_btn_pad_right']    ?? $dft['footer_btn_pad_right'] ) ) );
+		$out['footer_btn_pad_bottom']   = max( 0, min( 40,  intval( $d['footer_btn_pad_bottom']   ?? $dft['footer_btn_pad_bottom'] ) ) );
+		$out['footer_btn_pad_left']     = max( 0, min( 60,  intval( $d['footer_btn_pad_left']     ?? $dft['footer_btn_pad_left'] ) ) );
+		$out['footer_btn_margin_top']   = max( 0, min( 60,  intval( $d['footer_btn_margin_top']   ?? $dft['footer_btn_margin_top'] ) ) );
+		$out['footer_btn_margin_right'] = max( 0, min( 60,  intval( $d['footer_btn_margin_right'] ?? $dft['footer_btn_margin_right'] ) ) );
+		$out['footer_btn_margin_bottom']= max( 0, min( 60,  intval( $d['footer_btn_margin_bottom']?? $dft['footer_btn_margin_bottom'] ) ) );
+		$out['footer_btn_margin_left']  = max( 0, min( 60,  intval( $d['footer_btn_margin_left']  ?? $dft['footer_btn_margin_left'] ) ) );
 
 		$out['panel_width']     = max( 300, min( 700, intval( $d['panel_width'] ?? $dft['panel_width'] ) ) );
 		$out['mobile_bp']       = max( 320, min( 1024, intval( $d['mobile_bp'] ?? $dft['mobile_bp'] ) ) );
@@ -310,7 +317,13 @@ class WCPP_Settings_Page {
 			</tr>
 			<tr>
 				<th><?php esc_html_e( 'Button radius', 'wcpp' ); ?></th>
-				<td><input type="number" name="<?php echo esc_attr( self::name( 'design', 'btn_radius' ) ); ?>" value="<?php echo esc_attr( $d['btn_radius'] ); ?>" min="0" max="50" class="small-text" /> px</td>
+				<td>
+					<div class="wcpp-range-row">
+						<input type="range" min="0" max="50" value="<?php echo esc_attr( $d['btn_radius'] ); ?>" step="1" />
+						<input type="number" name="<?php echo esc_attr( self::name( 'design', 'btn_radius' ) ); ?>" value="<?php echo esc_attr( $d['btn_radius'] ); ?>" min="0" max="50" class="small-text" />
+						<span class="wcpp-range-unit">px</span>
+					</div>
+				</td>
 			</tr>
 			<tr>
 				<th><?php esc_html_e( 'Placement', 'wcpp' ); ?></th>
@@ -454,7 +467,13 @@ class WCPP_Settings_Page {
 			</tr>
 			<tr>
 				<th><?php esc_html_e( 'Panel radius', 'wcpp' ); ?></th>
-				<td><input type="number" name="<?php echo esc_attr( self::name( 'design', 'panel_radius' ) ); ?>" value="<?php echo esc_attr( $d['panel_radius'] ); ?>" min="0" max="50" class="small-text" /> px</td>
+				<td>
+					<div class="wcpp-range-row">
+						<input type="range" min="0" max="50" value="<?php echo esc_attr( $d['panel_radius'] ); ?>" step="1" />
+						<input type="number" name="<?php echo esc_attr( self::name( 'design', 'panel_radius' ) ); ?>" value="<?php echo esc_attr( $d['panel_radius'] ); ?>" min="0" max="50" class="small-text" />
+						<span class="wcpp-range-unit">px</span>
+					</div>
+				</td>
 			</tr>
 			<tr>
 				<th><?php esc_html_e( 'Overlay colour', 'wcpp' ); ?></th>
@@ -462,11 +481,23 @@ class WCPP_Settings_Page {
 			</tr>
 			<tr>
 				<th><?php esc_html_e( 'Overlay opacity', 'wcpp' ); ?></th>
-				<td><input type="number" name="<?php echo esc_attr( self::name( 'design', 'overlay_opacity' ) ); ?>" value="<?php echo esc_attr( $d['overlay_opacity'] ); ?>" min="0" max="100" class="small-text" /> %</td>
+				<td>
+					<div class="wcpp-range-row">
+						<input type="range" min="0" max="100" value="<?php echo esc_attr( $d['overlay_opacity'] ); ?>" step="1" />
+						<input type="number" name="<?php echo esc_attr( self::name( 'design', 'overlay_opacity' ) ); ?>" value="<?php echo esc_attr( $d['overlay_opacity'] ); ?>" min="0" max="100" class="small-text" />
+						<span class="wcpp-range-unit">%</span>
+					</div>
+				</td>
 			</tr>
 			<tr>
 				<th><?php esc_html_e( 'Animation speed', 'wcpp' ); ?></th>
-				<td><input type="number" name="<?php echo esc_attr( self::name( 'design', 'anim_speed' ) ); ?>" value="<?php echo esc_attr( $d['anim_speed'] ); ?>" min="100" max="1000" step="50" class="small-text" /> ms</td>
+				<td>
+					<div class="wcpp-range-row">
+						<input type="range" min="100" max="1000" value="<?php echo esc_attr( $d['anim_speed'] ); ?>" step="50" />
+						<input type="number" name="<?php echo esc_attr( self::name( 'design', 'anim_speed' ) ); ?>" value="<?php echo esc_attr( $d['anim_speed'] ); ?>" min="100" max="1000" step="50" class="small-text" />
+						<span class="wcpp-range-unit">ms</span>
+					</div>
+				</td>
 			</tr>
 			<tr>
 				<th><?php esc_html_e( 'Content padding', 'wcpp' ); ?></th>
@@ -595,15 +626,91 @@ class WCPP_Settings_Page {
 			</tr>
 			<tr>
 				<th><?php esc_html_e( 'Footer button radius', 'wcpp' ); ?></th>
-				<td><input type="number" name="<?php echo esc_attr( self::name( 'design', 'footer_btn_radius' ) ); ?>" value="<?php echo esc_attr( $d['footer_btn_radius'] ); ?>" min="0" max="50" class="small-text" /> px</td>
+				<td>
+					<div class="wcpp-range-row">
+						<input type="range" min="0" max="50" value="<?php echo esc_attr( $d['footer_btn_radius'] ); ?>" step="1" />
+						<input type="number" name="<?php echo esc_attr( self::name( 'design', 'footer_btn_radius' ) ); ?>" value="<?php echo esc_attr( $d['footer_btn_radius'] ); ?>" min="0" max="50" class="small-text" />
+						<span class="wcpp-range-unit">px</span>
+					</div>
+				</td>
 			</tr>
 			<tr>
 				<th><?php esc_html_e( 'Footer button font size', 'wcpp' ); ?></th>
 				<td><input type="number" name="<?php echo esc_attr( self::name( 'design', 'footer_btn_font_size' ) ); ?>" value="<?php echo esc_attr( $d['footer_btn_font_size'] ); ?>" min="10" max="24" class="small-text" /> px</td>
 			</tr>
 			<tr>
-				<th><?php esc_html_e( 'Footer button padding', 'wcpp' ); ?></th>
-				<td><input type="number" name="<?php echo esc_attr( self::name( 'design', 'footer_btn_padding_v' ) ); ?>" value="<?php echo esc_attr( $d['footer_btn_padding_v'] ); ?>" min="8" max="40" class="small-text" /> px <span class="description"><?php esc_html_e( 'Top / bottom padding on the Continue and Add to Bag buttons.', 'wcpp' ); ?></span></td>
+				<th><?php esc_html_e( 'Footer button padding &amp; margin', 'wcpp' ); ?></th>
+				<td>
+					<div class="wcpp-sides-pair">
+						<!-- Padding -->
+						<div class="wcpp-sides-pair__item">
+							<span class="wcpp-sides-pair__title"><?php esc_html_e( 'Padding', 'wcpp' ); ?></span>
+							<div class="wcpp-sides">
+								<div class="wcpp-sides__row">
+									<div class="wcpp-sides__side">
+										<span class="wcpp-sides__label"><?php esc_html_e( 'Top', 'wcpp' ); ?></span>
+										<input type="number" name="<?php echo esc_attr( self::name( 'design', 'footer_btn_pad_top' ) ); ?>" value="<?php echo esc_attr( $d['footer_btn_pad_top'] ); ?>" min="0" max="40" />
+										<span class="wcpp-sides__unit">px</span>
+									</div>
+								</div>
+								<div class="wcpp-sides__row">
+									<div class="wcpp-sides__side">
+										<span class="wcpp-sides__label"><?php esc_html_e( 'Left', 'wcpp' ); ?></span>
+										<input type="number" name="<?php echo esc_attr( self::name( 'design', 'footer_btn_pad_left' ) ); ?>" value="<?php echo esc_attr( $d['footer_btn_pad_left'] ); ?>" min="0" max="60" />
+										<span class="wcpp-sides__unit">px</span>
+									</div>
+									<div class="wcpp-sides__box"><?php esc_html_e( 'PAD', 'wcpp' ); ?></div>
+									<div class="wcpp-sides__side">
+										<span class="wcpp-sides__label"><?php esc_html_e( 'Right', 'wcpp' ); ?></span>
+										<input type="number" name="<?php echo esc_attr( self::name( 'design', 'footer_btn_pad_right' ) ); ?>" value="<?php echo esc_attr( $d['footer_btn_pad_right'] ); ?>" min="0" max="60" />
+										<span class="wcpp-sides__unit">px</span>
+									</div>
+								</div>
+								<div class="wcpp-sides__row">
+									<div class="wcpp-sides__side">
+										<span class="wcpp-sides__label"><?php esc_html_e( 'Bottom', 'wcpp' ); ?></span>
+										<input type="number" name="<?php echo esc_attr( self::name( 'design', 'footer_btn_pad_bottom' ) ); ?>" value="<?php echo esc_attr( $d['footer_btn_pad_bottom'] ); ?>" min="0" max="40" />
+										<span class="wcpp-sides__unit">px</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<!-- Margin -->
+						<div class="wcpp-sides-pair__divider"></div>
+						<div class="wcpp-sides-pair__item">
+							<span class="wcpp-sides-pair__title"><?php esc_html_e( 'Margin', 'wcpp' ); ?></span>
+							<div class="wcpp-sides">
+								<div class="wcpp-sides__row">
+									<div class="wcpp-sides__side">
+										<span class="wcpp-sides__label"><?php esc_html_e( 'Top', 'wcpp' ); ?></span>
+										<input type="number" name="<?php echo esc_attr( self::name( 'design', 'footer_btn_margin_top' ) ); ?>" value="<?php echo esc_attr( $d['footer_btn_margin_top'] ); ?>" min="0" max="60" />
+										<span class="wcpp-sides__unit">px</span>
+									</div>
+								</div>
+								<div class="wcpp-sides__row">
+									<div class="wcpp-sides__side">
+										<span class="wcpp-sides__label"><?php esc_html_e( 'Left', 'wcpp' ); ?></span>
+										<input type="number" name="<?php echo esc_attr( self::name( 'design', 'footer_btn_margin_left' ) ); ?>" value="<?php echo esc_attr( $d['footer_btn_margin_left'] ); ?>" min="0" max="60" />
+										<span class="wcpp-sides__unit">px</span>
+									</div>
+									<div class="wcpp-sides__box"><?php esc_html_e( 'MAR', 'wcpp' ); ?></div>
+									<div class="wcpp-sides__side">
+										<span class="wcpp-sides__label"><?php esc_html_e( 'Right', 'wcpp' ); ?></span>
+										<input type="number" name="<?php echo esc_attr( self::name( 'design', 'footer_btn_margin_right' ) ); ?>" value="<?php echo esc_attr( $d['footer_btn_margin_right'] ); ?>" min="0" max="60" />
+										<span class="wcpp-sides__unit">px</span>
+									</div>
+								</div>
+								<div class="wcpp-sides__row">
+									<div class="wcpp-sides__side">
+										<span class="wcpp-sides__label"><?php esc_html_e( 'Bottom', 'wcpp' ); ?></span>
+										<input type="number" name="<?php echo esc_attr( self::name( 'design', 'footer_btn_margin_bottom' ) ); ?>" value="<?php echo esc_attr( $d['footer_btn_margin_bottom'] ); ?>" min="0" max="60" />
+										<span class="wcpp-sides__unit">px</span>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</td>
 			</tr>
 			<tr>
 				<th><?php esc_html_e( 'Show price on each choice', 'wcpp' ); ?></th>

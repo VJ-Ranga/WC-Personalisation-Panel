@@ -76,9 +76,16 @@ class WCPP_Settings_Store {
 			'panel_content_pad'    => 22,   // horizontal padding inside the content px.
 
 			// Footer buttons (Next / Add to Bag).
-			'footer_btn_radius'    => 6,    // border-radius px.
-			'footer_btn_font_size' => 12,   // font-size px.
-			'footer_btn_padding_v' => 16,   // vertical padding (top/bottom) px.
+			'footer_btn_radius'       => 6,  // border-radius px.
+			'footer_btn_font_size'    => 12, // font-size px.
+			'footer_btn_pad_top'      => 16, // padding top px.
+			'footer_btn_pad_right'    => 24, // padding right px.
+			'footer_btn_pad_bottom'   => 16, // padding bottom px.
+			'footer_btn_pad_left'     => 24, // padding left px.
+			'footer_btn_margin_top'   => 0,  // margin top px.
+			'footer_btn_margin_right' => 0,  // margin right px.
+			'footer_btn_margin_bottom'=> 8,  // margin bottom px (gap between stacked buttons).
+			'footer_btn_margin_left'  => 0,  // margin left px.
 
 			// Drawer / panel.
 			'slide_from'        => 'right',     // right | left.

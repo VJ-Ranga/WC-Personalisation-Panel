@@ -110,7 +110,14 @@ class WCPP_Cart_Handler {
 			// Footer button tokens.
 			'--wcpp-footer-btn-radius' => intval( $design['footer_btn_radius'] ?? 6 ) . 'px',
 			'--wcpp-footer-btn-font'   => intval( $design['footer_btn_font_size'] ?? 12 ) . 'px',
-			'--wcpp-footer-btn-pad-v'  => intval( $design['footer_btn_padding_v'] ?? 16 ) . 'px',
+			'--wcpp-footer-btn-pad'    => intval( $design['footer_btn_pad_top']      ?? 16 ) . 'px '
+			                           . intval( $design['footer_btn_pad_right']    ?? 24 ) . 'px '
+			                           . intval( $design['footer_btn_pad_bottom']   ?? 16 ) . 'px '
+			                           . intval( $design['footer_btn_pad_left']     ?? 24 ) . 'px',
+			'--wcpp-footer-btn-margin' => intval( $design['footer_btn_margin_top']   ?? 0 ) . 'px '
+			                           . intval( $design['footer_btn_margin_right']  ?? 0 ) . 'px '
+			                           . intval( $design['footer_btn_margin_bottom'] ?? 8 ) . 'px '
+			                           . intval( $design['footer_btn_margin_left']   ?? 0 ) . 'px',
 
 			// Choice card image display.
 			'--wcpp-img-fit'    => in_array( $design['card_img_fit'] ?? 'cover', array( 'cover', 'contain' ), true ) ? ( $design['card_img_fit'] ?? 'cover' ) : 'cover',

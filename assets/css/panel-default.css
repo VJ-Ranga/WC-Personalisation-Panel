@@ -49,7 +49,8 @@
 	/* Footer button tokens */
 	--wcpp-footer-btn-radius: 6px;
 	--wcpp-footer-btn-font:   12px;
-	--wcpp-footer-btn-pad-v:  16px;
+	--wcpp-footer-btn-pad:    16px 24px 16px 24px;
+	--wcpp-footer-btn-margin: 0px 0px 8px 0px;
 
 	/* Choice card image display */
 	--wcpp-img-fit:    cover;
@@ -688,7 +689,8 @@
 .wcpp-panel__next,
 .wcpp-panel__add-to-bag {
 	width:          100%;
-	padding:        var(--wcpp-footer-btn-pad-v) 16px;
+	padding:        var(--wcpp-footer-btn-pad);
+	margin:         var(--wcpp-footer-btn-margin);
 	font-size:      var(--wcpp-footer-btn-font);
 	font-weight:    700;
 	letter-spacing: 0.12em;
