@@ -5,6 +5,14 @@
 
 ---
 
+## [0.7.31] — 2026-06
+### Added
+- **Footer button padding — 4-sides control** — The "Footer button padding" setting in Panel Settings → Design now uses the same box-model widget as the trigger button, with individual Top / Right / Bottom / Left inputs. Default: 16px top/bottom, 24px left/right.
+- **Footer button margin — 4-sides control** — New "Footer button margin" widget alongside padding, matching the trigger button UI exactly. Useful for spacing between stacked buttons and breathing room from the footer edges. Default: 8px bottom (gap between Next and Add to Bag).
+- **Range sliders** for five settings where dragging is more intuitive than typing a number: Button radius, Panel radius, Footer button radius, Overlay opacity (0–100 %), Animation speed (100–1000 ms). Each slider syncs live with its number input — the number field is what gets saved.
+
+---
+
 ## [0.7.21] — 2026-06
 ### Fixed
 - **Success screen crash** — `$footer` variable was undefined, causing the
